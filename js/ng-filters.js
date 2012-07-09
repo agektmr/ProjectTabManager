@@ -4,8 +4,8 @@ app.filter('sort', function() {
   return function(projects, projectId) {
     if (!projects) return;
 
-    var preceding = [];
-    var following = [];
+    var preceding = [],
+        following = [];
     // Move active project up to the top
     projects.forEach(function(project, index) {
       if (project.title == config.archiveFolderName) {
@@ -25,6 +25,7 @@ app.filter('normalize', function() {
   return function(bookmarks, projectId) {
     bookmarks = bookmarks || [];
     var tabs = (projectId == this.project.id || this.project.id == '0') ? this.currentTabs.slice(0) : [];
+
     // Loop through bookmarks and find folders (passive bookmarks folder)
     bookmarks.forEach(function(bookmark, index) {
       if (bookmark.children) {
@@ -36,21 +37,24 @@ app.filter('normalize', function() {
         bookmarks.splice(index, 1);
       } else {
         bookmark.current = false;
+        // Flag opened bookmark on current window's tabs
         tabs.forEach(function(tab, index) {
           if (bookmark.url == tab.url) {
             bookmark.current = true;
+            // Remove from appending tabs
             tabs.splice(index, 1);
           }
         });
         bookmark.passive = false;
       }
     });
+    // Append open tabs for addition candidate
     tabs.forEach(function(tab, index) {
+      // If the tab is opened using lazy loading, extract original url
       if (tab.url.match(RegExp('chrome-extension:\/\/'+chrome.i18n.getMessage('@@extension_id')+'\/lazy\.html'))) {
-        var query = tab.url.replace(/.*\?(.*)$/, '$1');
-        var params = {};
-        var _params = query.split('&');
-        _params.forEach(function(param) {
+        var query   = tab.url.replace(/.*\?(.*)$/, '$1'),
+            params  = {};
+        query.split('&').forEach(function(param) {
           var comb = param.split('=');
           if (comb.length == 2)
             params[comb[0]] = decodeURIComponent(comb[1]);

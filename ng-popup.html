@@ -31,7 +31,7 @@
             <span class="name" ng-class="{current: project.id==projectId}" ng-click="open()">{{project.title}}</span>
           </div>
           <div class="menu" ng-show="hover&&project.id!=0">
-            <span class="button pin" ng-click="pin()" chrome-i18n="pin:title"></span>
+            <span class="button pin" ng-click="pin()" ng-hide="project.id==projectId" chrome-i18n="pin:title"></span>
             <span class="button remove" ng-click="remove()" chrome-i18n="remove:title"></span>
           </div>
           <ul>

@@ -2,12 +2,8 @@
 
 app.controller('ProjectListCtrl', function($scope, Background) {
   $scope.currentWinId = '0';
-
   $scope.currentTabs = [];
-
   $scope.projectId = '0';
-
-  $scope.projects = [];
 
   $scope.reload = function(projectId) {
     Background.projects(function(projects) {
@@ -16,8 +12,10 @@ app.controller('ProjectListCtrl', function($scope, Background) {
         title: chrome.i18n.getMessage('name_this'),
         children: []
       });
-      $scope.projectId = projectId || $scope.projectId;
-      $scope.projects = projects;
+      $scope.$apply(function() {
+        $scope.projectId = projectId || $scope.projectId;
+        $scope.projects = projects;
+      });
     });
   };
 

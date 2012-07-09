@@ -6,7 +6,7 @@ var ProjectTabManager = (function() {
   localStorage.rootName = localStorage.rootName || 'Project Tab Manager';
 
   chrome.tabs.onActivated.addListener(function(activeInfo) {
-    activeTab = activeInfo ? activeInfo.tabId || null : null;
+    activeTab = activeInfo.tabId || null;
   });
 
   var projectsRootId = null,
@@ -66,7 +66,6 @@ var ProjectTabManager = (function() {
       return activeTab;
     },
     addBookmark: function(projectId, tab, callback) {
-      // FIXME: avoid adding bookmarks to locale file
       createBookmark(projectId, tab, callback);
     },
     getBookmarks: function(projectId, callback) {

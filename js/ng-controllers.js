@@ -7,13 +7,16 @@ app.controller('ProjectListCtrl', function($scope, Background) {
 
   $scope.projectId = '0';
 
-  $scope.reload = function() {
+  $scope.projects = [];
+
+  $scope.reload = function(projectId) {
     Background.projects(function(projects) {
       projects.unshift({
         id: '0',
         title: chrome.i18n.getMessage('name_this'),
         children: []
       });
+      $scope.projectId = projectId || $scope.projectId;
       $scope.projects = projects;
     });
   };
@@ -26,15 +29,6 @@ app.controller('ProjectListCtrl', function($scope, Background) {
     chrome.tabs.create({url:'/options.html'});
   };
 
-  $scope.pinProject = function(projectId) {
-    return function() {
-      Background.pin(projectId, $scope.currentWinId, function(project) {
-        $scope.projectId = project.id;
-        $scope.reload();
-      });
-    };
-  };
-
   $scope.edit = Background.edit;
 
   chrome.windows.getCurrent(function(win) {
@@ -43,8 +37,7 @@ app.controller('ProjectListCtrl', function($scope, Background) {
       $scope.currentTabs = tabs;
     });
     Background.current(win.id, function(projectId) {
-      $scope.projectId = projectId;
-      $scope.reload();
+      $scope.reload(projectId);
     });
   });
 });
@@ -53,13 +46,17 @@ app.controller('ProjectCtrl', function($scope, Background) {
   $scope.expand = false;
 
   $scope.add = function() {
+    if ($scope.project_name.length == 0) return;
     Background.addProject($scope.project_name, $scope.currentWinId, function(project) {
-      $scope.projectId = project.id;
-      $scope.reload();
+      $scope.reload(project.id);
     });
   };
 
-  $scope.pin = $scope.pinProject($scope.project.id);
+  $scope.pin = function() {
+    Background.pin($scope.project.id, $scope.currentWinId, function(project) {
+      $scope.reload(project.id);
+    });
+  };
 
   $scope.flip = function() {
     $scope.expand = $scope.expand  ? false : true;
@@ -71,8 +68,9 @@ app.controller('ProjectCtrl', function($scope, Background) {
   };
 
   $scope.remove = function() {
+    var projectId = $scope.project.id == $scope.projectId ? '0' : $scope.projectId;
     Background.removeProject($scope.project.id, function() {
-      $scope.reload();
+      $scope.reload(projectId);
     });
   };
 });

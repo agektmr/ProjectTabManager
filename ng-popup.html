@@ -30,7 +30,7 @@
             <span class="button arrow" ng-class="{expand: expand || project.id==projectId}" ng-click="flip()"></span>
             <span class="name" ng-class="{current: project.id==projectId}" ng-click="open()">{{project.title}}</span>
           </div>
-          <div class="menu" ng-show="hover">
+          <div class="menu" ng-show="hover&&project.id!=0">
             <span class="button pin" ng-click="pin()" chrome-i18n="pin:title"></span>
             <span class="button remove" ng-click="remove()" chrome-i18n="remove:title"></span>
           </div>
@@ -39,7 +39,7 @@
               <img src="../img/favicon.png" class="favicon" />
             </li>
             <li ng-show="project.id==0">
-              <input type="text" ng-model="project_name" chrome-i18n="project_name:value" />
+              <input type="text" ng-model="project_name" chrome-i18n="project_name:placeholder" />
               <input type="button" ng-click="add()" chrome-i18n="save:value" />
             </li>
             <li ng-repeat="bookmark in project.children | normalize:projectId | filter:query" ng-controller="BookmarkCtrl" ng-init="hover=false" ng-mouseover="hover=true" ng-mouseleave="hover=false">
@@ -49,7 +49,7 @@
               <div class="menu" ng-show="hover">
                 <span class="button" ng-class="{activate: passive, deactivate: !passive}" ng-click="changeStatus()" ng-show="!adding" title="{{titleStatus}}"></span>
                 <span class="button delete" ng-click="delete()" ng-show="!adding" chrome-i18n="delete:title"></span>
-                <span class="button add" ng-click="add()" ng-show="adding" chrome-i18n="add:title"></span>
+                <span class="button add" ng-click="add()" ng-show="adding&&project.id!=0" chrome-i18n="add:title"></span>
               </div>
             </li>
           </ul>

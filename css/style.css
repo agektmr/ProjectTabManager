@@ -1,0 +1,189 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+#container {
+  width: 300px;
+  margin: 0;
+  padding: 8px;
+  font-size: 0.8em;
+  background: -webkit-linear-gradient(top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.4));
+  background-color: #ddd;
+  border-radius: 5px;
+  overflow: hidden;
+}
+.name {
+  margin-top: 3px;
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: top;
+}
+.favicon {
+  margin: 2px 4px 0 0;
+  width: 16px;
+  height: 16px;
+  vertical-align: top;
+}
+.button {
+  margin: 2px 4px 0 0;
+  background: url(../img/buttons.png);
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  cursor: pointer;
+}
+.button.add {
+  background-position-y: -48px;
+}
+.button.delete {
+  background-position-y: -64px;
+}
+.button.open {
+  background-position-y: -32px;
+}
+.button.edit {
+  background-position-y: -16px;
+}
+.button.pin {
+  background-position-y: 0px;
+}
+.button.summary {
+  background-position-y: -80px;
+}
+.button.remove {
+  background-position-y: -96px;
+}
+.button.activate {
+  background-position-y: -32px;
+}
+.button.deactivate {
+  background-position-y: -32px;
+}
+.button.options {
+  background-position-y: -112px;
+}
+.button:hover {
+  background-position-x: -16px;
+}
+.button:active {
+  background-position-x: -32px;
+}
+.flipper {
+  margin: 0 4px;
+  background: url(../img/arrow.png);
+  float: left;
+}
+.flipper.open {
+  -webkit-transform: rotate(90deg);
+}
+header .name {
+  font-size: 16px;
+  font-family: Audiowide;
+  width: 228px;
+}
+#projects {
+  list-style: none;
+  margin-top: 8px;
+  padding: 0;
+  font-family: Helvetica, Arial;
+  overflow-y: scroll;
+  max-height: 538px;
+}
+.accordion {
+  -webkit-transition: max-height 0.1s ease-out;
+  max-height: 24px;
+  overflow-y: hidden;
+  white-space: nowrap;
+  position: relative;
+}
+.accordion.expand {
+  max-height: 548px;
+  overflow-y: scroll;
+}
+.accordion .search {
+  width: 100%;
+}
+.accordion .project {
+  background: -webkit-linear-gradient(top, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.3));
+  background-color: #fef;
+  padding: 2px 4px;
+  border: outset 1px #ede;
+  height: 18px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.accordion .project span.arrow {
+  background: url(../img/arrow.png);
+  background-position: 0px 0px;
+  width: 16px;
+  height: 16px;
+  -webkit-transition: -webkit-transform 0.08s ease-out;
+  cursor: pointer;
+}
+.accordion .project span.arrow:hover {
+  background-position-x: -16px;
+}
+.accordion .project span.arrow.expand {
+  -webkit-transform: rotate(90deg);
+}
+.accordion .project span.name {
+  width: 254px;
+  cursor: pointer;
+}
+.accordion .project span.name:hover {
+  text-decoration: underline;
+}
+.accordion .project span.name.current {
+  font-weight: bold;
+}
+.accordion input[type='text'] {
+  width: 220px;
+}
+.accordion .menu {
+  right: 0px;
+  top: 2px;
+}
+.accordion ul {
+  margin: 0;
+  padding: 0 0 3px 0;
+  list-style: none;
+  border: outset 1px #eee;
+  text-decoration: none;
+  background-color: #fff;
+}
+.accordion li {
+  margin: 0 5px;
+  position: relative;
+}
+.accordion li .name {
+  width: 270px;
+}
+.accordion li .name a {
+  color: #333;
+  text-decoration: none;
+}
+.accordion li .name.current a {
+  font-weight: bold;
+}
+.accordion li .name.adding a {
+  color: #ccc;
+}
+.accordion li .name.passive a {
+  color: #aaf;
+}
+.accordion li .name:hover {
+  text-decoration: underline;
+}
+.accordion li .menu {
+  right: -5px;
+  top: 0px;
+}
+.menu {
+  position: absolute;
+  margin: 0;
+  padding-left: 4px;
+  height: 21px;
+  right: -5px;
+  top: 0px;
+}

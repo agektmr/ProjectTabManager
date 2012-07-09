@@ -1,0 +1,62 @@
+{
+  "open": {
+    "message": "プロジェクトウィンドウを開く"
+  },
+  "update": {
+    "message": "タブを追加する"
+  },
+  "edit": {
+    "message": "ブックマークマネージャでプロジェクトを編集する"
+  },
+  "pin": {
+    "message": "このウィンドウをプロジェクトに紐付ける"
+  },
+  "delete": {
+    "message": "Delete"
+  },
+  "remove": {
+    "message": "削除する"
+  },
+  "save": {
+    "message": "保存する"
+  },
+  "add": {
+    "message": "追加する"
+  },
+  "activate": {
+    "message": "アクティブにする"
+  },
+  "deactivate": {
+    "message": "非アクティブにする"
+  },
+  "name_this": {
+    "message": "新しいプロジェクト"
+  },
+  "add_from_tabs": {
+    "message": "開いているタブから追加"
+  },
+  "description": {
+    "message": "Chromeでタブを開きすぎていませんか？このExtensionを使うことで、ウィンドウごとにタブを保存することができるようになります。"
+  },
+  "no_bookmarks_found": {
+    "message": "ブックマークがありません"
+  },
+  "todays_project_summary": {
+    "message": "本日のプロジェクト時間まとめ"
+  },
+  "options": {
+    "message": "オプション"
+  },
+  "project_name": {
+    "message": "プロジェクト名"
+  },
+  "amount_of_time_spent": {
+    "message": "経過時間"
+  },
+  "hour_min_sec": {
+    "message": "##hour##時間##min##分##sec##秒"
+  },
+  "new_project": {
+    "message": "新しいプロジェクト"
+  }
+}

@@ -1,0 +1,44 @@
+<html>
+  <head>
+    <title>Project Tab Manager setting</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="js/ProjectTabManager.js"></script>
+    <script src="js/options.js"></script>
+  </head>
+  <body>
+    <header id="header" class="navbar">
+      <div class="navbar-inner">
+        <div class="container"><span class="brand">Project Tab Manager</span></div>
+      </div>
+    </header><!-- /header -->
+    <div class="container form-horizontal control-group">
+      <fieldset>
+        <legend>Options</legend>
+        <div class="control-group">
+          <label class="control-label" for="root">Root Folder location:</label>
+          <div class="controls">
+            <select id="root" class="input-xlarge"></select>
+            <p class="help-block">Specify location of Projects Root Folder in Bookmarks.</p>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="folderName">Root Folder name: </label>
+          <div class="controls">
+            <input type="text" id="folderName" value="" class="input-xlarge" />
+            <p class="help-block">Specify name of Projects Root Folder.</p>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="lazyLoad">Disable lazy load: </label>
+          <div class="controls">
+            <input type="checkbox" id="lazyLoad" class="input-xlarge" />
+            <p>Lazy load prevents simultaneous load of multiple tabs when opening a project.</p>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" id="save" class="btn btn-primary" />Save</button>
+        </div>
+      </fieldset>
+    </div>
+  </body>
+</html>

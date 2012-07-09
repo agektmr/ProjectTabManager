@@ -1,0 +1,29 @@
+{
+  "name": "Project Tab Manager",
+  "description": "__MSG_description__",
+  "manifest_version": 2,
+  "version": "0.1.2",
+  "icons": {
+    "48": "img/48.png",
+    "128": "img/128.png"
+  },
+  "permissions": [
+    "bookmarks",
+    "tabs"
+  ],
+  "default_locale": "en",
+  "background": {
+    "scripts": [
+      "js/config.js",
+      "js/VisibilityTracker.js",
+      "js/ProjectTabManager.js",
+      "js/background.js"
+    ]
+  },
+  "browser_action": {
+    "default_icon": "img/19.png",
+    "default_title": "Project Tab Manager",
+    "popup": "popup.html"
+  },
+  "options_page": "options.html"
+}

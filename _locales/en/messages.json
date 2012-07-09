@@ -1,0 +1,62 @@
+{
+  "open": {
+    "message": "Open project window"
+  },
+  "update": {
+    "message": "Append Tabs"
+  },
+  "edit": {
+    "message": "Edit projects on Bookmark Manager"
+  },
+  "pin": {
+    "message": "Bind window to this project"
+  },
+  "delete": {
+    "message": "Delete"
+  },
+  "remove": {
+    "message": "Remove"
+  },
+  "save": {
+    "message": "Save"
+  },
+  "add": {
+    "message": "Add"
+  },
+  "activate": {
+    "message": "Activate"
+  },
+  "deactivate": {
+    "message": "Deactivate"
+  },
+  "name_this": {
+    "message": "Save as new project"
+  },
+  "add_from_tabs": {
+    "message": "Add from existing tabs"
+  },
+  "description": {
+    "message": "Have too many tabs opened on Chrome? This extension helps you organize your tabs on windows per projects."
+  },
+  "no_bookmarks_found": {
+    "message": "No Bookmarks Found"
+  },
+  "todays_project_summary": {
+    "message": "Today's Project Summary"
+  },
+  "options": {
+    "message": "Options"
+  },
+  "project_name": {
+    "message": "Project Name"
+  },
+  "amount_of_time_spent": {
+    "message": "Amount of time spent"
+  },
+  "hour_min_sec": {
+    "message": "##hour##h ##min##m ##sec##s"
+  },
+  "new_project": {
+    "message": "New Project"
+  }
+}

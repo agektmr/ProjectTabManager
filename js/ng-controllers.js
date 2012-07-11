@@ -57,7 +57,7 @@ app.controller('ProjectCtrl', function($scope, Background) {
   };
 
   $scope.flip = function() {
-    $scope.expand = $scope.expand  ? false : true;
+    $scope.expand = !$scope.expand;
   };
 
   $scope.open = function() {
@@ -92,7 +92,7 @@ app.controller('BookmarkCtrl', function($scope, Background) {
 
   $scope.changeStatus = function() {
     Background[$scope.passive ? 'activate' : 'deactivate']($scope.project.id, $scope.bookmark.id, function() {
-      $scope.passive = $scope.passive ? false : true;
+      $scope.passive = !$scope.passive;
       $scope.titleStatus = $scope.passive ? i18n_activate : i18n_deactivate;
     });
   };
@@ -110,7 +110,7 @@ app.controller('DebugCtrl', function($scope, Background) {
   $scope.tracker = [];
 
   $scope.flip = function() {
-    $scope.expand = $scope.expand ? false : true;
+    $scope.expand = !$scope.expand;
   };
 
   Background.debug(function(tracker) {

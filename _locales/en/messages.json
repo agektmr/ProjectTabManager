@@ -9,7 +9,7 @@
     "message": "Edit projects on Bookmark Manager"
   },
   "pin": {
-    "message": "Bind window to this project"
+    "message": "Bind this project to window"
   },
   "delete": {
     "message": "Delete"

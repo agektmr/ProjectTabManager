@@ -1,4 +1,21 @@
 <!DOCTYPE html>
+<!--
+Copyright 2012 Google Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Author: Eiji Kitamura (agektmr@chromium.org)
+-->
 <html ng-csp ng-app="ProjectTabManager">
   <head>
     <title>Project Tab Manager</title>
@@ -17,7 +34,7 @@
     <div id="container" ng-controller="ProjectListCtrl">
       <header>
         <span class="name">Project Tab Manager</span>
-        <span class="button edit" ng-click="reload()" chrome-i18n="edit:title"></span>
+        <span class="button edit" ng-click="openBookmarks()" chrome-i18n="edit:title"></span>
         <span class="button summary" ng-click="openSummary()" chrome-i18n="todays_project_summary:title"></span>
         <span class="button options" ng-click="openOptions()" chrome-i18n="options:title"></span>
       </header>

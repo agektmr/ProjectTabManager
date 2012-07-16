@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<!--
+Copyright 2012 Eiji Kitamura
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Author: Eiji Kitamura (agektmr@gmail.com)
+-->
+<html ng-csp ng-app="ProjectTabManager">
+  <head>
+    <title>Project Tab Manager setting</title>
+    <meta charset="utf-8"/>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="js/config.js"></script>
+    <script src="js/angular.js"></script>
+    <script src="js/ng-app.js"></script>
+    <script src="js/ng-options.js"></script>
+    <script src="js/ProjectTabManager.js"></script>
+    <script src="js/ng-options.js"></script>
+  </head>
+  <body>
+    <header id="header" class="navbar">
+      <div class="navbar-inner">
+        <div class="container"><span class="brand">Project Tab Manager</span></div>
+      </div>
+    </header><!-- /header -->
+    <div class="container form-horizontal control-group" ng-controller="OptionsCtrl">
+      <fieldset>
+        <div class="alert alert-block" ng-show="saved">
+          <p>Configuration Saved!</p>
+        </div>
+        <legend>Options</legend>
+        <div class="control-group">
+          <label class="control-label" for="root">Root Folder location:</label>
+          <div class="controls">
+            <select id="root" class="input-xlarge">
+              <option ng-repeat="folder in root_folders" value="folder.id" ng-selected="rootParentId == folder.id">{{folder.title}}</option>
+            </select>
+            <p class="help-block">Specify location of Projects Root Folder in Bookmarks.</p>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="folderName">Root Folder name: </label>
+          <div class="controls">
+            <input type="text" id="folderName" ng-model="folderName" class="input-xlarge" />
+            <p class="help-block">Specify name of Projects Root Folder.</p>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="lazyLoad">Disable lazy load: </label>
+          <div class="controls">
+            <input type="checkbox" id="lazyLoad" class="input-xlarge" ng-checked="lazyLoad" />
+            <p>Lazy load prevents simultaneous load of multiple tabs when opening a project.</p>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" id="save" class="btn btn-primary" ng-click="save()" />Save</button>
+        </div>
+      </fieldset>
+    </div>
+  </body>
+</html>

@@ -24,9 +24,9 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     <script src="js/config.js"></script>
     <script src="js/angular.js"></script>
     <script src="js/ng-app.js"></script>
+    <script src="js/ng-directives.js"></script>
     <script src="js/ng-options.js"></script>
     <script src="js/ProjectTabManager.js"></script>
-    <script src="js/ng-options.js"></script>
   </head>
   <body>
     <header id="header" class="navbar">
@@ -37,27 +37,27 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     <div class="container form-horizontal control-group" ng-controller="OptionsCtrl">
       <fieldset>
         <div class="alert alert-block" ng-show="saved">
-          <p>Configuration Saved!</p>
+          <p chrome-i18n="saved:inner"></p>
         </div>
-        <legend>Options</legend>
+        <legend chrome-i18n="options:inner"></legend>
         <div class="control-group">
-          <label class="control-label" for="root">Root Folder location:</label>
+          <label class="control-label" for="root" chrome-i18n="root_folder_location:inner"></label>
           <div class="controls">
             <select id="root" class="input-xlarge">
               <option ng-repeat="folder in root_folders" value="folder.id" ng-selected="rootParentId == folder.id">{{folder.title}}</option>
             </select>
-            <p class="help-block">Specify location of Projects Root Folder in Bookmarks.</p>
+            <p class="help-block" chrome-i18n="root_folder_location_help:inner"></p>
           </div>
         </div>
         <div class="control-group">
-          <label class="control-label" for="folderName">Root Folder name: </label>
+          <label class="control-label" for="folderName" chrome-i18n="root_folder_name:inner"></label>
           <div class="controls">
             <input type="text" id="folderName" ng-model="folderName" class="input-xlarge" />
-            <p class="help-block">Specify name of Projects Root Folder.</p>
+            <p class="help-block" chrome-i18n="root_folder_name_help:inner"></p>
           </div>
         </div>
         <div class="control-group">
-          <label class="control-label" for="lazyLoad">Disable lazy load: </label>
+          <label class="control-label" for="lazyLoad" chrome-i18n="disable_lazy_load:inner"></label>
           <div class="controls">
             <input type="checkbox" id="lazyLoad" class="input-xlarge" ng-checked="lazyLoad" />
             <p>Lazy load prevents simultaneous load of multiple tabs when opening a project.</p>

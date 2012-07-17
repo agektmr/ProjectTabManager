@@ -58,5 +58,26 @@
   },
   "new_project": {
     "message": "新しいプロジェクト"
+  },
+  "saved": {
+    "message": "設定を保存しました"
+  },
+  "root_folder_location": {
+    "message": "ルートフォルダの場所:"
+  },
+  "root_folder_location_help": {
+    "message": "ブックマーク内でのルートフォルダの場所を指定します"
+  },
+  "root_folder_name": {
+    "message": "ルートフォルダの名前:"
+  },
+  "root_folder_name_help": {
+    "message": "ルートフォルダの名前を指定します"
+  },
+  "disable_lazy_load": {
+    "message": "レイジーロードを無効にする:"
+  },
+  "disable_lazy_load_help": {
+    "message": "レイジーロードはプロジェクトから複数のタブを開く際、アクティブなタブのみをロードします"
   }
 }

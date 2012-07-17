@@ -58,5 +58,26 @@
   },
   "new_project": {
     "message": "New Project"
+  },
+  "saved": {
+    "message": "Configuration Saved!"
+  },
+  "root_folder_location": {
+    "message": "Root Folder Location:"
+  },
+  "root_folder_location_help": {
+    "message": "Specify location of Projects Root Folder in Bookmarks."
+  },
+  "root_folder_name": {
+    "message": "Root Folder Name:"
+  },
+  "root_folder_name_help": {
+    "message": "Specify name of Projects Root Folder."
+  },
+  "disable_lazy_load": {
+    "message": "Disable Lazy Load:"
+  },
+  "disable_lazy_load_help": {
+    "message": "Lazy load prevents simultaneous load of multiple tabs when opening a project."
   }
 }

@@ -40,11 +40,11 @@ app.controller('ProjectListCtrl', function($scope, Background) {
     Background.edit();
   }
   $scope.openSummary = function() {
-    chrome.tabs.create({url:'/summary.html'});
+    chrome.tabs.create({url:'/ng-summary.html'});
   };
 
   $scope.openOptions = function() {
-    chrome.tabs.create({url:'/options.html'});
+    chrome.tabs.create({url:'/ng-options.html'});
   };
 
   $scope.edit = Background.edit;

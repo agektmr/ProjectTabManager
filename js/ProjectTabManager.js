@@ -51,7 +51,7 @@ var ProjectTabManager = (function() {
         });
       },
       createBookmark = function(projectId, tab, callback) {
-        if (tab.url.match(/^chrome:\/\//i)) return null;
+        if (tab.url.match(/^chrome(|-devtools):\/\//i)) return null;
         if (tab.url.match(/^chrome-extension:\/\//i)) {
           if (tab.url.match(RegExp(chrome.i18n.getMessage('@@extension_id')+'\/lazy\.html'))) {
             var query = tab.url.replace(/.*\?(.*)$/, '$1');

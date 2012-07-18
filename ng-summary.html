@@ -26,7 +26,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     <script src="js/ng-services.js"></script>
     <script src="js/ng-directives.js"></script>
     <script src="js/ng-summary.js"></script>
-    <!-- <link rel="stylesheet" href="css/summary.css"> -->
+    <link rel="stylesheet" href="css/summary.css">
   </head>
   <body>
     <header id="header" class="navbar">
@@ -36,9 +36,13 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     </header><!-- /header -->
     <section class="container" ng-controller="SummaryCtrl">
       <fieldset>
-        <legend>Summary</legend>
+        <legend>Time Summary</legend>
+        <ul id="debug" class="timesummary">
+          <li ng-repeat="session in tracker" class="session" ng-controller="TimeSummaryCtrl" title="{{session.projectName}}: {{session.start|date:'HH:mm'}} - {{session.end|date:'HH:mm'}}" ng-style="session">
+          </li>
+        </ul>
+        <legend>Project Summary</legend>
         <table class="table table-bordered">
-          <caption>Time spent on each projects</caption>
           <thead>
             <tr>
               <th class="project" chrome-i18n="project_name:inner"></th>
@@ -48,12 +52,12 @@ Author: Eiji Kitamura (agektmr@gmail.com)
           </thead>
           <tbody>
             <tr ng-repeat="project in summary" ng-controller="ProjectSummaryCtrl">
-              <td>{{project.title}}</td>
+              <td><div class="color_swatch" ng-style="project" ></div>{{project.title}}</td>
               <td>{{project.timeStr}}</td>
               <td><meter min="0" max="{{max}}" value="{{project.time}}" style="width:500px;" /></td>
             </tr>
           </tbody>
-      </table>
+        </table>
       </fieldset>
     </section>
     <footer>

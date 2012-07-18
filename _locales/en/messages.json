@@ -53,6 +53,9 @@
   "amount_of_time_spent": {
     "message": "Amount of time spent"
   },
+  "meter": {
+    "message": "Meter"
+  },
   "hour_min_sec": {
     "message": "##hour##h ##min##m ##sec##s"
   },

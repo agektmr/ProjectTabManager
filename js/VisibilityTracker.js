@@ -58,6 +58,7 @@ var VisibilityTracker = (function() {
   });
   return {
     winChanged: function(winId) {
+      // TODO: ignore chrome:// and chrome-devtools://
       var last = tracker.length-1;
       if (winId == chrome.windows.WINDOW_ID_NONE) {
         tracker[last].endSession();
@@ -82,6 +83,18 @@ var VisibilityTracker = (function() {
         times[winId].time += time;
       })
       return times;
+    },
+    getTimeSummary: function(windowHistory) {
+      var copy = [];
+      tracker.forEach(function(session) {
+        var _session = {};
+        _session.winId = session.winId;
+        _session.start = session.start.getTime();
+        _session.end = session.end ? session.end.getTime() : null;
+        _session.projectName = windowHistory[_session.winId] ? windowHistory[_session.winId].title : _session.winId;
+        copy.push(_session);
+      });
+      return copy;
     },
     getDebugInfo: function(windowHistory) {
       var copy = [];

@@ -17,17 +17,39 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 */
 app.controller('SummaryCtrl', function($scope, Background) {
   Background.summary(function(summary) {
-    var max = 0;
+    var max = 0, i = 0;
     for(var key in summary) {
       max = summary[key].time > max ? summary[key].time : max;
+      summary[key].backgroundColor = 'hsl('+((i++*135)%360)+', 100%, 50%)';
     }
     $scope.max = max;
     $scope.summary = summary;
-    $scope.$apply();
+    Background.debug(function(tracker) {
+      var start = 0,
+          end = (new Date()).getTime();
+      if (tracker[0]) start = tracker[0].start;
+      $scope.work_hour = end - start;
+      tracker.forEach(function(session, index) {
+        session.left  = (((session.start - start) / $scope.work_hour * 100))+'%';
+        if (session.end === null) {
+          session.width = (((end - session.start) / $scope.work_hour * 100))+'%';
+        } else {
+          session.width = (((session.end - session.start) / $scope.work_hour * 100))+'%';
+        }
+        session.backgroundColor = $scope.summary[session.winId].backgroundColor;
+      })
+      $scope.tracker = tracker;
+      $scope.$apply();
+    });
   });
 });
 
 app.controller('ProjectSummaryCtrl', function($scope) {
+  // var sec   = $scope.project.time;
+  // var hour  = (sec/60*60)|0;
+  //     sec  -= hour*60*60|0;
+  // var min   = sec/60|0;
+  //     sec  -= min*60|0;
   var sec   = $scope.project.time;
   var hour  = ~~(sec/(60*60));
       sec  -= (hour*60*60);
@@ -38,4 +60,7 @@ app.controller('ProjectSummaryCtrl', function($scope) {
   $scope.project.timeStr = hour_min_sec.replace(/##hour##/, hour)
                                        .replace(/##min##/, min)
                                        .replace(/##sec##/, sec);
+});
+
+app.controller('TimeSummaryCtrl', function($scope) {
 });

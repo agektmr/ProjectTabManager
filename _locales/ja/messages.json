@@ -53,6 +53,9 @@
   "amount_of_time_spent": {
     "message": "経過時間"
   },
+  "meter": {
+    "message": "メーター"
+  },
   "hour_min_sec": {
     "message": "##hour##時間##min##分##sec##秒"
   },

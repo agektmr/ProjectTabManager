@@ -120,7 +120,8 @@ chrome.extension.onRequest.addListener(function(req, sender, callback) {
     });
     break;
   case 'debug':
-    callback(VisibilityTracker.getDebugInfo(windowHistory));
+    // callback(VisibilityTracker.getDebugInfo(windowHistory));
+    callback(VisibilityTracker.getTimeSummary(windowHistory));
     break;
   case 'summary':
     callback(VisibilityTracker.getSummary(windowHistory));

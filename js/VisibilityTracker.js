@@ -75,12 +75,12 @@ var VisibilityTracker = (function() {
         var winId = session.winId;
         if (!times[winId]) {
           times[winId] = {};
-          times[winId].time = 0;
+          times[winId].duration = 0;
           times[winId].title = windowHistory[winId] ? windowHistory[winId].title : session.winId;
         }
         var end = session.end ? session.end.getTime() : (new Date()).getTime();
-        var time = ~~((end - session.start.getTime()) / 1000);
-        times[winId].time += time;
+        var duration = ~~((end - session.start.getTime()) / 1000);
+        times[winId].duration += duration;
       })
       return times;
     },

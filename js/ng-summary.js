@@ -19,7 +19,7 @@ app.controller('SummaryCtrl', function($scope, Background) {
   Background.summary(function(summary) {
     var max = 0, i = 0;
     for(var key in summary) {
-      max = summary[key].time > max ? summary[key].time : max;
+      max += summary[key].duration;
       summary[key].backgroundColor = 'hsl('+((i++*135)%360)+', 100%, 50%)';
     }
     $scope.max = max;
@@ -45,12 +45,7 @@ app.controller('SummaryCtrl', function($scope, Background) {
 });
 
 app.controller('ProjectSummaryCtrl', function($scope) {
-  // var sec   = $scope.project.time;
-  // var hour  = (sec/60*60)|0;
-  //     sec  -= hour*60*60|0;
-  // var min   = sec/60|0;
-  //     sec  -= min*60|0;
-  var sec   = $scope.project.time;
+  var sec   = $scope.project.duration;
   var hour  = ~~(sec/(60*60));
       sec  -= (hour*60*60);
   var min   = ~~(sec/60);

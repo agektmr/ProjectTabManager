@@ -17,6 +17,11 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 */
 'use strict';
 
+app.filter('percentage', function() {
+  return function(max) {
+    return (this.project.duration/max*100)|0;
+  };
+});
 app.filter('sort', function() {
   return function(projects, projectId) {
     if (!projects) return;

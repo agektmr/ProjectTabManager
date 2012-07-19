@@ -25,6 +25,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     <script src="js/ng-app.js"></script>
     <script src="js/ng-services.js"></script>
     <script src="js/ng-directives.js"></script>
+    <script src="js/ng-filters.js"></script>
     <script src="js/ng-summary.js"></script>
     <link rel="stylesheet" href="css/summary.css">
   </head>
@@ -54,7 +55,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
             <tr ng-repeat="project in summary" ng-controller="ProjectSummaryCtrl">
               <td><div class="color_swatch" ng-style="project" ></div>{{project.title}}</td>
               <td>{{project.timeStr}}</td>
-              <td><meter min="0" max="{{max}}" value="{{project.time}}" style="width:500px;" /></td>
+              <td><meter min="0" max="{{max}}" value="{{project.duration}}" style="width:500px;"></meter> {{max|percentage}}%</td>
             </tr>
           </tbody>
         </table>

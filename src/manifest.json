@@ -19,7 +19,7 @@
       "js/ProjectTabManager.js",
       "js/background.js"
     ],
-    "persistent": false
+    "persistent": true
   },
   "browser_action": {
     "default_icon": "img/19.png",

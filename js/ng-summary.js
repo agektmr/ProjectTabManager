@@ -24,7 +24,7 @@ app.controller('SummaryCtrl', function($scope, Background) {
     }
     $scope.max = max;
     $scope.summary = summary;
-    Background.debug(function(tracker) {
+    Background.timesummary(function(tracker) {
       var start = 0,
           end = (new Date()).getTime();
       if (tracker[0]) start = tracker[0].start;

@@ -19,7 +19,6 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 
 var windowManager = {};
 var windowHistory = {};
-chrome.browserAction.setPopup({popup: 'ng-popup.html'});
 
 chrome.windows.onRemoved.addListener(function(winId) {
   if (windowManager[winId]) delete windowManager[winId];

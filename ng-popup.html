@@ -79,7 +79,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
         </div>
         <ul id="debug" class="bookmarks" ng-show="expand">
           <li ng-repeat="track in tracker">
-            <span class="project_name">{{track.projectName}}: {{track.start}} ~ {{track.end}}</span/>
+            <span class="project_name">{{track.projectName}}:<br/>{{track.start|date:'HH:mm:ss'}} ~ {{track.end|date:'HH:mm:ss'}}</span/>
           </li>
         </ul>
       </div>

@@ -19,15 +19,14 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 
 var windowManager = {};
 var windowHistory = {};
+chrome.browserAction.setPopup({popup: 'ng-popup.html'});
 
 chrome.windows.onRemoved.addListener(function(winId) {
   if (windowManager[winId]) delete windowManager[winId];
 });
 
 chrome.windows.onFocusChanged.addListener(function(winId) {
-  chrome.windows.get(winId, {populate:true}, function(win) {
-    VisibilityTracker.winChanged(win);
-  });
+  chrome.windows.get(winId, {populate:true}, VisibilityTracker.winChanged);
 });
 
 chrome.extension.onRequest.addListener(function(req, sender, callback) {
@@ -121,8 +120,7 @@ chrome.extension.onRequest.addListener(function(req, sender, callback) {
       chrome.tabs.create({url:'chrome://bookmarks/#'+root.id});
     });
     break;
-  case 'debug':
-    // callback(VisibilityTracker.getDebugInfo(windowHistory));
+  case 'timesummary':
     callback(VisibilityTracker.getTimeSummary(windowHistory));
     break;
   case 'summary':

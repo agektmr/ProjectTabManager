@@ -57,8 +57,8 @@ app.factory('Background', function() {
     edit: function() {
       chrome.extension.sendRequest({command: 'edit'});
     },
-    debug: function(callback) {
-      chrome.extension.sendRequest({command: 'debug'}, callback);
+    timesummary: function(callback) {
+      chrome.extension.sendRequest({command: 'timesummary'}, callback);
     },
     summary: function(callback) {
       chrome.extension.sendRequest({command: 'summary'}, callback);

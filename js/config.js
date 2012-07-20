@@ -16,7 +16,7 @@ limitations under the License.
 Author: Eiji Kitamura (agektmr@gmail.com)
 */
 var config = {
-   debug: true,
+   debug: false,
    archiveFolderName: '__Archive__',
    hiddenFolderName: 'passive'
 };

@@ -18,17 +18,6 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 var VisibilityTracker = (function() {
   var tracker = [];
   var session = (function() {
-    var getFormattedStartTime = function(ydt) {
-      if (ydt == null) return '';
-      var year  = ydt.getFullYear();
-      var month = ydt.getMonth()+1;
-      var date  = ydt.getDate();
-      var hour  = ydt.getHours() < 10 ? '0'+ydt.getHours() : ydt.getHours();
-      var min   = ydt.getMinutes() < 10 ? '0'+ydt.getMinutes() : ydt.getMinutes();;
-      var sec   = ydt.getSeconds() < 10 ? '0'+ydt.getSeconds() : ydt.getSeconds();;
-      // return year+'/'+month+'/'+date+' '+hour+':'+min+':'+sec;
-      return hour+':'+min+':'+sec;
-    };
     var session = function(winId) {
       this.winId = winId;
       this.start = new Date();
@@ -37,16 +26,6 @@ var VisibilityTracker = (function() {
     session.prototype = {
       endSession: function() {
         this.end = new Date();
-      },
-      convertTransferrable: function() {
-        var obj = {
-          winId: this.winId,
-          start: null,
-          end: null
-        };
-        obj.start = getFormattedStartTime(this.start);
-        obj.end = getFormattedStartTime(this.end);
-        return obj;
       }
     };
     return function(winId) {
@@ -95,18 +74,6 @@ var VisibilityTracker = (function() {
         _session.projectName = windowHistory[_session.winId] ? windowHistory[_session.winId].title : _session.winId;
         copy.push(_session);
       });
-      return copy;
-    },
-    getDebugInfo: function(windowHistory) {
-      var copy = [];
-      for (var i = 0; i < tracker.length; i++) {
-        var debugInfo = tracker[i].convertTransferrable();
-        if (windowHistory[debugInfo.winId])
-          debugInfo.projectName = windowHistory[debugInfo.winId].title;
-        else
-          debugInfo.projectName = debugInfo.winId;
-        copy.push(debugInfo);
-      }
       return copy;
     }
   };

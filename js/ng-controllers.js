@@ -133,7 +133,7 @@ app.controller('DebugCtrl', function($scope, Background) {
     $scope.expand = !$scope.expand;
   };
 
-  Background.debug(function(tracker) {
+  Background.timesummary(function(tracker) {
     $scope.tracker = tracker;
   });
 });

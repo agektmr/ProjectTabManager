@@ -19,14 +19,16 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 
 var windowManager = {};
 var windowHistory = {};
-// chrome.browserAction.setPopup({popup: 'popup.html'});
-chrome.browserAction.setPopup({popup: 'ng-popup.html'});
 
 chrome.windows.onRemoved.addListener(function(winId) {
   if (windowManager[winId]) delete windowManager[winId];
 });
 
-chrome.windows.onFocusChanged.addListener(VisibilityTracker.winChanged);
+chrome.windows.onFocusChanged.addListener(function(winId) {
+  chrome.windows.get(winId, {populate:true}, function(win) {
+    VisibilityTracker.winChanged(win);
+  });
+});
 
 chrome.extension.onRequest.addListener(function(req, sender, callback) {
   switch (req.command) {

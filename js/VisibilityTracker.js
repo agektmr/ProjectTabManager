@@ -57,17 +57,18 @@ var VisibilityTracker = (function() {
       tracker.push(new session(win.id));
   });
   return {
-    winChanged: function(winId) {
-      // TODO: ignore chrome:// and chrome-devtools://
+    winChanged: function(win) {
+      if (win.tabs.length == 1 && win.tabs[0].url.match(/^chrome(|-devtools):\/\//i)) {
+        return;
+      }
       var last = tracker.length-1;
-      if (winId == chrome.windows.WINDOW_ID_NONE) {
+      if (win.id == chrome.windows.WINDOW_ID_NONE) {
         tracker[last].endSession();
       } else {
         if (tracker[last].end == null)
           tracker[last].endSession();
-        tracker.push(new session(winId));
+        tracker.push(new session(win.id));
       }
-      return;
     },
     getSummary: function(windowHistory) {
       var times = {};

@@ -25,7 +25,11 @@ chrome.windows.onRemoved.addListener(function(winId) {
 });
 
 chrome.windows.onFocusChanged.addListener(function(winId) {
-  chrome.windows.get(winId, {populate:true}, VisibilityTracker.winChanged);
+  if (winId == chrome.windows.WINDOW_ID_NONE) {
+    VisibilityTracker.winChanged();    
+  } else {
+    chrome.windows.get(winId, {populate:true}, VisibilityTracker.winChanged);
+  }
 });
 
 chrome.extension.onRequest.addListener(function(req, sender, callback) {

@@ -30,24 +30,24 @@ var VisibilityTracker = (function() {
     };
     return function(winId) {
       return new session(winId);
-    }
+    };
   })();
   chrome.windows.getCurrent(function(win) {
       tracker.push(new session(win.id));
   });
   return {
     winChanged: function(win) {
+      var last = tracker.length-1;
+      if (!win) {
+        tracker[last].endSession();
+        return;
+      }
       if (win.tabs.length == 1 && win.tabs[0].url.match(/^chrome(|-devtools):\/\//i)) {
         return;
       }
-      var last = tracker.length-1;
-      if (win.id == chrome.windows.WINDOW_ID_NONE) {
+      if (tracker[last].end === null)
         tracker[last].endSession();
-      } else {
-        if (tracker[last].end == null)
-          tracker[last].endSession();
-        tracker.push(new session(win.id));
-      }
+      tracker.push(new session(win.id));
     },
     getSummary: function(windowHistory) {
       var times = {};

@@ -16,8 +16,8 @@ body{margin:0;padding:0;}
 .button:active{background-position-x:-32px;}
 .flipper{margin:0 4px;background:url(../img/arrow.png);float:left;}.flipper.open{-webkit-transform:rotate(90deg);}
 header .name{font-size:16px;font-family:Audiowide;width:228px;}
-#projects{list-style:none;margin-top:8px;padding:0;font-family:Helvetica, Arial;overflow-y:scroll;max-height:538px;}
-.accordion{-webkit-transition:max-height 0.1s ease-out;max-height:24px;overflow:hidden;white-space:nowrap;position:relative;}.accordion.expand{max-height:548px;overflow-y:scroll;}
+#projects{list-style:none;margin-top:8px;padding:0;font-family:Helvetica, Arial;overflow-y:auto;max-height:538px;}
+.accordion{-webkit-transition:max-height 0.1s ease-out;max-height:24px;overflow:hidden;white-space:nowrap;position:relative;}.accordion.expand{max-height:548px;overflow-y:auto;}
 .accordion .search{width:100%;}
 .accordion .project{background:-webkit-linear-gradient(top, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.3));background-color:#fef;padding:2px 4px;border:outset 1px #ede;height:18px;overflow:hidden;white-space:nowrap;}.accordion .project span.arrow{background:url(../img/arrow.png);background-position:0px 0px;width:16px;height:16px;-webkit-transition:-webkit-transform 0.08s ease-out;cursor:pointer;}.accordion .project span.arrow:hover{background-position-x:-16px;}
 .accordion .project span.arrow.expand{-webkit-transform:rotate(90deg);}

@@ -46,7 +46,7 @@ var ProjectTabManager = (function() {
         });
       },
       getCurrentTabs = function(callback) {
-        chrome.windows.getCurrent(function(win) {
+        chrome.windows.getCurrent({}, function(win) {
           chrome.tabs.query({windowId:win.id}, callback);
         });
       },
@@ -99,7 +99,7 @@ var ProjectTabManager = (function() {
     },
     getBookmarks: function(projectId, callback) {
       this.getProject(projectId, function(project) {
-        return project ? project.children : [];
+        callback(project ? project.children : []);
       });
     }
   };

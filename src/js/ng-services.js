@@ -54,7 +54,11 @@ app.factory('Background', function() {
     // Get folders of projects
     projects: function(callback) {
       chrome.extension.sendRequest({command: 'projects'}, function(projects) {
-        callback(projects.slice(0));
+        if (projects && projects.length > 0) {
+          callback(projects.slice(0));
+        } else {
+          callback([]);
+        }
       });
     },
     // Get project id assigned to active window

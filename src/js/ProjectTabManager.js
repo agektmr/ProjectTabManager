@@ -33,7 +33,7 @@ var ProjectTabManager = (function() {
         chrome.bookmarks.getSubTree(root, function(projects) {
           var done = false;
           projects[0].children.forEach(function(project) {
-            if (title === project.title && done == false) {
+            if (title === project.title && done === false) {
               callback(project);
               done = true;
             }
@@ -64,8 +64,8 @@ var ProjectTabManager = (function() {
             });
             if (params.url) tab.url = params.url;
           }
-        };
-        callback = callback || function() {return null};
+        }
+        callback = callback || function() { return null; };
         chrome.bookmarks.create({
           parentId: projectId,
           title: tab.title,
@@ -77,6 +77,35 @@ var ProjectTabManager = (function() {
     projectsRootId = root.id;
   });
 
+  var Cache = function() {
+    this.projects = {};
+    this.renew();
+  };
+  Cache.prototype = {
+    renew: function(callback) {
+      var that = this;
+      getFolder(localStorage.rootParentId, localStorage.rootName, function(root) {
+        that.projects = root.children;
+        if (typeof(callback) == 'function') callback(that.projects);
+      });
+    },
+    getProject: function(projectId, callback) {
+      for (var i = 0; i < this.projects.length; i++) {
+        if (projectId == this.projects[i].id) {
+          callback(this.projects[i]);
+          return;
+        }
+      }
+    },
+    getBookmarks: function(projectId, callback) {
+      this.getProject(projectId, function(project) {
+        return project ? project.children : [];
+      });
+    }
+  };
+
+  var cache = new Cache();
+
   return {
     getRoot: function(callback) {
       getFolder(localStorage.rootParentId, localStorage.rootName, callback);
@@ -85,31 +114,41 @@ var ProjectTabManager = (function() {
       return activeTab;
     },
     addBookmark: function(projectId, tab, callback) {
-      createBookmark(projectId, tab, callback);
-    },
-    getBookmarks: function(projectId, callback) {
-      getFolder(localStorage.rootParentId, localStorage.rootName, function(projects) {
-        if (!projects.children) callback([]);
-        for (var i = 0; i < projects.children.length; i++) {
-          if (projects.children[i].id === projectId) {
-            callback(projects.children[i].children);
-            return;
-          }
-        };
+      createBookmark(projectId, tab, function(newBookmark) {
+        callback(newBookmark);
+        cache.renew();
       });
     },
+    getBookmarks: cache.getBookmarks.bind(cache),
+    // getBookmarks: function(projectId, callback) {
+    //   getFolder(localStorage.rootParentId, localStorage.rootName, function(projects) {
+    //     if (!projects.children) callback([]);
+    //     for (var i = 0; i < projects.children.length; i++) {
+    //       if (projects.children[i].id === projectId) {
+    //         callback(projects.children[i].children);
+    //         return;
+    //       }
+    //     }
+    //   });
+    // },
     moveToHiddenFolder: function(projectId, bookmarkId, callback) {
       getFolder(projectId, PASSIVE_FOLDER, function(hidden) {
         if (hidden) {
           chrome.bookmarks.move(bookmarkId, {parentId: hidden.id}, callback);
+          cache.renew();
         }
       });
     },
     moveFromHiddenFolder: function(projectId, bookmarkId, callback) {
-      chrome.bookmarks.move(bookmarkId, {parentId: projectId}, callback);
+      chrome.bookmarks.move(bookmarkId, {parentId: projectId}, function(newBookmark) {
+        callback(newBookmark);
+        cache.renew();
+      });
     },
     removeBookmark: function(bookmarkId, callback) {
-      chrome.bookmarks.remove(bookmarkId, callback);
+      chrome.bookmarks.remove(bookmarkId, function() {
+        cache.renew();
+      });
     },
     addProject: function(name, callback) {
       getCurrentTabs(function(tabs) {
@@ -121,28 +160,34 @@ var ProjectTabManager = (function() {
             createBookmark(newProject.id, tabs[i]);
           }
           callback(newProject);
+          cache.renew();
         });
       });
     },
-    getProject: function(projectId, callback) {
-      getFolder(localStorage.rootParentId, localStorage.rootName, function(root) {
-        for (var i = 0; i < root.children.length; i++) {
-          if (projectId == root.children[i].id) {
-            callback(root.children[i]);
-            return;
-          }
-        }
-      });
-    },
+    getProject: cache.getProject.bind(cache),
+    // getProject: function(projectId, callback) {
+    //   getFolder(localStorage.rootParentId, localStorage.rootName, function(root) {
+    //     for (var i = 0; i < root.children.length; i++) {
+    //       if (projectId == root.children[i].id) {
+    //         callback(root.children[i]);
+    //         return;
+    //       }
+    //     }
+    //   });
+    // },
     getProjectList: function(callback) {
-      getFolder(localStorage.rootParentId, localStorage.rootName, function(root) {
-        callback(root.children);
-      });
+      cache.renew(callback);
+      // getFolder(localStorage.rootParentId, localStorage.rootName, function(root) {
+      //   callback(root.children);
+      // });
     },
     removeProject: function(projectId, callback) {
       getFolder(projectsRootId, ARCHIVE_FOLDER, function(archive) {
         if (archive) {
-          chrome.bookmarks.move(projectId, {parentId: archive.id}, callback);
+          chrome.bookmarks.move(projectId, {parentId: archive.id}, function(newProject) {
+            callback(newProject);
+            cache.renew();
+          });
         }
       });
     }

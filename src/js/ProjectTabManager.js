@@ -21,8 +21,8 @@ var ProjectTabManager = (function() {
   var PASSIVE_FOLDER = config.hiddenFolderName,
       ARCHIVE_FOLDER = config.archiveFolderName,
       activeTab = null;
-  localStorage.rootParentId = localStorage.rootParentId || '2';
-  localStorage.rootName = localStorage.rootName || 'Project Tab Manager';
+  localStorage.rootParentId = localStorage.rootParentId || config.defaultRootParentId;
+  localStorage.rootName = localStorage.rootName || config.defaultRootName;
 
   chrome.tabs.onActivated.addListener(function(activeInfo) {
     activeTab = activeInfo.tabId || null;
@@ -120,17 +120,6 @@ var ProjectTabManager = (function() {
       });
     },
     getBookmarks: cache.getBookmarks.bind(cache),
-    // getBookmarks: function(projectId, callback) {
-    //   getFolder(localStorage.rootParentId, localStorage.rootName, function(projects) {
-    //     if (!projects.children) callback([]);
-    //     for (var i = 0; i < projects.children.length; i++) {
-    //       if (projects.children[i].id === projectId) {
-    //         callback(projects.children[i].children);
-    //         return;
-    //       }
-    //     }
-    //   });
-    // },
     moveToHiddenFolder: function(projectId, bookmarkId, callback) {
       getFolder(projectId, PASSIVE_FOLDER, function(hidden) {
         if (hidden) {
@@ -147,6 +136,7 @@ var ProjectTabManager = (function() {
     },
     removeBookmark: function(bookmarkId, callback) {
       chrome.bookmarks.remove(bookmarkId, function() {
+        callback();
         cache.renew();
       });
     },
@@ -165,16 +155,6 @@ var ProjectTabManager = (function() {
       });
     },
     getProject: cache.getProject.bind(cache),
-    // getProject: function(projectId, callback) {
-    //   getFolder(localStorage.rootParentId, localStorage.rootName, function(root) {
-    //     for (var i = 0; i < root.children.length; i++) {
-    //       if (projectId == root.children[i].id) {
-    //         callback(root.children[i]);
-    //         return;
-    //       }
-    //     }
-    //   });
-    // },
     getProjectList: function(callback) {
       cache.renew(callback);
       // getFolder(localStorage.rootParentId, localStorage.rootName, function(root) {

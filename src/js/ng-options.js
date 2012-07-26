@@ -16,8 +16,8 @@ limitations under the License.
 Author: Eiji Kitamura (agektmr@gmail.com)
 */
 app.controller('OptionsCtrl', function($scope) {
-  $scope.rootParentId = localStorage.rootParentId,
-  $scope.folderName   = localStorage.rootName || 'Project Tab Manager',
+  $scope.rootParentId = localStorage.rootParentId || config.defaultRootParentId,
+  $scope.folderName   = localStorage.rootName || config.defaultRootName,
   $scope.lazyLoad     = localStorage.lazyLoad ? true : false,
   $scope.saved        = false;
 

@@ -18,5 +18,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 var config = {
    debug: false,
    archiveFolderName: '__Archive__',
-   hiddenFolderName: 'passive'
+   hiddenFolderName: 'passive',
+   defaultRootParentId: '2',
+   defaultRootName: 'Project Tab Manager'
 };

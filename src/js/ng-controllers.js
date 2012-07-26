@@ -38,7 +38,7 @@ app.controller('ProjectListCtrl', function($scope, Background) {
 
   $scope.openBookmarks = function() {
     Background.edit();
-  }
+  };
   $scope.openSummary = function() {
     chrome.tabs.create({url:'/ng-summary.html'});
   };
@@ -64,7 +64,7 @@ app.controller('ProjectCtrl', function($scope, Background) {
   $scope.expand = false;
 
   $scope.add = function() {
-    if ($scope.project_name.length == 0) return;
+    if ($scope.project_name.length === 0) return;
     Background.addProject($scope.project_name, $scope.currentWinId, function(project) {
       $scope.reload(project.id);
     });

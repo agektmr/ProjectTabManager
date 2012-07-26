@@ -46,7 +46,8 @@ app.filter('sort', function() {
 app.filter('normalize', function() {
   return function(bookmarks, projectId) {
     bookmarks = bookmarks || [];
-    var tabs = (projectId == this.project.id || this.project.id == '0') ? this.currentTabs.slice(0) : [];
+    var STRIP_HASH = /^(.*?)#.*$/,
+        tabs = (projectId == this.project.id || this.project.id == '0') ? this.currentTabs.slice(0) : [];
 
     // Loop through bookmarks and find folders (passive bookmarks folder)
     bookmarks.forEach(function(bookmark, index) {
@@ -61,7 +62,7 @@ app.filter('normalize', function() {
         bookmark.current = false;
         // Flag opened bookmark on current window's tabs
         tabs.forEach(function(tab, index) {
-          if (bookmark.url == tab.url) {
+          if (bookmark.url.replace(STRIP_HASH, '$1') == tab.url.replace(STRIP_HASH, '$1')) {
             bookmark.current = true;
             // Remove from appending tabs
             tabs.splice(index, 1);

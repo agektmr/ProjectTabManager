@@ -23,6 +23,7 @@ var ProjectTabManager = (function() {
       activeTab = null;
   localStorage.rootParentId = localStorage.rootParentId || config.defaultRootParentId;
   localStorage.rootName = localStorage.rootName || config.defaultRootName;
+  localStorage.lazyLoad = localStorage.lazyLoad || '';
 
   chrome.tabs.onActivated.addListener(function(activeInfo) {
     activeTab = activeInfo.tabId || null;

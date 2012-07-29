@@ -64,7 +64,7 @@ chrome.extension.onRequest.addListener(function(req, sender, callback) {
         for (var i = s+1; i < bookmarks.length; i++) {
           // avoid folder
           if (bookmarks[i].children) continue;
-          var url = localStorage.lazyLoad && localStorage.lazyLoad == 'true' ? bookmarks[i].url :
+          var url = localStorage.lazyLoad == 'true' ? bookmarks[i].url :
             'lazy.html?url='+encodeURIComponent(bookmarks[i].url)+
             '&title='+encodeURIComponent(bookmarks[i].title);
           chrome.tabs.create({

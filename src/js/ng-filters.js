@@ -47,7 +47,8 @@ app.filter('normalize', function() {
   return function(bookmarks, projectId) {
     bookmarks = bookmarks || [];
     var STRIP_HASH = /^(.*?)#.*$/,
-        tabs = (projectId == this.project.id || this.project.id == '0') ? this.currentTabs.slice(0) : [];
+        tabs = (projectId == this.project.id || this.project.id == '0') ? this.currentTabs.slice(0) : [],
+        splices = [];
 
     // Loop through bookmarks and find folders (passive bookmarks folder)
     bookmarks.forEach(function(bookmark, index) {
@@ -57,7 +58,8 @@ app.filter('normalize', function() {
           _bookmark.passive = true;
           bookmarks.push(_bookmark);
         });
-        bookmarks.splice(index, 1);
+        // Keep indexes for later removal
+        splices.push(index);
       } else {
         bookmark.current = false;
         // Flag opened bookmark on current window's tabs
@@ -71,6 +73,10 @@ app.filter('normalize', function() {
         bookmark.passive = false;
       }
     });
+    // Remove folders
+    splices.forEach(function(index) {
+      bookmarks.splice(index, 1);
+    })
     // Append open tabs for addition candidate
     tabs.forEach(function(tab, index) {
       // If the tab is opened using lazy loading, extract original url

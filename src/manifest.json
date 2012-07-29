@@ -2,7 +2,7 @@
   "name": "Project Tab Manager",
   "description": "__MSG_description__",
   "manifest_version": 2,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "icons": {
     "48": "img/48.png",
     "128": "img/48.png"

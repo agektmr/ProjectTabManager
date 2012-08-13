@@ -79,7 +79,7 @@ var ProjectTabManager = (function() {
   });
 
   var Cache = function() {
-    this.projects = {};
+    this.projects = [];
     this.renew();
   };
   Cache.prototype = {
@@ -89,6 +89,9 @@ var ProjectTabManager = (function() {
         that.projects = root.children;
         if (typeof(callback) == 'function') callback(that.projects);
       });
+    },
+    getProjects: function() {
+      return this.projects;
     },
     getProject: function(projectId, callback) {
       for (var i = 0; i < this.projects.length; i++) {
@@ -157,10 +160,12 @@ var ProjectTabManager = (function() {
     },
     getProject: cache.getProject.bind(cache),
     getProjectList: function(callback) {
-      cache.renew(callback);
-      // getFolder(localStorage.rootParentId, localStorage.rootName, function(root) {
-      //   callback(root.children);
-      // });
+      var projects = cache.getProjects();
+      if (projects.length > 0) {
+        callback(projects);
+      } else {
+        cache.renew(callback);
+      }
     },
     removeProject: function(projectId, callback) {
       getFolder(projectsRootId, ARCHIVE_FOLDER, function(archive) {

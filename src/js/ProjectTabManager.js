@@ -155,6 +155,21 @@ var ProjectTabManager = (function() {
         });
       });
     },
+    // new method to add Project from selected tabs
+    addProjectSelected: function(name, tabs, callback) {
+        //getCurrentTabs(function(tabs) {
+        chrome.bookmarks.create({
+          parentId: projectsRootId,
+          title: name || 'Untitled'
+        }, function(newProject) {
+          for (var i = 0; i < tabs.length; i++) {
+            createBookmark(newProject.id, tabs[i]);
+          }
+          callback(newProject);
+          cache.renew();
+        });
+      //});
+    },
     getProject: cache.getProject.bind(cache),
     getProjectList: function(callback) {
       cache.renew(callback);

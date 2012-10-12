@@ -29,7 +29,9 @@ if (params.title) {
 document.addEventListener('webkitvisibilitychange', function(e) {
   if (e.target.webkitVisibilityState == 'visible') {
     if (params.url) {
-      location.href = params.url;
+      chrome.tabs.getCurrent(function(tab) {
+        chrome.tabs.update(tab.id, {url: params.url});
+      });
     }
   }
 });

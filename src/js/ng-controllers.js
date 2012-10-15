@@ -21,6 +21,7 @@ app.controller('ProjectListCtrl', function($scope, Background) {
   $scope.currentWinId = '0';
   $scope.currentTabs = [];
   $scope.projectId = '0';
+  
 
   $scope.reload = function(projectId) {
     Background.projects(function(projects) {
@@ -67,6 +68,23 @@ app.controller('ProjectCtrl', function($scope, Background) {
     if ($scope.project_name.length === 0) return;
     Background.addProject($scope.project_name, $scope.currentWinId, function(project) {
       $scope.reload(project.id);
+    });
+  };
+
+  // new method to add Project from selected tabs
+  $scope.addSelected = function() {
+    if ($scope.project_name.length === 0) return;
+
+    $scope.checkedTabs=[];
+    //create array of checked tabs 
+    angular.forEach($scope.project.children, function(tab) {
+      if (tab.adding) {
+        $scope.checkedTabs.push(tab);
+      }
+    });
+
+    Background.addProjectSelected($scope.project_name, $scope.checkedTabs, function(project) {
+       $scope.reload(project.id);
     });
   };
 

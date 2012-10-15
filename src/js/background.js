@@ -103,6 +103,16 @@ chrome.extension.onRequest.addListener(function(req, sender, callback) {
       callback(newProject);
     });
     break;
+  case 'addProjectSelected':
+    ProjectTabManager.addProjectSelected(req.name || 'New Project', req.tabs, function(newProject) {
+      chrome.windows.getCurrent(function(win) {
+        windowManager[win.id] = newProject;
+        windowHistory[win.id] = {};
+        windowHistory[win.id].title = newProject.title;
+      });
+      callback(newProject);
+    });
+    break;  
   case 'remove':
     ProjectTabManager.removeBookmark(req.bookmarkId, callback);
     break;

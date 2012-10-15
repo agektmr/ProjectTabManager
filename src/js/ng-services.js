@@ -43,6 +43,10 @@ app.factory('Background', function() {
     addProject: function(name, winId, callback) {
       chrome.extension.sendRequest({command: 'addProject', name: name, winId: winId}, callback);
     },
+    // Create folder and add checked tabs in specified window there
+    addProjectSelected: function(name, bookmarks, callback) {
+      chrome.extension.sendRequest({command: 'addProjectSelected', name: name, tabs: bookmarks}, callback);
+    },
     // Remove specified bookmark from project
     remove: function(bookmarkId, callback) {
       chrome.extension.sendRequest({command: 'remove', bookmarkId: bookmarkId}, callback);

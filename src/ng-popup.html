@@ -57,9 +57,11 @@ Author: Eiji Kitamura (agektmr@gmail.com)
             </li>
             <li ng-show="project.id==0">
               <input type="text" ng-model="project_name" chrome-i18n="project_name:placeholder" />
-              <input type="button" ng-click="add()" chrome-i18n="save:value" />
+              <input type="button" ng-click="addSelected()" chrome-i18n="save:value" />
             </li>
-            <li ng-repeat="bookmark in project.children | normalize:projectId | filter:query" ng-controller="BookmarkCtrl" ng-init="hover=false" ng-mouseover="hover=true" ng-mouseleave="hover=false">
+	    <li ng-repeat="bookmark in project.children | normalize:projectId | filter:query" ng-controller="BookmarkCtrl" ng-init="hover=false" ng-mouseover="hover=true" ng-mouseleave="hover=false">
+	            <!--check boxes to select tabs-->
+              <input type="checkbox" ng-show="project.id==0" ng-model="bookmark.adding" />
               <img ng-src="http://www.google.com/s2/favicons?domain={{domain}}" class="favicon" />
               <span class="name" ng-class="{passive: passive, current: current, adding: adding}"><a href="{{bookmark.url}}" target="_blank" title="{{bookmark.title}}
 {{bookmark.url}}">{{bookmark.title}}</a></span>

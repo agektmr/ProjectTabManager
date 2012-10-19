@@ -17,16 +17,15 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 */
 'use strict';
 
-var windowManager = {};
 var windowHistory = {};
 
 chrome.windows.onRemoved.addListener(function(winId) {
-  if (windowManager[winId]) delete windowManager[winId];
+  TabManager.resetProject(winId);
 });
 
 chrome.windows.onFocusChanged.addListener(function(winId) {
   if (winId == chrome.windows.WINDOW_ID_NONE) {
-    VisibilityTracker.winChanged();    
+    VisibilityTracker.winChanged();
   } else {
     chrome.windows.get(winId, {populate:true}, VisibilityTracker.winChanged);
   }
@@ -36,11 +35,8 @@ chrome.extension.onRequest.addListener(function(req, sender, callback) {
   switch (req.command) {
   case 'open':
     /* Try to open existing project window */
-    for (var winId in windowManager) {
-      if (windowManager[winId].id == req.projectId) {
-        chrome.windows.update(parseInt(winId), {focused:true});
-        return;
-      }
+    if (TabManager.openProject(req.projectId)) {
+      return;
     }
     /* Otherwise, create a new window with project tabs */
     ProjectTabManager.getBookmarks(req.projectId, function(bookmarks) {
@@ -56,7 +52,7 @@ chrome.extension.onRequest.addListener(function(req, sender, callback) {
       }, function(win) {
         // register window to window manager
         ProjectTabManager.getProject(req.projectId, function(project) {
-          windowManager[win.id] = project;
+          TabManager.setProject(win.id, project);
           windowHistory[win.id] = {};
           windowHistory[win.id].title = project.title;
         });
@@ -64,9 +60,7 @@ chrome.extension.onRequest.addListener(function(req, sender, callback) {
         for (var i = s+1; i < bookmarks.length; i++) {
           // avoid folder
           if (bookmarks[i].children) continue;
-          var url = localStorage.lazyLoad == 'true' ? bookmarks[i].url :
-            'lazy.html?url='+encodeURIComponent(bookmarks[i].url)+
-            '&title='+encodeURIComponent(bookmarks[i].title);
+          var url = localStorage.lazyLoad == 'true' ? bookmarks[i].url : util.lazify(bookmarks[i]);
           chrome.tabs.create({
             windowId:win.id,
             url:url,
@@ -78,7 +72,7 @@ chrome.extension.onRequest.addListener(function(req, sender, callback) {
     break;
   case 'pin':
     ProjectTabManager.getProject(req.projectId, function(project) {
-      windowManager[req.winId] = project;
+      TabManager.setProject(req.winId, project);
       windowHistory[req.winId] = {};
       windowHistory[req.winId].title = project.title;
       callback(project);
@@ -96,7 +90,7 @@ chrome.extension.onRequest.addListener(function(req, sender, callback) {
   case 'addProject':
     ProjectTabManager.addProject(req.name || 'New Project', function(newProject) {
       chrome.windows.getCurrent(function(win) {
-        windowManager[win.id] = newProject;
+        TabManager.setProject(win.id, newProject);
         windowHistory[win.id] = {};
         windowHistory[win.id].title = newProject.title;
       });
@@ -113,7 +107,7 @@ chrome.extension.onRequest.addListener(function(req, sender, callback) {
     ProjectTabManager.getProjectList(callback);
     break;
   case 'current':
-    callback(windowManager[req.winId] && windowManager[req.winId].id || '0');
+    callback(TabManager.getCurrentProjectId(req.winId));
     break;
   case 'bookmarks':
     ProjectTabManager.getBookmarks(req.projectId, callback);
@@ -129,8 +123,13 @@ chrome.extension.onRequest.addListener(function(req, sender, callback) {
   case 'summary':
     callback(VisibilityTracker.getSummary(windowHistory));
     break;
+  case 'windows':
+    callback(TabManager.projects);
   default:
     break;
-  };
+  }
 });
 
+// chrome.experimental.commands.onCommand.addListener(function(command) {
+//   console.log('command');
+// });

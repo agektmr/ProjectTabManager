@@ -33,7 +33,7 @@ var VisibilityTracker = (function() {
     };
   })();
   chrome.windows.getCurrent(function(win) {
-      tracker.push(new session(win.id));
+    tracker.push(new session(win.id));
   });
   return {
     winChanged: function(win) {
@@ -61,7 +61,7 @@ var VisibilityTracker = (function() {
         var end = session.end ? session.end.getTime() : (new Date()).getTime();
         var duration = ~~((end - session.start.getTime()) / 1000);
         times[winId].duration += duration;
-      })
+      });
       return times;
     },
     getTimeSummary: function(windowHistory) {

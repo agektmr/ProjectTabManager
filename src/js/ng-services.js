@@ -73,13 +73,17 @@ app.factory('Background', function() {
     edit: function() {
       chrome.extension.sendRequest({command: 'edit'});
     },
-    // Receive timesummary data
+    // Receive timesummary data for debug use
     timesummary: function(callback) {
       chrome.extension.sendRequest({command: 'timesummary'}, callback);
     },
-    // Receive summary data
+    // Receive summary data for debug use
     summary: function(callback) {
       chrome.extension.sendRequest({command: 'summary'}, callback);
+    },
+    // Receive window status for debug use
+    windows: function(callback) {
+      chrome.extension.sendRequest({command: 'windows'}, callback);
     }
   };
 });

@@ -44,7 +44,7 @@ app.controller('ProjectListCtrl', function($scope, Background) {
   };
 
   $scope.openOptions = function() {
-    chrome.tabs.create({url:'/ng-options.html'});
+    chrome.tabs.create({url:'/ng-layout.html'});
   };
 
   $scope.edit = Background.edit;
@@ -122,12 +122,17 @@ app.controller('BookmarkCtrl', function($scope, Background) {
       $scope.reload();
     });
   };
+
+  $scope.open = function() {
+    chrome.tabs.create({url: $scope.bookmark.url, active: true});
+  }
 });
 
 app.controller('DebugCtrl', function($scope, Background) {
   $scope.debug = config.debug;
   $scope.expand = false;
   $scope.tracker = [];
+  $scope.windows = {};
 
   $scope.flip = function() {
     $scope.expand = !$scope.expand;
@@ -136,4 +141,16 @@ app.controller('DebugCtrl', function($scope, Background) {
   Background.timesummary(function(tracker) {
     $scope.tracker = tracker;
   });
+  Background.windows(function(windows) {
+    $scope.windows = windows;
+  });
+});
+
+window.addEventListener('keydown', function(event) {
+  if (event.keyCode === 13 &&
+      event.target.classList.contains('name') &&
+      event.target.dataset.project) {
+    event.preventDefault();
+    chrome.extension.sendRequest({command: 'open', projectId: event.target.dataset.project});
+  }
 });

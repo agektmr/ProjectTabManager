@@ -2,20 +2,26 @@
   "name": "Project Tab Manager",
   "description": "__MSG_description__",
   "manifest_version": 2,
-  "version": "1.0.3",
+  "version": "1.1.0",
   "icons": {
     "48": "img/48.png",
     "128": "img/48.png"
   },
   "permissions": [
+    "experimental",
+    "commands",
     "bookmarks",
+    "storage",
     "tabs"
   ],
   "default_locale": "en",
   "background": {
     "scripts": [
       "js/config.js",
+      "js/util.js",
       "js/VisibilityTracker.js",
+      "js/TabManager.js",
+      "js/UpdateManager.js",
       "js/ProjectTabManager.js",
       "js/background.js"
     ],
@@ -26,5 +32,14 @@
     "default_title": "Project Tab Manager",
     "default_popup": "ng-popup.html"
   },
-  "options_page": "ng-options.html"
+  "options_page": "ng-options.html",
+  "commands": {
+    // "open_popup": {
+    //   "suggested_key": {
+    //     "default": "Alt+Shift+B",
+    //     "mac": "Option+Command+B"
+    //   },
+    //   "description": "Opens browser action popup window"
+    // }
+  }
 }

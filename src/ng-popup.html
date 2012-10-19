@@ -40,12 +40,12 @@ Author: Eiji Kitamura (agektmr@gmail.com)
       </header>
       <ul id="projects">
         <li class="accordion">
-          <input type="search" class="search" ng-model="query" value="" placeholder="Search Projects and Bookmarks" />
+          <input type="search" class="search" ng-model="query" value="" placeholder="Search Projects and Bookmarks" tabindex="1" />
         </li>
         <li class="accordion" ng-class="{expand: expand || project.id==projectId}" ng-repeat="project in projects | sort:projectId | filter:query" ng-controller="ProjectCtrl" ng-init="hover=false" ng-mouseover="hover=true" ng-mouseleave="hover=false">
           <div class="project">
             <span class="button arrow" ng-class="{expand: expand || project.id==projectId}" ng-click="flip()"></span>
-            <span class="name" ng-class="{current: project.id==projectId}" ng-click="open()">{{project.title}}</span>
+            <span class="name" ng-class="{current: project.id==projectId}" ng-click="open()" data-project="{{project.id}}" tabindex="{{$index+2}}">{{project.title}}</span>
           </div>
           <div class="menu" ng-show="hover&&project.id!=0">
             <span class="button pin" ng-click="pin()" ng-hide="project.id==projectId" chrome-i18n="pin:title"></span>
@@ -61,8 +61,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
             </li>
             <li ng-repeat="bookmark in project.children | normalize:projectId | filter:query" ng-controller="BookmarkCtrl" ng-init="hover=false" ng-mouseover="hover=true" ng-mouseleave="hover=false">
               <img ng-src="http://www.google.com/s2/favicons?domain={{domain}}" class="favicon" />
-              <span class="name" ng-class="{passive: passive, current: current, adding: adding}"><a href="{{bookmark.url}}" target="_blank" title="{{bookmark.title}}
-{{bookmark.url}}">{{bookmark.title}}</a></span>
+              <span class="name" ng-class="{passive: passive, current: current, adding: adding}" title="{{bookmark.title}}" ng-click="open()">{{bookmark.title}}</span>
               <div class="menu" ng-show="hover">
                 <span class="button" ng-class="{activate: passive, deactivate: !passive}" ng-click="changeStatus()" ng-show="!adding" title="{{titleStatus}}"></span>
                 <span class="button delete" ng-click="delete()" ng-show="!adding" chrome-i18n="delete:title"></span>
@@ -77,6 +76,13 @@ Author: Eiji Kitamura (agektmr@gmail.com)
           <div class="flipper button" ng-class="{open: expand}" ng-click="flip()"></div>
           <span id="debug_expand">Debug Info</span>
         </div>
+        <p ng-show="expand">Projects</p>
+        <ul class="bookmarks" ng-show="expand">
+          <li ng-repeat="window in windows">{{window.winId||"null"}}<ul>
+            <li ng-repeat="tab in window.tabs">{{tab.title}}</li>
+          </ul></li>
+        </ul>
+        <p ng-show="expand">History</p>
         <ul id="debug" class="bookmarks" ng-show="expand">
           <li ng-repeat="track in tracker">
             <span class="project_name">{{track.projectName}}:<br/>{{track.start|date:'HH:mm:ss'}} ~ {{track.end|date:'HH:mm:ss'}}</span/>

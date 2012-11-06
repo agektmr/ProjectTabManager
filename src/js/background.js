@@ -34,7 +34,7 @@ chrome.windows.onFocusChanged.addListener(function(winId) {
 chrome.extension.onRequest.addListener(function(req, sender, callback) {
   switch (req.command) {
   case 'open':
-    /* Try to open existing project window */
+    /* Try to open existing session window */
     if (TabManager.openProject(req.projectId)) {
       return;
     }

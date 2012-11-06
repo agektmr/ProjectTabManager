@@ -44,60 +44,34 @@ app.filter('sort', function() {
 });
 
 app.filter('normalize', function() {
-  return function(bookmarks, projectId) {
+  return function(bookmarks, tabs) {
     bookmarks = bookmarks || [];
-    var STRIP_HASH = /^(.*?)#.*$/,
-        tabs = (projectId == this.project.id || this.project.id == '0') ? this.currentTabs.slice(0) : [],
-        splices = [];
+    // var tabs = this.project.id === '0' ? this.currentTabs.slice(0) : [],
+    var splices = [];
 
-    // Loop through bookmarks and find folders (passive bookmarks folder)
+    // Loop through bookmarks and find child folders
     bookmarks.forEach(function(bookmark, index) {
       if (bookmark.children) {
-        // Add passive flag and append to parent folder
+        // Append to parent folder
         bookmark.children.forEach(function(_bookmark) {
-          _bookmark.passive = true;
           bookmarks.push(_bookmark);
         });
         // Keep indexes for later removal
         splices.push(index);
       } else {
         bookmark.current = false;
-        // Flag opened bookmark on current window's tabs
-        tabs.forEach(function(tab, index) {
-          if (bookmark.url.replace(STRIP_HASH, '$1') == tab.url.replace(STRIP_HASH, '$1')) {
-            bookmark.current = true;
-            // Remove from appending tabs
-            tabs.splice(index, 1);
-          }
-        });
-        bookmark.passive = false;
+      }
+      bookmark.added = false;
+      for (var tabId in tabs) {
+        if (bookmark.url &&
+          tabs[tabId].url.replace(util.STRIP_HASH, '$1') === bookmark.url.replace(util.STRIP_HASH, '$1')) {
+            bookmark.added = true;
+        }
       }
     });
     // Remove folders
     splices.forEach(function(index) {
       bookmarks.splice(index, 1);
-    })
-    // Append open tabs for addition candidate
-    tabs.forEach(function(tab, index) {
-      // If the tab is opened using lazy loading, extract original url
-      if (tab.url.match(RegExp('chrome-extension:\/\/'+chrome.i18n.getMessage('@@extension_id')+'\/lazy\.html'))) {
-        var query   = tab.url.replace(/.*\?(.*)$/, '$1'),
-            params  = {};
-        query.split('&').forEach(function(param) {
-          var comb = param.split('=');
-          if (comb.length == 2)
-            params[comb[0]] = decodeURIComponent(comb[1]);
-        });
-        if (params.url) tab.url = params.url;
-      }
-      var favicon = tab.favIconUrl || '../img/favicon.png';
-      var bookmark = {
-        favIconUrl: favicon.match(/^chrome:\/\/theme/) ? '../img/favicon.png' : favicon,
-        url: tab.url,
-        title: tab.title,
-        adding: true
-      };
-      bookmarks.push(bookmark);
     });
     return bookmarks;
   };

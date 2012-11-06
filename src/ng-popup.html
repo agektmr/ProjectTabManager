@@ -23,6 +23,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     <link href='http://fonts.googleapis.com/css?family=Audiowide' rel='stylesheet' type='text/css'>
     <link href="css/style.css" rel="stylesheet" type="text/css">
     <script src="js/config.js"></script>
+    <script src="js/util.js"></script>
     <script src="js/angular.js"></script>
     <script src="js/ng-app.js"></script>
     <script src="js/ng-services.js"></script>
@@ -59,13 +60,19 @@ Author: Eiji Kitamura (agektmr@gmail.com)
               <input type="text" ng-model="project_name" chrome-i18n="project_name:placeholder" />
               <input type="button" ng-click="add()" chrome-i18n="save:value" />
             </li>
-            <li ng-repeat="bookmark in project.children | normalize:projectId | filter:query" ng-controller="BookmarkCtrl" ng-init="hover=false" ng-mouseover="hover=true" ng-mouseleave="hover=false">
+            <li ng-repeat="tab in project.tabs | filter:query" ng-controller="TabCtrl" ng-init="hover=false" ng-mouseover="hover=true" ng-mouseleave="hover=false">
+              <img ng-src="{{tab.favIconUrl}}" class="favicon" />
+              <span class="name current" title="{{tab.title}}" ng-click="open()">{{tab.title}}</span>
+              <div class="menu">
+                <span class="button delete" ng-click="delete()" ng-show="hover&&tab.added" chrome-i18n="delete:title"></span>
+                <span class="button add" ng-click="add()" ng-show="!tab.added" chrome-i18n="add:title"></span>
+              </div>
+            </li>
+            <li ng-repeat="bookmark in project.children | normalize:project.tabs | filter:query" ng-controller="BookmarkCtrl" ng-init="hover=false" ng-mouseover="hover=true" ng-mouseleave="hover=false">
               <img ng-src="http://www.google.com/s2/favicons?domain={{domain}}" class="favicon" />
-              <span class="name" ng-class="{passive: passive, current: current, adding: adding}" title="{{bookmark.title}}" ng-click="open()">{{bookmark.title}}</span>
+              <span class="name" ng-class="{current: current, adding: adding}" title="{{bookmark.title}}" ng-click="open()">{{bookmark.title}}</span>
               <div class="menu" ng-show="hover">
-                <span class="button" ng-class="{activate: passive, deactivate: !passive}" ng-click="changeStatus()" ng-show="!adding" title="{{titleStatus}}"></span>
-                <span class="button delete" ng-click="delete()" ng-show="!adding" chrome-i18n="delete:title"></span>
-                <span class="button add" ng-click="add()" ng-show="adding&&project.id!=0" chrome-i18n="add:title"></span>
+                <span class="button delete" ng-click="delete()" ng-show="!bookmark.added" chrome-i18n="delete:title"></span>
               </div>
             </li>
           </ul>

@@ -18,16 +18,15 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 'use strict';
 
 var TabManager = (function() {
-  var CHROME_EXCEPTION_URL = /^chrome(|-devtools):/;
-
   var TabEntity = function(tab) {
     var url = util.unlazify(tab.url);
+    var domain = url.replace(/^.*?\/\/(.*?)\/.*$/, "$1");
     this.id =         tab.id;
     this.index =      tab.index;
     this.title =      tab.title;
     this.url =        url;
     this.pinned =     tab.pinned || false;
-    this.favIconUrl = tab.favIconUrl || ''; // TODO: use google api to generate favicon
+    this.favIconUrl = tab.favIconUrl || null;
   };
 
   var ProjectManager = function(win_id_or_project) {
@@ -60,7 +59,7 @@ var TabManager = (function() {
           }
         }
       }
-      if (!tab.url.match(CHROME_EXCEPTION_URL)) {
+      if (!tab.url.match(util.CHROME_EXCEPTION_URL)) {
         if (config.debug) console.log('added tab', tab.id);
         this.tabs[tab.id] = new TabEntity(tab);
       }
@@ -131,7 +130,7 @@ var TabManager = (function() {
     this.projectIds = {};
 
     var add = function(tab) {
-      if (!tab.url.match(CHROME_EXCEPTION_URL)) {
+      if (!tab.url.match(util.CHROME_EXCEPTION_URL)) {
         var projectId = this.projectIds[tab.windowId];
         if (this.projects[projectId]) {
           if (config.debug) console.log('adding tab', tab);
@@ -226,7 +225,7 @@ var TabManager = (function() {
             var similar = 0,
                 count = 0;
             for (var i = 0; i < win.tabs.length; i++) {
-              if (win.tabs[i].url.match(CHROME_EXCEPTION_URL)) continue;
+              if (win.tabs[i].url.match(util.CHROME_EXCEPTION_URL)) continue;
               count++;
               for (var id in projects[projectId].tabs) {
                 /* Check if tab url is similar TODO: doesn't have to be precise */

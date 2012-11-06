@@ -52,6 +52,12 @@ app.controller('ProjectListCtrl', function($scope, Background) {
   chrome.windows.getCurrent(function(win) {
     $scope.currentWinId = win.id;
     chrome.tabs.query({windowId:win.id}, function(tabs) {
+      // Strip exception URLs
+      for (var i in tabs) {
+        if (tabs[i].url.match(util.CHROME_EXCEPTION_URL)) {
+          tabs.splice(i--, 1);
+        }
+      }
       $scope.currentTabs = tabs;
     });
     Background.current(win.id, function(projectId) {
@@ -93,16 +99,23 @@ app.controller('ProjectCtrl', function($scope, Background) {
   };
 });
 
+app.controller('TabCtrl', function($scope, Background) {
+  $scope.add = function() {
+    Background.add($scope.project.id, $scope.tab, function() {
+      $scope.reload();
+    });
+  };
+
+  $scope.open = function() {
+    chrome.tabs.create({url: $scope.tab.url, active: true});
+  };
+});
+
 app.controller('BookmarkCtrl', function($scope, Background) {
   $scope.passive = $scope.bookmark.passive || false;
   $scope.current = $scope.bookmark.current || false;
   $scope.adding  = $scope.bookmark.adding  || false;
-
-  var i18n_activate   = chrome.i18n.getMessage('activate');
-  var i18n_deactivate = chrome.i18n.getMessage('deactivate');
-  $scope.titleStatus  = $scope.passive ? i18n_activate : i18n_deactivate;
-
-  $scope.domain = ($scope.bookmark.url && $scope.bookmark.url.replace(/^.*?\/\/(.*?)\/.*$/, "$1")) || '';
+  $scope.domain  = ($scope.bookmark.url && $scope.bookmark.url.replace(/^.*?\/\/(.*?)\/.*$/, "$1")) || '';
 
   $scope.add = function() {
     Background.add($scope.project.id, $scope.bookmark, function() {
@@ -125,7 +138,7 @@ app.controller('BookmarkCtrl', function($scope, Background) {
 
   $scope.open = function() {
     chrome.tabs.create({url: $scope.bookmark.url, active: true});
-  }
+  };
 });
 
 app.controller('DebugCtrl', function($scope, Background) {

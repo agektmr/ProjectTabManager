@@ -29,37 +29,37 @@ var ProjectTabManager = (function() {
     activeTab = activeInfo.tabId || null;
   });
 
-  var projectsRootId = null,
-      getFolder = function(root, title, callback) {
-        chrome.bookmarks.getSubTree(root, function(projects) {
-          var done = false;
-          projects[0].children.forEach(function(project) {
-            if (title === project.title && done === false) {
-              callback(project);
-              done = true;
-            }
-          });
-          if (done) return;
-          chrome.bookmarks.create({
-            parentId: String(root),
-            title:    title
-          }, callback);
-        });
-      },
-      getCurrentTabs = function(callback) {
-        chrome.windows.getCurrent({}, function(win) {
-          chrome.tabs.query({windowId:win.id}, callback);
-        });
-      },
-      createBookmark = function(projectId, tab, callback) {
-        if (tab.url.match(/^chrome(|-devtools):\/\//i)) return null;
-        callback = callback || function() { return null; };
-        chrome.bookmarks.create({
-          parentId: projectId,
-          title: tab.title,
-          url: util.unlazify(tab.url)
-        }, callback);
-      };
+  var projectsRootId = null;
+  var getFolder = function(root, title, callback) {
+    chrome.bookmarks.getSubTree(root, function(projects) {
+      var done = false;
+      projects[0].children.forEach(function(project) {
+        if (title === project.title && done === false) {
+          callback(project);
+          done = true;
+        }
+      });
+      if (done) return;
+      chrome.bookmarks.create({
+        parentId: String(root),
+        title:    title
+      }, callback);
+    });
+  };
+  var getCurrentTabs = function(callback) {
+    chrome.windows.getCurrent({}, function(win) {
+      chrome.tabs.query({windowId:win.id}, callback);
+    });
+  };
+   var createBookmark = function(projectId, tab, callback) {
+    if (tab.url.match(/^chrome(|-devtools):\/\//i)) return null;
+    callback = callback || function() { return null; };
+    chrome.bookmarks.create({
+      parentId: projectId,
+      title: tab.title,
+      url: util.unlazify(tab.url)
+    }, callback);
+  };
 
   getFolder(localStorage.rootParentId, localStorage.rootName, function(root) {
     projectsRootId = root.id;
@@ -71,18 +71,28 @@ var ProjectTabManager = (function() {
   };
   Cache.prototype = {
     renew: function(callback) {
-      var that = this;
-      getFolder(localStorage.rootParentId, localStorage.rootName, function(root) {
-        that.projects = root.children;
-        if (typeof(callback) == 'function') callback(that.projects);
-      });
+      getFolder(localStorage.rootParentId, localStorage.rootName, (function(root) {
+        this.projects = root.children;
+        for (var i = 0; i < this.projects.length; i++) {
+          var projectId = this.projects[i].id;
+          if (config.debug) console.log('merging sessions into bookmarks', projectId, TabManager.projects[projectId]);
+        }
+        if (typeof(callback) == 'function') callback(this.projects);
+      }).bind(this));
     },
     getProjects: function() {
+      for (var i = 0; i < this.projects.length; i++) {
+        var projectId = this.projects[i].id;
+        if (TabManager.projects[projectId]) {
+          this.projects[i].tabs = TabManager.projects[projectId].tabs;
+        }
+      }
       return this.projects;
     },
     getProject: function(projectId, callback) {
       for (var i = 0; i < this.projects.length; i++) {
         if (projectId == this.projects[i].id) {
+          this.projects[i].tabs = TabManager.projects[projectId].tabs;
           callback(this.projects[i]);
           return;
         }

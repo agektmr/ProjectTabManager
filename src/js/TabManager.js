@@ -26,7 +26,7 @@ var TabManager = (function() {
     this.title =      tab.title;
     this.url =        url;
     this.pinned =     tab.pinned || false;
-    this.favIconUrl = tab.favIconUrl || null;
+    this.favIconUrl = tab.favIconUrl || 'http://www.google.com/s2/favicons?domain='+encodeURIComponent(domain);
   };
 
   var ProjectManager = function(win_id_or_project) {

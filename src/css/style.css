@@ -183,7 +183,7 @@ header .name {
   font-weight: bold;
 }
 .accordion li .name.adding {
-  color: #ccc;
+  color: #999;
 }
 .accordion li .name.passive {
   color: #aaf;

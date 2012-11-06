@@ -45,34 +45,51 @@ app.filter('sort', function() {
 
 app.filter('normalize', function() {
   return function(bookmarks, tabs) {
+    var results = [],
+        splices = [];
     bookmarks = bookmarks || [];
-    // var tabs = this.project.id === '0' ? this.currentTabs.slice(0) : [],
-    var splices = [];
 
     // Loop through bookmarks and find child folders
-    bookmarks.forEach(function(bookmark, index) {
+    for (var i = 0; i < bookmarks.length; i++) {
+      var bookmark = bookmarks[i];
+      bookmark.session = false;
+      bookmark.added = true;
       if (bookmark.children) {
         // Append to parent folder
-        bookmark.children.forEach(function(_bookmark) {
-          bookmarks.push(_bookmark);
-        });
+        for (var j = 0; j < bookmark.children.length; j++) {
+          bookmarks.push(bookmark.children[j]);
+        }
         // Keep indexes for later removal
-        splices.push(index);
-      } else {
-        bookmark.current = false;
+        splices.push(i);
+        continue;
       }
-      bookmark.added = false;
+      // Check if this bookmark is in session
       for (var tabId in tabs) {
         if (bookmark.url &&
-          tabs[tabId].url.replace(util.STRIP_HASH, '$1') === bookmark.url.replace(util.STRIP_HASH, '$1')) {
-            bookmark.added = true;
+            tabs[tabId].url.replace(util.STRIP_HASH, '$1') === bookmark.url.replace(util.STRIP_HASH, '$1')) {
+          bookmark.favIconUrl = tabs[tabId].favIconUrl;
+          tabs[tabId].added = true;
+          bookmark.session = true;
+          break;
         }
       }
-    });
+      if (!bookmark.favIconUrl) {
+        bookmark.favIconUrl = 'http://www.google.com/s2/favicons?domain='+encodeURIComponent(bookmark.url.replace(/^.*?\/\/(.*?)\/.*$/, "$1"));
+      }
+    }
     // Remove folders
     splices.forEach(function(index) {
       bookmarks.splice(index, 1);
     });
-    return bookmarks;
+    for (i in tabs) {
+      if (tabs[i].added) continue;
+      tabs[i].added = false;
+      tabs[i].session = true;
+      results.push(tabs[i]);
+    }
+    for (i = 0; i < bookmarks.length; i++) {
+      results.push(bookmarks[i]);
+    }
+    return results;
   };
 });

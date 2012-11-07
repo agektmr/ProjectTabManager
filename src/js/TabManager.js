@@ -214,6 +214,10 @@ var TabManager = (function() {
       }
       return false;
     },
+    removeProject: function(projectId) {
+      delete this.projects[projectId];
+      UpdateManager.sync();
+    },
     getCurrentProjectId: function(winId) {
       return this.projectIds[winId] || '0';
     },

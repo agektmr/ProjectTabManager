@@ -8,8 +8,8 @@
     "128": "img/48.png"
   },
   "permissions": [
-    "experimental",
     "commands",
+    "contextMenus",
     "bookmarks",
     "storage",
     "tabs"

@@ -73,7 +73,20 @@ var ProjectTabManager = (function() {
     renew: function(callback) {
       getFolder(localStorage.rootParentId, localStorage.rootName, (function(root) {
         this.projects = root.children;
+        chrome.contextMenus.removeAll();
+        var parent = chrome.contextMenus.create({title: 'Projects'});
         for (var i = 0; i < this.projects.length; i++) {
+          if (this.projects[i].title !== config.archiveFolderName) {
+            chrome.contextMenus.create({
+              title: this.projects[i].title,
+              parentId: parent,
+              onclick: (function(projectId) {
+                return function() {
+                  ProjectTabManager.openProject(projectId);
+                }
+              })(this.projects[i].id)
+            });
+          }
           var projectId = this.projects[i].id;
           if (config.debug) console.log('merging sessions into bookmarks', projectId, TabManager.projects[projectId]);
         }
@@ -145,6 +158,7 @@ var ProjectTabManager = (function() {
       getCurrentTabs(function(tabs) {
         chrome.bookmarks.create({
           parentId: projectsRootId,
+          index: 0,
           title: name || 'Untitled'
         }, function(newProject) {
           for (var i = 0; i < tabs.length; i++) {
@@ -164,10 +178,48 @@ var ProjectTabManager = (function() {
         cache.renew(callback);
       }
     },
+    openProject: function(projectId) {
+      /* Try to open existing session window */
+      if (TabManager.openProject(projectId)) {
+        return;
+      }
+      /* Otherwise, create a new window with project tabs */
+      ProjectTabManager.getBookmarks(projectId, function(bookmarks) {
+        // avoid folder for first bookmark
+        for (var s = 0; s < bookmarks.length; s++) {
+          if (bookmarks[s].url) break;
+        }
+        if (s == bookmarks.length) return;
+        // open first bookmark
+        chrome.windows.create({
+          url:bookmarks[s].url || null,
+          focused:true
+        }, function(win) {
+          // register window to window manager
+          ProjectTabManager.getProject(projectId, function(project) {
+            TabManager.setProject(win.id, project);
+            windowHistory[win.id] = {};
+            windowHistory[win.id].title = project.title;
+          });
+          // open bookmarks in window
+          for (var i = s+1; i < bookmarks.length; i++) {
+            // avoid folder
+            if (bookmarks[i].children) continue;
+            var url = localStorage.lazyLoad == 'true' ? bookmarks[i].url : util.lazify(bookmarks[i]);
+            chrome.tabs.create({
+              windowId:win.id,
+              url:url,
+              active:false
+            });
+          }
+        });
+      });
+    },
     removeProject: function(projectId, callback) {
       getFolder(projectsRootId, ARCHIVE_FOLDER, function(archive) {
         if (archive) {
           chrome.bookmarks.move(projectId, {parentId: archive.id}, function(newProject) {
+            TabManager.removeProject(projectId);
             callback(newProject);
             cache.renew();
           });

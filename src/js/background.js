@@ -34,41 +34,7 @@ chrome.windows.onFocusChanged.addListener(function(winId) {
 chrome.extension.onRequest.addListener(function(req, sender, callback) {
   switch (req.command) {
   case 'open':
-    /* Try to open existing session window */
-    if (TabManager.openProject(req.projectId)) {
-      return;
-    }
-    /* Otherwise, create a new window with project tabs */
-    ProjectTabManager.getBookmarks(req.projectId, function(bookmarks) {
-      // avoid folder for first bookmark
-      for (var s = 0; s < bookmarks.length; s++) {
-        if (bookmarks[s].url) break;
-      }
-      if (s == bookmarks.length) return;
-      // open first bookmark
-      chrome.windows.create({
-        url:bookmarks[s].url || null,
-        focused:true
-      }, function(win) {
-        // register window to window manager
-        ProjectTabManager.getProject(req.projectId, function(project) {
-          TabManager.setProject(win.id, project);
-          windowHistory[win.id] = {};
-          windowHistory[win.id].title = project.title;
-        });
-        // open bookmarks in window
-        for (var i = s+1; i < bookmarks.length; i++) {
-          // avoid folder
-          if (bookmarks[i].children) continue;
-          var url = localStorage.lazyLoad == 'true' ? bookmarks[i].url : util.lazify(bookmarks[i]);
-          chrome.tabs.create({
-            windowId:win.id,
-            url:url,
-            active:false
-          });
-        }
-      });
-    });
+    ProjectTabManager.openProject(req.projectId);
     break;
   case 'pin':
     ProjectTabManager.getProject(req.projectId, function(project) {

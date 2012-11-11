@@ -54,12 +54,10 @@ chrome.extension.onRequest.addListener(function(req, sender, callback) {
     ProjectTabManager.addBookmark(req.projectId, req.tab, callback);
     break;
   case 'addProject':
-    ProjectTabManager.addProject(req.name || 'New Project', function(newProject) {
-      chrome.windows.getCurrent(function(win) {
-        TabManager.setProject(win.id, newProject);
-        windowHistory[win.id] = {};
-        windowHistory[win.id].title = newProject.title;
-      });
+    ProjectTabManager.addProject(req.name || 'New Project', req.tabs, function(newProject) {
+      TabManager.setProject(req.winId, newProject);
+      windowHistory[req.winId] = {};
+      windowHistory[req.winId].title = newProject.title;
       callback(newProject);
     });
     break;

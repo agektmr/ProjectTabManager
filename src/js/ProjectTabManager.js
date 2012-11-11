@@ -88,7 +88,7 @@ var ProjectTabManager = (function() {
             });
           }
           var projectId = this.projects[i].id;
-          if (config.debug) console.log('merging sessions into bookmarks', projectId, TabManager.getProject(projectId));
+          if (config.debug) console.log('merging sessions into bookmarks', projectId, TabManager.projects[projectId]);
         }
         if (typeof(callback) == 'function') callback(this.projects);
       }).bind(this));
@@ -97,7 +97,7 @@ var ProjectTabManager = (function() {
       for (var i = 0; i < this.projects.length; i++) {
         var projectId = this.projects[i].id;
         if (TabManager.projects[projectId]) {
-          this.projects[i].tabs = TabManager.getProject(projectId).tabs;
+          this.projects[i].tabs = TabManager.projects[projectId].tabs;
         }
       }
       return this.projects;
@@ -105,7 +105,7 @@ var ProjectTabManager = (function() {
     getProject: function(projectId, callback) {
       for (var i = 0; i < this.projects.length; i++) {
         if (projectId == this.projects[i].id) {
-          this.projects[i].tabs = TabManager.getProject(projectId).tabs;
+          this.projects[i].tabs = TabManager.projects[projectId].tabs;
           callback(this.projects[i]);
           return;
         }
@@ -154,17 +154,19 @@ var ProjectTabManager = (function() {
         cache.renew();
       });
     },
-    addProject: function(name, tabs, callback) {
-      chrome.bookmarks.create({
-        parentId: projectsRootId,
-        index: 0,
-        title: name || 'Untitled'
-      }, function(newProject) {
-        for (var i = 0; i < tabs.length; i++) {
-          createBookmark(newProject.id, tabs[i]);
-        }
-        callback(newProject);
-        cache.renew();
+    addProject: function(name, callback) {
+      getCurrentTabs(function(tabs) {
+        chrome.bookmarks.create({
+          parentId: projectsRootId,
+          index: 0,
+          title: name || 'Untitled'
+        }, function(newProject) {
+          for (var i = 0; i < tabs.length; i++) {
+            createBookmark(newProject.id, tabs[i]);
+          }
+          callback(newProject);
+          cache.renew();
+        });
       });
     },
     getProject: cache.getProject.bind(cache),

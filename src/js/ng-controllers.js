@@ -27,8 +27,7 @@ app.controller('ProjectListCtrl', function($scope, Background) {
       projects.unshift({
         id: '0',
         title: chrome.i18n.getMessage('name_this'),
-        children: [],
-        tabs: $scope.currentTabs
+        children: []
       });
       $scope.$apply(function() {
         $scope.projectId = projectId || $scope.projectId;
@@ -71,13 +70,8 @@ app.controller('ProjectCtrl', function($scope, Background) {
   $scope.expand = false;
 
   $scope.add = function() {
-    var tabs = [];
-    for (var tabId in $scope.project.tabs) {
-      if ($scope.project.tabs[tabId].checked) {
-        tabs.push($scope.project.tabs[tabId]);
-      }
-    }
-    Background.addProject($scope.project_name, $scope.currentWinId, tabs, function(project) {
+    if ($scope.project_name.length === 0) return;
+    Background.addProject($scope.project_name, $scope.currentWinId, function(project) {
       $scope.reload(project.id);
     });
   };

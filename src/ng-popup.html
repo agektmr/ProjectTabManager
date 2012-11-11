@@ -60,14 +60,13 @@ Author: Eiji Kitamura (agektmr@gmail.com)
               <input type="text" ng-model="project_name" chrome-i18n="project_name:placeholder" />
               <input type="button" ng-click="add()" chrome-i18n="save:value" />
             </li>
-            <li ng-repeat="bookmark in project.children | normalize:project.tabs | filter:query" ng-controller="BookmarkCtrl">
+            <li ng-repeat="bookmark in project.children | normalize:project.tabs | filter:query" ng-controller="BookmarkCtrl" ng-init="hover=false" ng-mouseover="hover=true" ng-mouseleave="hover=false">
               <img ng-src="{{bookmark.favIconUrl}}" class="favicon" />
               <span class="name" ng-class="{current: bookmark.session, adding: !bookmark.added}" title="{{bookmark.title}}
 {{bookmark.url}}" ng-click="open()">{{bookmark.title}}</span>
-              <div class="menu">
-                <span class="button delete" ng-click="delete()" ng-show="bookmark.added&&project.id!=0" chrome-i18n="delete:title"></span>
-                <span class="button add" ng-click="add()" ng-show="!bookmark.added&&project.id!=0" chrome-i18n="add:title"></span>
-                <input type="checkbox" ng-model="bookmark.checked" ng-show="project.id==0" ng-init="bookmark.checked=true"/>
+              <div class="menu" ng-show="hover">
+                <span class="button delete" ng-click="delete()" ng-show="bookmark.added" chrome-i18n="delete:title"></span>
+                <span class="button add" ng-click="add()" ng-show="!bookmark.added" chrome-i18n="add:title"></span>
               </div>
             </li>
           </ul>

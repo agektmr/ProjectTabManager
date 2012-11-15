@@ -24,7 +24,7 @@ _params.forEach(function(param) {
     params[comb[0]] = decodeURIComponent(comb[1]);
 });
 if (params.title) {
-  document.querySelector('title').innerText = params.title;
+  document.querySelector('title').innerText = '* '+params.title;
 }
 if (params.favIconUrl) {
   var link = document.createElement('link');

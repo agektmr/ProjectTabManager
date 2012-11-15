@@ -26,6 +26,13 @@ _params.forEach(function(param) {
 if (params.title) {
   document.querySelector('title').innerText = params.title;
 }
+if (params.favIconUrl) {
+  var link = document.createElement('link');
+  link.setAttribute('rel', 'shortcut icon');
+  link.setAttribute('href', decodeURIComponent(params.favIconUrl));
+  link.setAttribute('type', 'image/x-icon');
+  document.querySelector('head').appendChild(link);
+}
 document.addEventListener('webkitvisibilitychange', function(e) {
   if (e.target.webkitVisibilityState == 'visible') {
     if (params.url) {

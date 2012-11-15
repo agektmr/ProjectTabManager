@@ -2,7 +2,7 @@ var util = {};
 util.CHROME_EXCEPTION_URL = /^chrome(|-devtools):/;
 util.STRIP_HASH = /^(.*?)#.*$/;
 util.lazify = function(obj) {
-  return 'lazy.html?url='+encodeURIComponent(obj.url)+'&title='+encodeURIComponent(obj.title);
+  return 'lazy.html?url='+encodeURIComponent(obj.url)+'&title='+encodeURIComponent(obj.title)+'&favIconUrl='+encodeURIComponent(obj.favIconUrl);
 };
 util.unlazify = function(url) {
   var params = {};

@@ -70,6 +70,7 @@ app.filter('normalize', function() {
           bookmark.favIconUrl = tabs[tabId].favIconUrl;
           tabs[tabId].added = true;
           bookmark.session = true;
+          bookmark.id = tabs[tabId].id; // replace bookmark id with tab id
           break;
         }
       }

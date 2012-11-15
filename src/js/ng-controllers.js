@@ -41,11 +41,11 @@ app.controller('ProjectListCtrl', function($scope, Background) {
     Background.edit();
   };
   $scope.openSummary = function() {
-    chrome.tabs.create({url:'/ng-summary.html'});
+    chrome.tabs.create({url:'/ng-layout.html#summary'});
   };
 
   $scope.openOptions = function() {
-    chrome.tabs.create({url:'/ng-layout.html'});
+    chrome.tabs.create({url:'/ng-layout.html#options'});
   };
 
   $scope.edit = Background.edit;
@@ -143,7 +143,13 @@ app.controller('BookmarkCtrl', function($scope, Background) {
   };
 
   $scope.open = function() {
-    chrome.tabs.create({url: $scope.bookmark.url, active: true});
+    var tabId = parseInt($scope.bookmark.id);
+    chrome.tabs.get(tabId, function(tab) {
+      if (!tab)
+        chrome.tabs.create({url: $scope.bookmark.url, active: true});
+      else
+        chrome.tabs.update(tabId, {active: true});
+    });
   };
 });
 

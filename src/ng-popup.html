@@ -50,12 +50,9 @@ Author: Eiji Kitamura (agektmr@gmail.com)
           </div>
           <div class="menu" ng-show="hover&&project.id!=0">
             <span class="button pin" ng-click="pin()" ng-hide="project.id==projectId" chrome-i18n="pin:title"></span>
-            <span class="button remove" ng-click="remove()" chrome-i18n="remove:title"></span>
+            <span class="button remove" ng-click="remove()" ng-hide="project.id==projectId" chrome-i18n="remove:title"></span>
           </div>
           <ul>
-            <li ng-show="project.children.length==0" chrome-i18n="no_bookmarks_found:inner">
-              <img src="../img/favicon.png" class="favicon" />
-            </li>
             <li ng-show="project.id==0">
               <input type="text" ng-model="project_name" chrome-i18n="project_name:placeholder" />
               <input type="button" ng-click="add()" chrome-i18n="save:value" />
@@ -69,6 +66,9 @@ Author: Eiji Kitamura (agektmr@gmail.com)
                 <span class="button add" ng-click="add()" ng-show="!bookmark.added&&project.id!=0" chrome-i18n="add:title"></span>
                 <input type="checkbox" ng-model="bookmark.checked" ng-show="project.id==0" ng-init="bookmark.checked=true"/>
               </div>
+            </li>
+            <li ng-show="project.children.length==0" chrome-i18n="no_bookmarks_found:inner">
+              <img src="../img/favicon.png" class="favicon" />
             </li>
           </ul>
         </li>

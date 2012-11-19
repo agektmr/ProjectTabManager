@@ -88,7 +88,6 @@ var ProjectTabManager = (function() {
             });
           }
           var projectId = this.projects[i].id;
-          if (config.debug) console.log('merging sessions into bookmarks', projectId, TabManager.getProject(projectId));
         }
         if (typeof(callback) == 'function') callback(this.projects);
       }).bind(this));

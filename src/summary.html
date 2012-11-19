@@ -1,0 +1,26 @@
+    <div ng-controller="SummaryCtrl">
+      <fieldset>
+        <legend>Time Summary</legend>
+        <ul id="debug" class="timesummary">
+          <li ng-repeat="session in tracker" class="session" ng-controller="TimeSummaryCtrl" title="{{session.projectName}}: {{session.start|date:'HH:mm'}} - {{session.end|date:'HH:mm'}}" ng-style="session">
+          </li>
+        </ul>
+        <legend>Project Summary</legend>
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th class="project" chrome-i18n="project_name:inner"></th>
+              <th class="duration" chrome-i18n="amount_of_time_spent:inner"></th>
+              <th class="meter" chrome-i18n="meter:inner"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="project in summary" ng-controller="ProjectSummaryCtrl">
+              <td><div class="color_swatch" ng-style="project" ></div>{{project.title}}</td>
+              <td>{{project.timeStr}}</td>
+              <td><meter min="0" max="{{max}}" value="{{project.duration}}" style="width:500px;"></meter></td>
+            </tr>
+          </tbody>
+        </table>
+      </fieldset>
+    </div>

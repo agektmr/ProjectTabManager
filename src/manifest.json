@@ -2,13 +2,12 @@
   "name": "Project Tab Manager",
   "description": "__MSG_description__",
   "manifest_version": 2,
-  "version": "1.1.0",
+  "version": "1.9.0",
   "icons": {
     "48": "img/48.png",
     "128": "img/48.png"
   },
   "permissions": [
-    "commands",
     "contextMenus",
     "bookmarks",
     "storage",
@@ -34,12 +33,11 @@
   },
   "options_page": "ng-options.html",
   "commands": {
-    // "open_popup": {
-    //   "suggested_key": {
-    //     "default": "Alt+Shift+B",
-    //     "mac": "Option+Command+B"
-    //   },
-    //   "description": "Opens browser action popup window"
-    // }
+    "_execute_browser_action": {
+      "suggested_key": {
+        "default": "Alt+Shift+P"
+      },
+      "description": "Opens browser action popup window"
+    }
   }
 }

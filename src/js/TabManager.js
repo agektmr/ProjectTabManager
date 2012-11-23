@@ -200,7 +200,9 @@ var TabManager = (function() {
       // TODO: this won't work
       chrome.tabs.get(tabId, remove.bind(this));
     }).bind(this));
-    chrome.windows.onRemoved.addListener(TabManager.resetProject.bind(this));
+    chrome.windows.onRemoved.addListener((function(windowId) {
+      TabManager.resetProject(windowId);
+    }).bind(this));
   };
   TabManager.prototype = {
     getProject: function(projectId) {

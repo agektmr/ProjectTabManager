@@ -18,6 +18,9 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 'use strict';
 
 var TabManager = (function() {
+  /**
+   *  Tab entity which will be stored as ProjectManager tabs
+   **/
   var TabEntity = function(tab) {
     var url = util.unlazify(tab.url);
     var domain = url.replace(/^.*?\/\/(.*?)\/.*$/, "$1");
@@ -29,14 +32,18 @@ var TabManager = (function() {
     this.favIconUrl = tab.favIconUrl || 'http://www.google.com/s2/favicons?domain='+encodeURIComponent(domain);
   };
 
+  /**
+   *  ProjectManager is a session instance of projects
+   *  This is created either out of tabs in a window or existing session (ProjectManager instance)
+   **/
   var ProjectManager = function(win_id_or_project) {
     this.winId = null;
     this.tabs = {}; // tabId as key
-    if (typeof win_id_or_project == 'object') {
+    if (typeof win_id_or_project == 'object') { // if win_id_or_project is project
       for (var id in win_id_or_project.tabs) {
         this.updateTab(win_id_or_project.tabs[id]);
       }
-    } else {
+    } else { // if win_id_or_project is winId
       this.winId = win_id_or_project;
       chrome.tabs.getAllInWindow(parseInt(win_id_or_project), (function(tabs) {
         for (var id in tabs) {
@@ -46,12 +53,17 @@ var TabManager = (function() {
     }
   };
   ProjectManager.prototype = {
+    /**
+     *  Update tab
+     **/
     updateTab: function(tab) {
+      // If tab already exists, remove existing tab first
       if (this.tabs[tab.id]) {
         if (config.debug) console.log('removed tab', tab.id);
         delete this.tabs[tab.id];
       } else {
         for (var id in this.tabs) {
+          // Loop through all tabs and look for tab with similar url
           if (this.tabs[id].url === util.unlazify(tab.url)) {
             if (config.debug) console.log('removed tab', id);
             delete this.tabs[id];
@@ -61,9 +73,13 @@ var TabManager = (function() {
       }
       if (!tab.url.match(util.CHROME_EXCEPTION_URL)) {
         if (config.debug) console.log('added tab', tab.id);
+        // Create new tab entity
         this.tabs[tab.id] = new TabEntity(tab);
       }
     },
+    /**
+     *  Removed tab
+     **/
     removeTab: function(tabId) {
       if (this.tabs[tabId]) {
         delete this.tabs[tabId];
@@ -71,6 +87,9 @@ var TabManager = (function() {
       }
       return false;
     },
+    /**
+     *  Open new window along with set of tabs
+     **/
     openWindow: function(callback) {
       var tabs = [];
       for (var tabId in this.tabs) {
@@ -112,10 +131,12 @@ var TabManager = (function() {
   };
 
   /***
-   *  @param {Object} projects ProjectManager objects with projectId as a key. This object will be stored in chrome.storage.sync and synced under profile. Next time you open Chrome, assigned projects will be restored to each windows by guessing tab similarities.
+   *  @param {Object} projects ProjectManager objects with projectId as a key. This object will be stored in chrome.storage.local. Next time you open Chrome, assigned projects will be restored to each windows by guessing tab similarities.
    ***/
   var TabManager = function() {
     this.projects = {};
+    this.projectIds = {};
+
     chrome.storage.local.get((function(items) {
       if (chrome.runtime.lastError) {
         console.error(chrome.runtime.lastError.message);
@@ -127,7 +148,6 @@ var TabManager = (function() {
         if (config.debug) console.log('projects restored.', items['projects']);
       }
     }).bind(this));
-    this.projectIds = {};
 
     var add = function(tab) {
       if (!tab.url.match(util.CHROME_EXCEPTION_URL)) {
@@ -180,9 +200,7 @@ var TabManager = (function() {
       // TODO: this won't work
       chrome.tabs.get(tabId, remove.bind(this));
     }).bind(this));
-    chrome.windows.onRemoved.addListener((function(windowId) {
-      delete this.projectIds[windowId];
-    }).bind(this));
+    chrome.windows.onRemoved.addListener(TabManager.resetProject.bind(this));
   };
   TabManager.prototype = {
     getProject: function(projectId) {

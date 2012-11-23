@@ -15,63 +15,89 @@ limitations under the License.
 
 Author: Eiji Kitamura (agektmr@gmail.com)
 */
+'use strict';
+
 var VisibilityTracker = (function() {
   var tracker = [];
-  var session = (function() {
-    var session = function(winId) {
+  var Session = (function() {
+    var Session = function(winId) {
       this.winId = winId;
+      this.projectId = TabManager.projectIds[winId] || null;
       this.start = new Date();
       this.end = null;
     };
-    session.prototype = {
+    Session.prototype = {
       endSession: function() {
         this.end = new Date();
       }
     };
     return function(winId) {
-      return new session(winId);
+      return new Session(winId);
     };
   })();
-  chrome.windows.getCurrent(function(win) {
-    tracker.push(new session(win.id));
+
+  chrome.windows.onFocusChanged.addListener(function(winId) {
+    if (winId == chrome.windows.WINDOW_ID_NONE) {
+      VisibilityTracker.winChanged();
+    } else {
+      chrome.windows.get(winId, {populate:true}, VisibilityTracker.winChanged);
+    }
   });
+
+  chrome.windows.getCurrent(function(win) {
+    tracker.push(new Session(win.id));
+  });
+
   return {
     winChanged: function(win) {
       var last = tracker.length-1;
-      if (!win) {
+      if (!win) { // null window means session end
         tracker[last].endSession();
         return;
       }
-      if (win.tabs.length == 1 && win.tabs[0].url.match(/^chrome(|-devtools):\/\//i)) {
+      if (win.tabs.length == 1 && win.tabs[0].url.match(util.CHROME_EXCEPTION_URL)) {
         return;
       }
       if (tracker[last].end === null)
         tracker[last].endSession();
-      tracker.push(new session(win.id));
+      tracker.push(new Session(win.id));
     },
-    getSummary: function(windowHistory) {
-      var times = {};
+    getSummary: function() {
+      var _session = {};
       tracker.forEach(function(session) {
-        var winId = session.winId;
-        if (!times[winId]) {
-          times[winId] = {};
-          times[winId].duration = 0;
-          times[winId].title = windowHistory[winId] ? windowHistory[winId].title : session.winId;
+        var projectId = session.projectId;
+        if (!_session[projectId]) {
+          _session[projectId] = {};
+          _session[projectId].duration = 0;
+          if (projectId) {
+            ProjectTabManager.getProject(projectId, function(project) {
+              _session[projectId].title = project.title;
+            });
+          } else {
+            _session[projectId].title = 'Unknown';
+          }
         }
         var end = session.end ? session.end.getTime() : (new Date()).getTime();
         var duration = ~~((end - session.start.getTime()) / 1000);
-        times[winId].duration += duration;
+        _session[projectId].duration += duration;
       });
-      return times;
+      return _session;
     },
-    getTimeSummary: function(windowHistory) {
+    getTimeSummary: function() {
       var copy = [];
       tracker.forEach(function(session) {
         var _session = {};
         _session.winId = session.winId;
+        _session.projectId = session.projectId;
         _session.start = session.start.getTime();
         _session.end = session.end ? session.end.getTime() : null;
-        _session.projectName = windowHistory[_session.winId] ? windowHistory[_session.winId].title : _session.winId;
+        if (session.projectId) {
+          ProjectTabManager.getProject(session.projectId, function(project) {
+            _session.projectName = project.title;
+          });
+        } else {
+          _session.projectName = 'Unknown';
+        }
         copy.push(_session);
       });
       return copy;

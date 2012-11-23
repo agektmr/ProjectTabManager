@@ -153,7 +153,6 @@ var ProjectTabManager = (function() {
         cache.renew();
       });
     },
-
     addProject: function(name, tabs, callback) {
       chrome.bookmarks.create({
         parentId: projectsRootId,
@@ -196,8 +195,6 @@ var ProjectTabManager = (function() {
           // register window to window manager
           ProjectTabManager.getProject(projectId, function(project) {
             TabManager.setProject(win.id, project);
-            windowHistory[win.id] = {};
-            windowHistory[win.id].title = project.title;
           });
           // open bookmarks in window
           for (var i = s+1; i < bookmarks.length; i++) {

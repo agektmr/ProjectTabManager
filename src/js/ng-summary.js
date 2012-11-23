@@ -36,7 +36,7 @@ app.controller('SummaryCtrl', function($scope, Background) {
         } else {
           session.width = (((session.end - session.start) / $scope.work_hour * 100))+'%';
         }
-        session.backgroundColor = $scope.summary[session.winId].backgroundColor;
+        session.backgroundColor = $scope.summary[session.projectId].backgroundColor;
       });
       $scope.tracker = tracker;
       $scope.$apply();

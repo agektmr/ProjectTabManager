@@ -17,18 +17,8 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 */
 'use strict';
 
-var windowHistory = {};
-
-chrome.windows.onRemoved.addListener(function(winId) {
-  TabManager.resetProject(winId);
-});
-
-chrome.windows.onFocusChanged.addListener(function(winId) {
-  if (winId == chrome.windows.WINDOW_ID_NONE) {
-    VisibilityTracker.winChanged();
-  } else {
-    chrome.windows.get(winId, {populate:true}, VisibilityTracker.winChanged);
-  }
+chrome.commands.onCommand.addListener(function(command) {
+  console.log('command');
 });
 
 chrome.extension.onRequest.addListener(function(req, sender, callback) {
@@ -39,8 +29,6 @@ chrome.extension.onRequest.addListener(function(req, sender, callback) {
   case 'pin':
     ProjectTabManager.getProject(req.projectId, function(project) {
       TabManager.setProject(req.winId, project);
-      windowHistory[req.winId] = {};
-      windowHistory[req.winId].title = project.title;
       callback(project);
     });
     break;
@@ -56,8 +44,6 @@ chrome.extension.onRequest.addListener(function(req, sender, callback) {
   case 'addProject':
     ProjectTabManager.addProject(req.name || 'New Project', req.tabs, function(newProject) {
       TabManager.setProject(req.winId, newProject);
-      windowHistory[req.winId] = {};
-      windowHistory[req.winId].title = newProject.title;
       callback(newProject);
     });
     break;
@@ -82,10 +68,10 @@ chrome.extension.onRequest.addListener(function(req, sender, callback) {
     });
     break;
   case 'timesummary':
-    callback(VisibilityTracker.getTimeSummary(windowHistory));
+    callback(VisibilityTracker.getTimeSummary());
     break;
   case 'summary':
-    callback(VisibilityTracker.getSummary(windowHistory));
+    callback(VisibilityTracker.getSummary());
     break;
   case 'windows':
     callback(TabManager.projects);
@@ -93,7 +79,3 @@ chrome.extension.onRequest.addListener(function(req, sender, callback) {
     break;
   }
 });
-
-// chrome.experimental.commands.onCommand.addListener(function(command) {
-//   console.log('command');
-// });

@@ -9,10 +9,10 @@
     "message": "ブックマークマネージャでプロジェクトを編集する"
   },
   "pin": {
-    "message": "このプロジェクトをウィンドウに紐付ける"
+    "message": "このプロジェクトをウィンドウに関連付ける"
   },
   "delete": {
-    "message": "Delete"
+    "message": "プロジェクトから削除"
   },
   "remove": {
     "message": "削除する"
@@ -21,7 +21,7 @@
     "message": "保存する"
   },
   "add": {
-    "message": "追加する"
+    "message": "プロジェクトに追加"
   },
   "activate": {
     "message": "アクティブにする"
@@ -48,7 +48,7 @@
     "message": "オプション"
   },
   "project_name": {
-    "message": "プロジェクト名"
+    "message": "ウィンドウに名前を付けるとプロジェクト化してトラッキングできるようになります"
   },
   "amount_of_time_spent": {
     "message": "経過時間"

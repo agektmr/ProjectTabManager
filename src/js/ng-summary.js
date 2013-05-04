@@ -15,33 +15,53 @@ limitations under the License.
 
 Author: Eiji Kitamura (agektmr@gmail.com)
 */
-app.controller('SummaryCtrl', function($scope, Background) {
-  Background.summary(function(summary) {
-    var max = 0, i = 0;
-    for(var key in summary) {
-      max += summary[key].duration;
-      summary[key].backgroundColor = 'hsl('+((i++*135)%360)+', 100%, 50%)';
-    }
-    $scope.max = max;
-    $scope.summary = summary;
-    Background.timesummary(function(tracker) {
+app.value('ProjectManager', chrome.extension.getBackgroundPage().projectManager);
+
+app.controller('SummaryCtrl', function($scope, ProjectManager) {
+  var now = new Date(Date.now());
+  var today = now.toISOString().replace(/^([0-9]+-[0-9]+-[0-9]+).*$/, '$1');
+
+  $scope.max = 0;
+  $scope.summary_date   = today;
+  $scope.summary_start  = today;
+  $scope.summary_end    = today;
+
+  $scope.get_summary = function() {
+    ProjectManager.getSummary($scope.summary_start, $scope.summary_end, function(summary) {
+      var max = 0, i = 0;
+      for (var id in summary) {
+        var session = summary[id];
+        max += session.duration;
+        session.backgroundColor = 'hsl('+((parseInt(id)*135)%360)+', 100%, 50%)';
+      };
+      $scope.max = max;
+      $scope.summary = summary;
+      $scope.$apply();
+    });
+  };
+
+  $scope.get_time_table = function() {
+    ProjectManager.getTimeTable($scope.summary_date, function(table) {
       var start = 0,
           end = (new Date()).getTime();
-      if (tracker[0]) start = tracker[0].start;
+      if (table[0]) start = table[0].start;
       $scope.work_hour = end - start;
-      tracker.forEach(function(session, index) {
+      table.forEach(function(session, index) {
         session.left  = (((session.start - start) / $scope.work_hour * 100))+'%';
         if (session.end === null) {
           session.width = (((end - session.start) / $scope.work_hour * 100))+'%';
         } else {
           session.width = (((session.end - session.start) / $scope.work_hour * 100))+'%';
         }
-        session.backgroundColor = $scope.summary[session.projectId].backgroundColor;
+        session.backgroundColor = 'hsl('+((parseInt(session.id)*135)%360)+', 100%, 50%)';
       });
-      $scope.tracker = tracker;
+      $scope.table = table;
       $scope.$apply();
     });
-  });
+  };
+
+  $scope.get_summary();
+  $scope.get_time_table();
 });
 
 app.controller('ProjectSummaryCtrl', function($scope) {

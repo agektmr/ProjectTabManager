@@ -15,10 +15,68 @@ limitations under the License.
 
 Author: Eiji Kitamura (agektmr@gmail.com)
 */
-var config = {
-   debug: true,
-   archiveFolderName: '__Archive__',
-   hiddenFolderName: 'passive',
-   defaultRootParentId: '2',
-   defaultRootName: 'Project Tab Manager'
-};
+var Config = (function() {
+  var rootParentId_ = '2',
+      rootName_     = 'Project Tab Manager',
+      lazyLoad_     = true;
+
+  var setConfig = function() {
+    chrome.storage.sync.set({config: {
+      lazyLoad:     lazyLoad_,
+      rootParentId: rootParentId_,
+      rootName:     rootName_
+    }}, function() {
+      if (chrome.runtime.lastError) {
+        console.error(chrome.runtime.lastError.message);
+      } else {
+        console.log('sessions stored.', lazyLoad_, rootParentId_, rootName_);
+      }
+    })
+  };
+
+  var Config = function(callback) {
+    chrome.storage.sync.get((function(items) {
+      if (chrome.runtime.lastError) {
+        console.error(chrome.runtime.lastError.message);
+      } else {
+        var conf = items['config'] || {};
+        rootParentId_ = conf.rootParentId || localStorage.rootParentId || '2';
+        rootName_     = conf.rootName     || localStorage.rootName     || 'Project Tab Manager';
+        if (conf.lazyLoad !== undefined) {
+          lazyLoad_ = conf.lazyLoad_;
+        } else {
+          lazyLoad_ = localStorage.lazyLoad === 'true' ? true : false;
+        }
+       if (this.debug) console.log('[Config] initialization finished');
+        if (typeof callback === 'function') callback();
+      }
+    }).bind(this));
+  };
+  Config.prototype = {
+    debug: true,
+    archiveFolderName: '__Archive__',
+    hiddenFolderName: 'passive',
+    set lazyLoad(val) {
+      lazyLoad_ = val ? true : false;
+      setConfig();
+    },
+    get lazyLoad() {
+      return lazyLoad_;
+    },
+    set rootParentId(val) {
+      rootParentId_ = val;
+      setConfig();
+    },
+    get rootParentId() {
+      return rootParentId_;
+    },
+    set rootName(val) {
+      rootName_ = val;
+      setConfig();
+    },
+    get rootName() {
+      return rootName_;
+    }
+  };
+  return Config;
+})();

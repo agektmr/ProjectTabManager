@@ -17,75 +17,65 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 */
 'use strict';
 
-app.controller('ProjectListCtrl', function($scope, Background) {
-  $scope.currentWinId = '0';
-  $scope.currentTabs = [];
-  $scope.projectId = '0';
+app.value('ProjectManager', chrome.extension.getBackgroundPage().projectManager);
 
-  $scope.reload = function(projectId) {
-    Background.projects(function(projects) {
-      projects.unshift({
-        id: '0',
-        title: chrome.i18n.getMessage('name_this'),
-        children: [],
-        tabs: $scope.currentTabs
-      });
-      $scope.$apply(function() {
-        $scope.projectId = projectId || $scope.projectId;
-        $scope.projects = projects;
-      });
-    });
+app.controller('ProjectListCtrl', function($scope, $window, ProjectManager) {
+  $window.addEventListener('keydown', function(event) {
+    if (event.keyCode === 13) {
+      event.preventDefault();
+      var scope = angular.element(event.target).scope();
+      if (scope.open) {
+        scope.open();
+      }
+    }
+  });
+
+  $scope.setActiveProjectId = function(id) {
+    $scope.activeProjectId = id;
+  },
+
+  $scope.reload = function() {
+    $scope.projects = ProjectManager.getProjectList(true);
+    $scope.$apply();
   };
 
   $scope.openBookmarks = function() {
-    Background.edit();
+    var projectId = $scope.activeProjectId === '0' ? null : $scope.activeProjectId;
+    ProjectManager.openBookmarkEditWindow(projectId);
   };
+
   $scope.openSummary = function() {
-    chrome.tabs.create({url:'/ng-layout.html#summary'});
+    chrome.tabs.create({url:chrome.extension.getURL('/ng-layout.html#summary')});
   };
 
   $scope.openOptions = function() {
-    chrome.tabs.create({url:'/ng-layout.html#options'});
+    chrome.tabs.create({url:chrome.extension.getURL('/ng-layout.html#options')});
   };
 
-  $scope.edit = Background.edit;
+  $scope.reload();
+  // TODO: merge active window and active project id into active project?
+  $scope.activeWindowId   = ProjectManager.getActiveWindowId();
+  var activeProject       = ProjectManager.getActiveProject();
 
-  chrome.windows.getCurrent(function(win) {
-    $scope.currentWinId = win.id;
-    chrome.tabs.query({windowId:win.id}, function(tabs) {
-      // Strip exception URLs
-      for (var i in tabs) {
-        if (tabs[i].url.match(util.CHROME_EXCEPTION_URL)) {
-          tabs.splice(i--, 1);
-        }
-      }
-      $scope.currentTabs = tabs;
-    });
-    Background.current(win.id, function(projectId) {
-      $scope.reload(projectId);
-    });
-  });
+  $scope.setActiveProjectId(activeProject && activeProject.id || '0');
 });
 
-app.controller('ProjectCtrl', function($scope, Background) {
-  $scope.expand = false;
+app.controller('ProjectCtrl', function($scope, ProjectManager) {
+  $scope.expand = $scope.project.winId === $scope.activeWindowId ? true : false;
 
-  $scope.add = function() {
-    var tabs = [];
-    for (var tabId in $scope.project.tabs) {
-      if ($scope.project.tabs[tabId].checked) {
-        tabs.push($scope.project.tabs[tabId]);
-      }
-    }
-    Background.addProject($scope.project_name, $scope.currentWinId, tabs, function(project) {
-      $scope.reload(project.id);
+  $scope.save = function() {
+    ProjectManager.createProject($scope.project_name, function(project) {
+      $scope.project = project;
+      $scope.setActiveProjectId(project.id);
+      $scope.reload();
     });
   };
 
-  $scope.pin = function() {
-    Background.pin($scope.project.id, $scope.currentWinId, function(project) {
-      $scope.reload(project.id);
-    });
+  $scope.associate = function() {
+    // TODO check if this works well
+    var winId = ProjectManager.getActiveWindowId();
+    $scope.project.associateWindow(winId);
+    $scope.setActiveProjectId($scope.project.id);
   };
 
   $scope.flip = function() {
@@ -93,89 +83,68 @@ app.controller('ProjectCtrl', function($scope, Background) {
   };
 
   $scope.open = function() {
-    if ($scope.project.id == '0') return;
-    Background.open($scope.project.id);
+    $scope.project.open();
   };
 
   $scope.remove = function() {
-    var projectId = $scope.project.id == $scope.projectId ? '0' : $scope.projectId;
-    Background.removeProject($scope.project.id, function() {
-      $scope.reload(projectId);
+    ProjectManager.removeProject($scope.project.id, function() {
+      $scope.reload();
     });
   };
 });
 
-app.controller('TabCtrl', function($scope, Background) {
-  $scope.add = function() {
-    Background.add($scope.project.id, $scope.tab, function() {
-      $scope.reload();
-    });
+app.controller('FieldCtrl', function($scope, ProjectManager) {
+  $scope.toggle = function() {
+    if ($scope.field.id !== undefined) {
+      $scope.project.removeBookmark($scope.field.id, function() {
+        $scope.field.id = undefined;
+        $scope.$apply();
+      });
+    } else {
+      $scope.project.addBookmark($scope.field.tabId, function(bookmark) {
+        $scope.field.id = bookmark.id;
+        $scope.$apply();
+      });
+    }
   };
 
   $scope.open = function() {
-    chrome.tabs.create({url: $scope.tab.url, active: true});
+    var tabId = $scope.field.tabId;
+    // If tab id is not assigned
+    if (!tabId) {
+      // Open new project field
+      chrome.tabs.create({url: $scope.field.url, active: true});
+    } else {
+      chrome.tabs.get(tabId, function(tab) {
+        // If the project filed is not open yet
+        if (!tab) {
+          // Open new project field
+          chrome.tabs.create({url: $scope.field.url, active: true});
+        // If the project filed is already open
+        } else {
+          // Just activate open project field
+          chrome.tabs.update(tabId, {active: true});
+        }
+      });
+    }
   };
 });
 
-app.controller('BookmarkCtrl', function($scope, Background) {
-  $scope.passive = $scope.bookmark.passive || false;
-  $scope.current = $scope.bookmark.current || false;
-  $scope.adding  = $scope.bookmark.adding  || false;
-  $scope.domain  = ($scope.bookmark.url && $scope.bookmark.url.replace(/^.*?\/\/(.*?)\/.*$/, "$1")) || '';
+// app.controller('DebugCtrl', function($scope, ProjectManager) {
+//   $scope.debug = true;
+//   $scope.expand = false;
+//   $scope.tracker = [];
+//   $scope.windows = {};
 
-  $scope.add = function() {
-    Background.add($scope.project.id, $scope.bookmark, function() {
-      $scope.reload();
-    });
-  };
+//   $scope.flip = function() {
+//     $scope.expand = !$scope.expand;
+//   };
 
-  $scope.changeStatus = function() {
-    Background[$scope.passive ? 'activate' : 'deactivate']($scope.project.id, $scope.bookmark.id, function() {
-      $scope.passive = !$scope.passive;
-      $scope.titleStatus = $scope.passive ? i18n_activate : i18n_deactivate;
-    });
-  };
+//   // Background.timesummary(function(tracker) {
+//   //   $scope.tracker = tracker;
+//   // });
+//   // Background.windows(function(windows) {
+//   //   $scope.windows = windows;
+//   // });
+// });
 
-  $scope.delete = function() {
-    Background.remove($scope.bookmark.id, function() {
-      $scope.reload();
-    });
-  };
-
-  $scope.open = function() {
-    var tabId = parseInt($scope.bookmark.id);
-    chrome.tabs.get(tabId, function(tab) {
-      if (!tab)
-        chrome.tabs.create({url: $scope.bookmark.url, active: true});
-      else
-        chrome.tabs.update(tabId, {active: true});
-    });
-  };
-});
-
-app.controller('DebugCtrl', function($scope, Background) {
-  $scope.debug = config.debug;
-  $scope.expand = false;
-  $scope.tracker = [];
-  $scope.windows = {};
-
-  $scope.flip = function() {
-    $scope.expand = !$scope.expand;
-  };
-
-  Background.timesummary(function(tracker) {
-    $scope.tracker = tracker;
-  });
-  Background.windows(function(windows) {
-    $scope.windows = windows;
-  });
-});
-
-window.addEventListener('keydown', function(event) {
-  if (event.keyCode === 13 &&
-      event.target.classList.contains('name') &&
-      event.target.dataset.project) {
-    event.preventDefault();
-    chrome.extension.sendRequest({command: 'open', projectId: event.target.dataset.project});
-  }
-});

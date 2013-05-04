@@ -1,19 +1,19 @@
 app.config(function($routeProvider) {
   $routeProvider.
     when('/options', {
-      templateUrl: 'options.html',
+      templateUrl: 'partials/options.html',
       controller: 'OptionsCtrl'
     }).
     when('/summary', {
-      templateUrl: 'summary.html',
+      templateUrl: 'partials/summary.html',
       controller: 'SummaryCtrl'
     }).
     when('/help', {
-      templateUrl: 'help.html',
+      templateUrl: 'partials/help.html',
       controller: 'HelpCtrl'
     }).
     otherwise({
-      templateUrl: 'options.html',
+      templateUrl: 'partials/options.html',
       controller: 'OptionsCtrl'
     });
 });

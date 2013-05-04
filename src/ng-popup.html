@@ -20,7 +20,6 @@ Author: Eiji Kitamura (agektmr@gmail.com)
   <head>
     <title>Project Tab Manager</title>
     <meta charset="utf-8"/>
-    <link href='http://fonts.googleapis.com/css?family=Audiowide' rel='stylesheet' type='text/css'>
     <link href="css/style.css" rel="stylesheet" type="text/css">
     <script src="js/config.js"></script>
     <script src="js/util.js"></script>
@@ -34,63 +33,77 @@ Author: Eiji Kitamura (agektmr@gmail.com)
   <body>
     <div id="container" ng-controller="ProjectListCtrl">
       <header>
-        <span class="name">Project Tab Manager</span>
+        <input type="search" class="search" ng-model="query" value="" placeholder="Search Projects and Bookmarks" tabindex="1" />
+        <span class="button reload" ng-click="reload()" chrome-i18n="reload:title"></span>
         <span class="button edit" ng-click="openBookmarks()" chrome-i18n="edit:title"></span>
         <span class="button summary" ng-click="openSummary()" chrome-i18n="todays_project_summary:title"></span>
         <span class="button options" ng-click="openOptions()" chrome-i18n="options:title"></span>
       </header>
       <ul id="projects">
-        <li class="accordion">
-          <input type="search" class="search" ng-model="query" value="" placeholder="Search Projects and Bookmarks" tabindex="1" />
-        </li>
-        <li class="accordion" ng-class="{expand: expand || project.id==projectId}" ng-repeat="project in projects | sort:projectId | filter:query" ng-controller="ProjectCtrl" ng-init="hover=false" ng-mouseover="hover=true" ng-mouseleave="hover=false">
+        <li class="accordion" ng-class="{expand: expand || project.id==activeProjectId}" ng-repeat="project in projects | sort:activeProjectId | filter:query" ng-controller="ProjectCtrl" ng-init="hover=false" ng-mouseover="hover=true" ng-mouseleave="hover=false">
           <div class="project">
-            <span class="button arrow" ng-class="{expand: expand || project.id==projectId}" ng-click="flip()"></span>
-            <span class="name" ng-class="{current: project.id==projectId}" ng-click="open()" data-project="{{project.id}}" tabindex="{{$index+2}}">{{project.title}}</span>
-          </div>
-          <div class="menu" ng-show="hover&&project.id!=0">
-            <span class="button pin" ng-click="pin()" ng-hide="project.id==projectId" chrome-i18n="pin:title"></span>
-            <span class="button remove" ng-click="remove()" ng-hide="project.id==projectId" chrome-i18n="remove:title"></span>
+            <span class="button arrow" ng-class="{expand: expand || project.id==activeProjectId}" ng-click="flip()"></span>
+            <span class="name" ng-class="{current: project.id==activeProjectId}" ng-click="open()" data-project="{{project.id}}" tabindex="{{$index+2}}">{{project.title}}</span>
+            <div class="menu" ng-show="hover&&project.id!=0">
+              <span class="button pin" ng-click="associate()" ng-hide="project.id==activeProjectId" chrome-i18n="pin:title"></span>
+              <span class="button remove" ng-click="remove()" chrome-i18n="remove:title"></span>
+            </div>
           </div>
           <ul>
-            <li ng-show="project.id==0">
+            <li ng-show="project.id==0" class="new_project_name">
               <input type="text" ng-model="project_name" chrome-i18n="project_name:placeholder" />
-              <input type="button" ng-click="add()" chrome-i18n="save:value" />
-            </li>
-            <li ng-repeat="bookmark in project.children | normalize:project.tabs | filter:query" ng-controller="BookmarkCtrl">
-              <img ng-src="{{bookmark.favIconUrl}}" class="favicon" />
-              <span class="name" ng-class="{current: bookmark.session, adding: !bookmark.added}" title="{{bookmark.title}}
-{{bookmark.url}}" ng-click="open()">{{bookmark.title}}</span>
               <div class="menu">
-                <span class="button delete" ng-click="delete()" ng-show="bookmark.added&&project.id!=0" chrome-i18n="delete:title"></span>
-                <span class="button add" ng-click="add()" ng-show="!bookmark.added&&project.id!=0" chrome-i18n="add:title"></span>
-                <input type="checkbox" ng-model="bookmark.checked" ng-show="project.id==0" ng-init="bookmark.checked=true"/>
+                <input type="button" ng-click="save()" chrome-i18n="save:value" />
               </div>
             </li>
-            <li ng-show="project.children.length==0" chrome-i18n="no_bookmarks_found:inner">
+            <li ng-repeat="field in project.fields | filter:query" ng-controller="FieldCtrl">
+              <img ng-src="{{field.favIconUrl}}" class="favicon" />
+              <span class="name" ng-class="{current:!!field.tabId}" title="{{field.title}}
+{{field.url}}" ng-click="open()">{{field.title}}</span>
+              <div class="menu">
+                <span class="bookmark" ng-class="{star:field.id}" ng-click="toggle()" ng-show="project.id!=0" chrome-i18n="add:title"></span>
+                <input type="checkbox" ng-class="{bookmarked:!!field.id}" ng-model="field.id" ng-show="project.id==0"/>
+              </div>
+            </li>
+            <li ng-show="project.fields.length==0&&project.id!=0">
               <img src="../img/favicon.png" class="favicon" />
+              <span class="name" chrome-i18n="no_bookmarks_found:inner"></span>
             </li>
           </ul>
         </li>
       </ul>
-      <div ng-controller="DebugCtrl">
+<!--       <div ng-controller="DebugCtrl">
         <div id="debug_expander" ng-show="debug">
-          <div class="flipper button" ng-class="{open: expand}" ng-click="flip()"></div>
+          <span class="button arrow" ng-class="{expand: expand}" ng-click="flip()"></span>
           <span id="debug_expand">Debug Info</span>
         </div>
         <p ng-show="expand">Projects</p>
         <ul class="bookmarks" ng-show="expand">
-          <li ng-repeat="window in windows">{{window.winId||"null"}}<ul>
-            <li ng-repeat="tab in window.tabs">{{tab.title}}</li>
-          </ul></li>
+          <li class="accordion expand" ng-repeat="window in windows">
+            <div class="project">
+              <span class="name">{{window.winId||"null"}}</span>
+            </div>
+            <ul>
+              <li ng-repeat="tab in window.tabs">
+                <span class="name">{{tab.title}}</span>
+              </li>
+            </ul>
+          </li>
         </ul>
         <p ng-show="expand">History</p>
         <ul id="debug" class="bookmarks" ng-show="expand">
-          <li ng-repeat="track in tracker">
-            <span class="project_name">{{track.projectName}}:<br/>{{track.start|date:'HH:mm:ss'}} ~ {{track.end|date:'HH:mm:ss'}}</span/>
+          <li class="accordion expand" ng-repeat="track in tracker">
+            <div class="project">
+              <span class="name">{{track.projectName}}</span>
+            </div>
+            <ul>
+              <li>
+                <span class="name">{{track.start|date:'HH:mm:ss'}} ~ {{track.end|date:'HH:mm:ss'}}</span>
+              </li>
+            </ul>
           </li>
         </ul>
       </div>
-    </div>
+ -->    </div>
   </body>
 </html>

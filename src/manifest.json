@@ -2,7 +2,7 @@
   "name": "Project Tab Manager",
   "description": "__MSG_description__",
   "manifest_version": 2,
-  "version": "1.9.0",
+  "version": "2.0.0",
   "icons": {
     "48": "img/48.png",
     "128": "img/48.png"
@@ -18,10 +18,10 @@
     "scripts": [
       "js/config.js",
       "js/util.js",
-      "js/VisibilityTracker.js",
-      "js/TabManager.js",
-      "js/UpdateManager.js",
-      "js/ProjectTabManager.js",
+      "js/idb.js",
+      "js/SessionManager.js",
+      "js/BookmarkManager.js",
+      "js/ProjectManager.js",
       "js/background.js"
     ],
     "persistent": true
@@ -31,11 +31,11 @@
     "default_title": "Project Tab Manager",
     "default_popup": "ng-popup.html"
   },
-  "options_page": "ng-options.html",
+  "options_page": "ng-layout.html#options",
   "commands": {
     "_execute_browser_action": {
       "suggested_key": {
-        "default": "Alt+Shift+P"
+        "default": "Ctrl+P"
       },
       "description": "Opens browser action popup window"
     }

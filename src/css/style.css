@@ -19,6 +19,11 @@ body {
   margin: 0;
   padding: 0;
 }
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
 #container {
   width: 300px;
   margin: 0;
@@ -30,20 +35,28 @@ body {
   overflow: hidden;
 }
 .name {
-  margin-top: 3px;
   display: inline-block;
   overflow: hidden;
   text-overflow: ellipsis;
   vertical-align: top;
 }
 .favicon {
-  margin: 2px 4px 0 0;
   width: 16px;
   height: 16px;
-  vertical-align: top;
+}
+.bookmark {
+  margin: 0 4px 0 0;
+  background: url(../img/star.png);
+  width: 17px;
+  height: 17px;
+  display: inline-block;
+  cursor: pointer;
+}
+.bookmark.star {
+  background-position-x: -17px;
 }
 .button {
-  margin: 2px 4px 0 0;
+  margin: 0 4px 0 0;
   background: url(../img/buttons.png);
   width: 16px;
   height: 16px;
@@ -51,34 +64,44 @@ body {
   cursor: pointer;
 }
 .button.add {
-  background-position-y: -48px;
+  background-position-y: -64px;
 }
 .button.delete {
-  background-position-y: -64px;
+  background-position-y: -96px;
 }
 .button.open {
   background-position-y: -32px;
 }
 .button.edit {
-  background-position-y: -16px;
+  background-position-y: -288px;
 }
 .button.pin {
-  background-position-y: 0px;
+  background-position-y: -128px;
 }
 .button.summary {
-  background-position-y: -80px;
+  background-position-y: -320px;
 }
 .button.remove {
-  background-position-y: -96px;
+  background-position-y: -160px;
 }
 .button.activate {
-  background-position-y: -32px;
+  background-position-y: -192px;
 }
 .button.deactivate {
-  background-position-y: -32px;
+  background-position-y: -192px;
+}
+.button.reload {
+  background-position-y: -224px;
 }
 .button.options {
-  background-position-y: -112px;
+  background-position-y: -32px;
+}
+.button.arrow {
+  background-position-y: -256px;
+  -webkit-transition: -webkit-transform 0.08s ease-out;
+}
+.button.arrow.expand {
+  -webkit-transform: rotate(90deg);
 }
 .button:hover {
   background-position-x: -16px;
@@ -94,10 +117,11 @@ body {
 .flipper.open {
   -webkit-transform: rotate(90deg);
 }
-header .name {
-  font-size: 16px;
-  font-family: Audiowide;
-  width: 228px;
+header .search {
+  width: 200px;
+}
+header .button {
+  margin: 0 3px -3px 3px;
 }
 #projects {
   list-style: none;
@@ -109,69 +133,48 @@ header .name {
 }
 .accordion {
   -webkit-transition: max-height 0.1s ease-out;
-  max-height: 24px;
+  max-height: 23px;
   overflow: hidden;
   white-space: nowrap;
   position: relative;
 }
 .accordion.expand {
-  max-height: 548px;
+  max-height: 550px;
   overflow-y: auto;
 }
-.accordion .search {
-  width: 100%;
-}
 .accordion .project {
-  background: -webkit-linear-gradient(top, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.3));
-  background-color: #fef;
-  padding: 2px 4px;
-  border: outset 1px #ede;
-  height: 18px;
+  background: -webkit-gradient(linear, left bottom, left top, from(rgba(0, 0, 0, 0)), to(rgba(0, 0, 0, 0.15))) rgba(242, 242, 242, 0.85);
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.5), 0 1px 0 rgba(0, 0, 0, 0.05), 0 -1px 0 rgba(0, 0, 0, 0.4), inset 1px 0 0 rgba(255, 255, 255, 0.4), inset 0 1px 0 #ffffff;
+  padding: 4px 4px 2px 4px;
+  height: 17px;
   overflow: hidden;
   white-space: nowrap;
 }
-.accordion .project span.arrow {
-  background: url(../img/arrow.png);
-  background-position: 0px 0px;
-  width: 16px;
-  height: 16px;
-  -webkit-transition: -webkit-transform 0.08s ease-out;
-  cursor: pointer;
-}
-.accordion .project span.arrow:hover {
-  background-position-x: -16px;
-}
-.accordion .project span.arrow.expand {
-  -webkit-transform: rotate(90deg);
-}
 .accordion .project span.name {
-  width: 254px;
+  width: 222px;
   cursor: pointer;
+  text-shadow: 0 1px 0 #ffffff;
 }
 .accordion .project span.name:hover {
   text-decoration: underline;
+}
+.accordion .project span.name:focus {
+  color: blue;
 }
 .accordion .project span.name.current {
   font-weight: bold;
 }
 .accordion input[type='text'] {
-  width: 220px;
-}
-.accordion .menu {
-  right: 0px;
-  top: 2px;
+  width: 240px;
 }
 .accordion ul {
-  margin: 0;
-  padding: 0 0 3px 0;
-  list-style: none;
-  border: outset 1px #eee;
-  text-decoration: none;
+  overflow-y: hidden;
   background-color: #fff;
 }
 .accordion li {
-  margin: 0 5px;
-  position: relative;
+  margin: 0;
+  padding: 2px 5px;
+  height: 16px;
 }
 .accordion li .name {
   width: 250px;
@@ -182,24 +185,15 @@ header .name {
 .accordion li .name.current {
   font-weight: bold;
 }
-.accordion li .name.adding {
-  color: #999;
-}
-.accordion li .name.passive {
-  color: #aaf;
-}
 .accordion li .name:hover {
   text-decoration: underline;
 }
-.accordion li .menu {
-  right: -5px;
-  top: 0px;
+.accordion li:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+.accordion li.new_project_name {
+  height: 23px;
 }
 .menu {
-  position: absolute;
-  margin: 0;
-  padding-left: 4px;
-  height: 21px;
-  right: -5px;
-  top: 0px;
+  display: inline-block;
 }

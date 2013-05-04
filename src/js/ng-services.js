@@ -29,11 +29,11 @@ app.factory('Background', function() {
     },
     // Move specified bookmark to passive folder
     deactivate: function(projectId, bookmarkId, callback) {
-      chrome.extension.sendRequest({command: 'deactivate', projectId: projectId, bookmarkId: bookmarkId}, callback);
+      chrome.extension.sendRequest({command: 'deactivate', projectId: projectId, bookmarkId: ''+bookmarkId}, callback);
     },
     // Move specified bookmark out of passive folder
     activate: function(projectId, bookmarkId, callback) {
-      chrome.extension.sendRequest({command: 'activate', projectId: projectId, bookmarkId: bookmarkId}, callback);
+      chrome.extension.sendRequest({command: 'activate', projectId: projectId, bookmarkId: ''+bookmarkId}, callback);
     },
     // Add new bookmark
     add: function(projectId, bookmark, callback) {
@@ -45,15 +45,15 @@ app.factory('Background', function() {
     },
     // Remove specified bookmark from project
     remove: function(bookmarkId, callback) {
-      chrome.extension.sendRequest({command: 'remove', bookmarkId: bookmarkId}, callback);
+      chrome.extension.sendRequest({command: 'remove', bookmarkId: ''+bookmarkId}, callback);
     },
     // Remove specified project folder
     removeProject: function(projectId, callback) {
       chrome.extension.sendRequest({command: 'removeProject', projectId: projectId}, callback);
     },
     // Get folders of projects
-    projects: function(callback) {
-      chrome.extension.sendRequest({command: 'projects'}, function(projects) {
+    projects: function(callback, force_reload) {
+      chrome.extension.sendRequest({command: 'projects', forceReload: force_reload}, function(projects) {
         if (projects && projects.length > 0) {
           callback(projects.slice(0));
         } else {

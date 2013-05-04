@@ -9,10 +9,10 @@
     "message": "Edit projects on Bookmark Manager"
   },
   "pin": {
-    "message": "Bind this project to window"
+    "message": "Associate this project to the window"
   },
   "delete": {
-    "message": "Delete"
+    "message": "Remove from Project"
   },
   "remove": {
     "message": "Remove"
@@ -21,7 +21,7 @@
     "message": "Save"
   },
   "add": {
-    "message": "Add"
+    "message": "Add to Project"
   },
   "activate": {
     "message": "Activate"
@@ -48,7 +48,7 @@
     "message": "Options"
   },
   "project_name": {
-    "message": "Project Name"
+    "message": "Name this window to start tracking as a project"
   },
   "amount_of_time_spent": {
     "message": "Amount of time spent"

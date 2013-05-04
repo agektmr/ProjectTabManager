@@ -15,25 +15,14 @@ limitations under the License.
 
 Author: Eiji Kitamura (agektmr@gmail.com)
 */
-app.controller('OptionsCtrl', function($scope) {
-  $scope.rootParentId = localStorage.rootParentId || config.defaultRootParentId,
-  $scope.folderName   = localStorage.rootName || config.defaultRootName,
-  $scope.lazyLoad     = localStorage.lazyLoad ? true : false,
-  $scope.saved        = false;
 
+app.value('config', new Config());
+app.value('ProjectManager', chrome.extension.getBackgroundPage().projectManager);
+
+app.controller('OptionsCtrl', function($scope, config) {
+  $scope.config = config;
   chrome.bookmarks.getSubTree('0', function(bookmarks) {
     $scope.root_folders = bookmarks[0].children;
     $scope.$apply();
   });
-
-  $scope.save = function() {
-    localStorage.rootParentId = $scope.rootParentId,
-    localStorage.rootName     = $scope.folderName,
-    localStorage.lazyLoad     = $scope.lazyLoad ? 'true' : '',
-    $scope.saved              = true;
-    setTimeout(function() {
-      $scope.saved = false;
-      $scope.$apply();
-    }, 3000);
-  };
 });

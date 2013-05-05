@@ -44,7 +44,7 @@ var Config = (function() {
         rootParentId_ = conf.rootParentId || localStorage.rootParentId || '2';
         rootName_     = conf.rootName     || localStorage.rootName     || 'Project Tab Manager';
         if (conf.lazyLoad !== undefined) {
-          lazyLoad_ = conf.lazyLoad_;
+          lazyLoad_ = conf.lazyLoad;
         } else {
           lazyLoad_ = localStorage.lazyLoad === 'true' ? true : false;
         }
@@ -64,6 +64,7 @@ var Config = (function() {
     debug: debug_,
     archiveFolderName: '__Archive__',
     hiddenFolderName: 'passive',
+    summaryRemains: 60*60*24*30*2*1000, // 2 month ago
     set lazyLoad(val) {
       lazyLoad_ = val ? true : false;
       setConfig();

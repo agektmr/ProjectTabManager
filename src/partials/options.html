@@ -8,7 +8,7 @@
           <label class="control-label" for="root" chrome-i18n="root_folder_location:inner"></label>
           <div class="controls">
             <select id="root" class="input-xlarge" ng-model="config.rootParentId">
-              <option ng-repeat="folder in root_folders" value="folder.id" ng-selected="config.rootParentId == folder.id">{{folder.title}}</option>
+              <option ng-repeat="folder in root_folders" ng-model="folder.id" ng-selected="config.rootParentId == folder.id">{{folder.title}}</option>
             </select>
             <p class="help-block" chrome-i18n="root_folder_location_help:inner"></p>
           </div>

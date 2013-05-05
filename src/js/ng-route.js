@@ -9,8 +9,10 @@ app.config(function($routeProvider) {
       controller: 'SummaryCtrl'
     }).
     when('/help', {
-      templateUrl: 'partials/help.html',
-      controller: 'HelpCtrl'
+      templateUrl: 'partials/help.html'
+    }).
+    when('/history', {
+      templateUrl: 'partials/history.html'
     }).
     otherwise({
       templateUrl: 'partials/options.html',

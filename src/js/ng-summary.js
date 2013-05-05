@@ -43,7 +43,7 @@ app.controller('SummaryCtrl', function($scope, ProjectManager) {
   $scope.get_time_table = function() {
     ProjectManager.getTimeTable($scope.summary_date, function(table) {
       var start = 0,
-          end = (new Date()).getTime();
+          end = Date.now();
       if (table[0]) start = table[0].start;
       $scope.work_hour = end - start;
       table.forEach(function(session, index) {

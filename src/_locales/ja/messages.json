@@ -48,7 +48,7 @@
     "message": "オプション"
   },
   "project_name": {
-    "message": "ウィンドウに名前を付けるとプロジェクト化してトラッキングできるようになります"
+    "message": "名前をつけて下さい"
   },
   "amount_of_time_spent": {
     "message": "経過時間"

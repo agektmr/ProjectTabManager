@@ -18,7 +18,8 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 var Config = (function() {
   var rootParentId_ = '2',
       rootName_     = 'Project Tab Manager',
-      lazyLoad_     = true;
+      lazyLoad_     = true,
+      debug_        = true;
 
   var setConfig = function() {
     chrome.storage.sync.set({config: {
@@ -52,8 +53,15 @@ var Config = (function() {
       }
     }).bind(this));
   };
+
+  var manifest = chrome.runtime.getManifest();
+  if (manifest.key !== undefined) {
+    // If there's key property exists in manifest, this is production
+    debug_ = false;
+  }
+
   Config.prototype = {
-    debug: true,
+    debug: debug_,
     archiveFolderName: '__Archive__',
     hiddenFolderName: 'passive',
     set lazyLoad(val) {

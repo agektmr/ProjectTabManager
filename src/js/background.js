@@ -21,6 +21,14 @@ var bookmarkManager,
     sessionManager,
     projectManager;
 
+chrome.runtime.onInstalled.addListener(function(details) {
+  if (details.reason === 'update') {
+    chrome.tabs.create({url:chrome.extension.getURL('/ng-layout.html#history')});
+  } else if (details.reason === 'install') {
+    chrome.tabs.create({url:chrome.extension.getURL('/ng-layout.html#help')});
+  }
+});
+
 var config = new Config(function() {
   bookmarkManager = new BookmarkManager(config, function() {
     sessionManager = new SessionManager(config, function() {

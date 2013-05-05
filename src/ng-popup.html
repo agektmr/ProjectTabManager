@@ -23,7 +23,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     <link href="css/style.css" rel="stylesheet" type="text/css">
     <script src="js/config.js"></script>
     <script src="js/util.js"></script>
-    <script src="js/angular.js"></script>
+    <script src="js/angular.min.js"></script>
     <script src="js/ng-app.js"></script>
     <script src="js/ng-services.js"></script>
     <script src="js/ng-controllers.js"></script>
@@ -62,7 +62,6 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 {{field.url}}" ng-click="open()">{{field.title}}</span>
               <div class="menu">
                 <span class="bookmark" ng-class="{star:field.id}" ng-click="toggle()" ng-show="project.id!=0" chrome-i18n="add:title"></span>
-                <input type="checkbox" ng-class="{bookmarked:!!field.id}" ng-model="field.id" ng-show="project.id==0"/>
               </div>
             </li>
             <li ng-show="project.fields.length==0&&project.id!=0">

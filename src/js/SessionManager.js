@@ -298,19 +298,12 @@ var SessionManager = (function() {
     }).bind(this));
 
     // chrome.tabs.onCreated.addListener(this.oncreated.bind(this));
-
     chrome.tabs.onUpdated.addListener(this.onupdated.bind(this));
-
     chrome.tabs.onRemoved.addListener(this.onremoved.bind(this));
-
     chrome.tabs.onMoved.addListener(this.onmoved.bind(this));
-
     chrome.tabs.onReplaced.addListener(this.onreplaced.bind(this));
-
     chrome.tabs.onAttached.addListener(this.onattached.bind(this));
-
     chrome.tabs.onDetached.addListener(this.ondetached.bind(this));
-
     chrome.tabs.onActivated.addListener(this.onactivated.bind(this));
 
     chrome.windows.onFocusChanged.addListener(this.onfocuschanged.bind(this));
@@ -672,7 +665,7 @@ var SessionManager = (function() {
      * @return {[type]}            [description]
      */
     getTimeTable: function(date, callback) {
-      var start     = (new Date(date)).getTime();
+      var start     = util.getLocalMidnightTime(date);
       var next_day  = start + (60 * 60 * 24 * 1000);
       var end       = (new Date(next_day)).getTime();
       db.getRange(db.SUMMARIES, start, end, (function(table) {
@@ -683,12 +676,12 @@ var SessionManager = (function() {
             if (table[i+1]) {
               // Assign start time of next session as end time
               session.end = (new Date(table[i+1].start)).getTime();
-              console.log('[SessionManager] Assigning session end time as start time of next one', session);
+              if (config_.debug) console.log('[SessionManager] Assigning session end time as start time of next one', session);
             // If next session doesn't exist, this is the last session
             } else {
               // Simply assign latest possible
               session.end = end > Date.now() ? Date.now() : end;
-              console.log('[SessionManager] Assigning session end time as latest possible', session);
+              if (config_.debug) console.log('[SessionManager] Assigning session end time as latest possible', session);
             }
           }
           table[i] = session;
@@ -723,11 +716,11 @@ var SessionManager = (function() {
             if (summary[i+1]) {
               // Assign start time of next session as end time
               session.end = (new Date(summary[i+1].start)).getTime();
-              console.log('[SessionManager] Assigning session end time as start time of next one', session);
+              if (config_.debug) console.log('[SessionManager] Assigning session end time as start time of next one', session);
             // If next session doesn't exist, this is the last session
             } else {
               // Simply remove that last session
-              console.log('[SessionManager] Removing session since end time is not known', session);
+              if (config_.debug) console.log('[SessionManager] Removing session since end time is not known', session);
               summary.splice(i, 1);
               return;
             }
@@ -735,6 +728,15 @@ var SessionManager = (function() {
           _summary[id].duration += ~~((session.end - session.start) / 1000);
         });
         callback(_summary);
+      });
+    },
+
+    deleteOldSummary: function() {
+      var boundDateOffset = config_.summaryRemains;
+      var today = new Date().toDateString();
+      var boundDate = (new Date(today)).getTime() - boundDateOffset;
+      db.deleteOlder(db.SUMMARIES, boundDate, function() {
+        if (config_.debug) console.log('[SessionManager] Old summary record has been deleted in database.');
       });
     }
   };

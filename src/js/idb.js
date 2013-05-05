@@ -119,6 +119,22 @@ var idb = (function(config) {
           cursor.continue();
         }
       }).bind(this);
+    },
+    deleteOlder: function(storeName, boundDate, callback) {
+      if (!db) return;
+      this.table = [];
+      var transaction = db.transaction([storeName], 'readwrite');
+      transaction.oncomplete = callback;
+      transaction.onerror = error;
+      var range = IDBKeyRange.upperBound(boundDate, true);
+      var req = transaction.objectStore(storeName).openCursor(range);
+      req.onsuccess = (function(e) {
+        var cursor = e.target.result;
+        if (cursor) {
+          store.delete(cursor.key);
+          cursor.continue();
+        }
+      }).bind(this);
     }
   };
   return idb;

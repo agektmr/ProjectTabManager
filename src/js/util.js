@@ -100,5 +100,17 @@ var util = {
       query:      parsed[8],
       fragment:   parsed[10]
     }
+  },
+
+  /**
+   * [getLocalMidnightTime description]
+   * @param  {[type]} dateStr [description]
+   * @return {[type]}         [description]
+   */
+  getLocalMidnightTime: function(dateStr) {
+    var date = new Date(dateStr);
+    var UTCMidnight = date.getTime();
+    var TimezoneOffset = date.getTimezoneOffset() * 60 * 1000;
+    return UTCMidnight + TimezoneOffset;
   }
 };

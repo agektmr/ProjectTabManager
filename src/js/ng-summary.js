@@ -18,8 +18,13 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 app.value('ProjectManager', chrome.extension.getBackgroundPage().projectManager);
 
 app.controller('SummaryCtrl', function($scope, ProjectManager) {
-  var now = new Date(Date.now());
-  var today = now.toISOString().replace(/^([0-9]+-[0-9]+-[0-9]+).*$/, '$1');
+  var now   = new Date(),
+      year  = now.getFullYear(),
+      month = now.getMonth() + 1,
+      date  = now.getDate(),
+      today = year + '-' +
+              (month < 10 ? '0' + month : month) + '-' +
+              (date  < 10 ? '0' + date  : date);
 
   $scope.max = 0;
   $scope.summary_date   = today;
@@ -42,9 +47,8 @@ app.controller('SummaryCtrl', function($scope, ProjectManager) {
 
   $scope.get_time_table = function() {
     ProjectManager.getTimeTable($scope.summary_date, function(table) {
-      var start = 0,
-          end = Date.now();
-      if (table[0]) start = table[0].start;
+      var start     = util.getLocalMidnightTime($scope.summary_date);
+          end       = (new Date(start + (60 * 60 * 24 * 1000))).getTime();
       $scope.work_hour = end - start;
       table.forEach(function(session, index) {
         session.left  = (((session.start - start) / $scope.work_hour * 100))+'%';

@@ -67,6 +67,17 @@ You should now see the same tab sets restored. Got the idea? Enjoy!
 * You can optionally assign shortcut to open PTM pop up as well. Open "chrome://extensions" and go to bottom of the page to find "Keyboard shortcuts" then assign.
 
 ## Version history
+### Version 2.0.2
+* Quick fix on bookmark initialization
+
+
+### Version 2.0.1
+* Bug fixes.
+    * Console logs are now disabled.
+    * Summary works better.
+    * History log will be removed after 2 month.
+    * Options were busted. Now it works ok.
+
 ### Version 2.0.0
 * Project Tab Manager has got a major update. Check out these killer features!
 * Enhanced UI. Project Tab Manager UI has got much better, more intuitive and friendlier than before.

@@ -9,16 +9,14 @@ var BookmarkManager = (function() {
    */
   var getFolder = function(parentId, title, callback) {
     chrome.bookmarks.getSubTree(parentId, function(bookmarks) {
-      var done = false;
+      var children = bookmarks[0].children;
       // Loop through bookmarks under parentId
-      bookmarks[0].children.forEach(function(bookmark) {
-        // If title matches and not yet found
-        if (title === bookmark.title && done === false) {
-          callback(bookmark);
-          done = true;
+      for (var i = 0; i < children.length; i++) {
+        if (title === children[i].title) {
+          callback(children[i]);
+          return;
         }
-      });
-      if (done) return;
+      }
       // Create new root folder if not existing
       chrome.bookmarks.create({
         parentId: String(parentId),
@@ -147,7 +145,7 @@ var BookmarkManager = (function() {
     load: function(callback) {
       getFolder(config_.rootParentId, config_.rootName, (function(folder) {
         this.rootId = folder.id;
-        this.bookmarks = folder.children;
+        this.bookmarks = folder.children || [];
         if (typeof callback === 'function') callback();
       }).bind(this));
     }

@@ -48,7 +48,7 @@ var Config = (function() {
         } else {
           lazyLoad_ = localStorage.lazyLoad === 'true' ? true : false;
         }
-       if (this.debug) console.log('[Config] initialization finished');
+        if (this.debug) console.log('[Config] initialization finished');
         if (typeof callback === 'function') callback();
       }
     }).bind(this));

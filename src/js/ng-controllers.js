@@ -72,7 +72,7 @@ app.controller('ProjectCtrl', function($scope, ProjectManager) {
     ProjectManager.createProject($scope.project_name, function(project) {
       $scope.project = project;
       $scope.setActiveProjectId(project.id);
-      $scope.reload();
+      $scope.reload(true);
     });
   };
 

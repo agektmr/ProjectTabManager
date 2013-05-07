@@ -67,9 +67,11 @@ You should now see the same tab sets restored. Got the idea? Enjoy!
 * You can optionally assign shortcut to open PTM pop up as well. Open "chrome://extensions" and go to bottom of the page to find "Keyboard shortcuts" then assign.
 
 ## Version history
-### Version 2.0.2
-* Quick fix on bookmark initialization
+### Version 2.0.3
+* Opening pop up is now much much faster.
 
+### Version 2.0.2
+* Quick fix on bookmark initialization.
 
 ### Version 2.0.1
 * Bug fixes.

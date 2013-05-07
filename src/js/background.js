@@ -33,7 +33,7 @@ var config = new Config(function() {
   bookmarkManager = new BookmarkManager(config, function() {
     sessionManager = new SessionManager(config, function() {
       projectManager = new ProjectManager(config);
-      projectManager.getProjectList(true);
+      projectManager.update(true);
     });
   });
 });

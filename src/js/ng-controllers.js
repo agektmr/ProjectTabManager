@@ -35,8 +35,9 @@ app.controller('ProjectListCtrl', function($scope, $window, ProjectManager) {
   },
 
   $scope.reload = function() {
-    $scope.projects = ProjectManager.getProjectList(true);
-    $scope.$apply();
+    ProjectManager.update(true, function(projects) {
+      $scope.projects = projects;
+    });
   };
 
   $scope.openBookmarks = function() {
@@ -52,12 +53,16 @@ app.controller('ProjectListCtrl', function($scope, $window, ProjectManager) {
     chrome.tabs.create({url:chrome.extension.getURL('/ng-layout.html#options')});
   };
 
-  $scope.reload();
   // TODO: merge active window and active project id into active project?
   $scope.activeWindowId   = ProjectManager.getActiveWindowId();
   var activeProject       = ProjectManager.getActiveProject();
 
   $scope.setActiveProjectId(activeProject && activeProject.id || '0');
+
+  ProjectManager.update(false, function(projects) {
+    $scope.projects = projects;
+    if (!$scope.$$phase) $scope.$apply();
+  });
 });
 
 app.controller('ProjectCtrl', function($scope, ProjectManager) {
@@ -72,10 +77,10 @@ app.controller('ProjectCtrl', function($scope, ProjectManager) {
   };
 
   $scope.associate = function() {
-    // TODO check if this works well
     var winId = ProjectManager.getActiveWindowId();
     $scope.project.associateWindow(winId);
     $scope.setActiveProjectId($scope.project.id);
+    $scope.reload(true);
   };
 
   $scope.flip = function() {

@@ -76,8 +76,12 @@ var BookmarkManager = (function() {
      * Gets project list
      * @return {Array} Array of chrome.bookmarks.BookmarkTreeNode
      */
-    getRoot: function(force_reload) {
-      return this.bookmarks;
+    getRoot: function(force_reload, callback) {
+      if (force_reload) {
+        this.load(callback);
+      } else {
+        if (typeof callback === 'function') callback(this.bookmarks);
+      }
     },
 
     /**
@@ -146,7 +150,7 @@ var BookmarkManager = (function() {
       getFolder(config_.rootParentId, config_.rootName, (function(folder) {
         this.rootId = folder.id;
         this.bookmarks = folder.children || [];
-        if (typeof callback === 'function') callback();
+        if (typeof callback === 'function') callback(this.bookmarks);
       }).bind(this));
     }
   };

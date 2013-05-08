@@ -388,26 +388,22 @@ var ProjectManager = (function() {
         }
       }
 
-      if (force_reload) {
-        if (config_.debug) console.log('[ProjectManager] starting to generate project list');
-        bookmarkManager.getRoot(true, (function(bookmarks) {
-          // Loop through all sessions
-          for (var i = 0; i < bookmarks.length; i++) {
-            var found = false,
-                bookmark = bookmarks[i];
+      if (config_.debug) console.log('[ProjectManager] starting to generate project list');
+      bookmarkManager.getRoot(force_reload, (function(bookmarks) {
+        // Loop through all sessions
+        for (var i = 0; i < bookmarks.length; i++) {
+          var found = false,
+              bookmark = bookmarks[i];
 
-            // Skip Archives folder
-            if (bookmark.title === config_.archiveFolderName) continue;
+          // Skip Archives folder
+          if (bookmark.title === config_.archiveFolderName) continue;
 
-            var session = sessionManager.getSessionFromProjectId(bookmark.id);
-            this.projects[bookmark.id] = new ProjectEntity(session, bookmark);
-            if (config_.debug) console.log('[ProjectManager] Project %s: %o created from session: %o and project: %o', bookmark.id, this.projects[bookmark.id], session, bookmark);
-          }
-          if (typeof callback === 'function') callback(this.projects);
-        }).bind(this));
-      } else {
+          var session = sessionManager.getSessionFromProjectId(bookmark.id);
+          this.projects[bookmark.id] = new ProjectEntity(session, bookmark);
+          if (config_.debug) console.log('[ProjectManager] Project %s: %o created from session: %o and project: %o', bookmark.id, this.projects[bookmark.id], session, bookmark);
+        }
         if (typeof callback === 'function') callback(this.projects);
-      }
+      }).bind(this));
     },
 
     /**

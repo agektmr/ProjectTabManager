@@ -486,7 +486,7 @@ var SessionManager = (function() {
           this.activeInfo.id        = null;
           this.activeInfo.start     = null;
           this.activeInfo.end       = null;
-          this.activeInfo.windowId  = null;
+          this.activeInfo.windowId  = winId;
         }
       }).bind(this));
     },
@@ -572,7 +572,9 @@ var SessionManager = (function() {
     getActiveSession: function() {
       var winId = this.activeInfo.windowId || null;
       if (winId) {
-        return this.getSessionFromWinId(winId);
+        var session = this.getSessionFromWinId(winId);
+        if (config_.debug) console.log('[SessionManager] Got active session', session);
+        return session;
       }
       return undefined;
     },

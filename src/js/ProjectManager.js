@@ -236,7 +236,7 @@ var ProjectManager = (function() {
    */
   var ProjectManager = function(config) {
     config_ = config;
-    this.projects = {};
+    this.projects = [];
 
     chrome.windows.onRemoved.addListener((function(windowId) {
       if (windowId === chrome.windows.WINDOW_ID_NONE) return;
@@ -292,7 +292,7 @@ var ProjectManager = (function() {
 
               // Delete temporary project and replace with new one
               this.removeProject('0');
-              this.projects[folder.id] = new_project;
+              this.projects.unshift(new_project);
               if (typeof callback === 'function') callback(new_project);
             }
           }).bind(this));
@@ -305,7 +305,8 @@ var ProjectManager = (function() {
      * @param  {String} id
      */
     openProject: function(id) {
-      this.projects[id].open();
+      var project =this.getProjectFromId(id);
+      project.open();
     },
 
     /**
@@ -314,7 +315,12 @@ var ProjectManager = (function() {
      * @return {ProjectEntity|undefined}
      */
     getProjectFromId: function(id) {
-      return this.projects[id];
+      for (var i = 0; i < this.projects.length; i++) {
+        if (this.projects[i].id === id) {
+          return this.projects[i];
+        }
+      }
+      return undefined;
     },
 
     /**
@@ -323,9 +329,9 @@ var ProjectManager = (function() {
      * @return {ProjectEntity|undefined}
      */
     getProjectFromWinId: function(winId) {
-      for (var id in this.projects) {
-        if (winId === this.projects[id].winId) {
-          return this.projects[id];
+      for (var i = 0; i < this.projects.length; i++) {
+        if (this.projects[i].winId === winId) {
+          return this.projects[i];
         }
       }
       return undefined;
@@ -337,12 +343,18 @@ var ProjectManager = (function() {
      * @param  {requestCallback}  callback  [description]
      */
     removeProject: function(id, callback) {
-      var project = this.getProjectFromId(id);
-      if (project.bookmark) {
-        bookmarkManager.archiveFolder(project.id, (function() {
-          delete this.projects[id];
-          if (typeof callback === 'function') callback();
-        }).bind(this));
+      for (var i = 0; i < this.projects.length; i++) {
+        if (this.projects[i].id === id) {
+          // Remove project from list first
+          var project = this.projects.splice(i, 1);
+          // Then remove bookmark
+          if (project.bookmark) {
+            bookmarkManager.archiveFolder(id, (function() {
+              if (typeof callback === 'function') callback(project);
+            }).bind(this));
+          }
+        }
+        // Don't break. There could be multiple same projects
       }
 
       // This is edge case but if there will be sessions with this project id, it will remain permanently.
@@ -376,20 +388,10 @@ var ProjectManager = (function() {
      * @return {[type]} [description]
      */
     update: function(force_reload, callback) {
-      if (config_.debug) console.log('[ProjectManager] getting project list');
-      var activeSession = sessionManager.getActiveSession();
-
-      if (activeSession !== undefined) {
-        if (activeSession.id === null) {
-          if (config_.debug) console.log('[ProjectManager] creating empty project', activeSession);
-          this.projects['0'] = new ProjectEntity(activeSession, undefined);
-        } else if (this.projects['0']) {
-          delete this.projects['0'];
-        }
-      }
-
-      if (config_.debug) console.log('[ProjectManager] starting to generate project list');
+      if (config_.debug) console.log('[ProjectManager] Starting to generate project list');
       bookmarkManager.getRoot(force_reload, (function(bookmarks) {
+        this.projects = [];
+
         // Loop through all sessions
         for (var i = 0; i < bookmarks.length; i++) {
           var found = false,
@@ -399,9 +401,23 @@ var ProjectManager = (function() {
           if (bookmark.title === config_.archiveFolderName) continue;
 
           var session = sessionManager.getSessionFromProjectId(bookmark.id);
-          this.projects[bookmark.id] = new ProjectEntity(session, bookmark);
-          if (config_.debug) console.log('[ProjectManager] Project %s: %o created from session: %o and project: %o', bookmark.id, this.projects[bookmark.id], session, bookmark);
+          var project = new ProjectEntity(session, bookmark);
+          this.projects.push(project);
+          if (config_.debug) console.log('[ProjectManager] Project %s: %o created from session: %o and project: %o', project.id, project, session, bookmark);
         }
+
+        var activeSession = sessionManager.getActiveSession();
+
+        if (activeSession !== undefined) {
+          if (activeSession.id === null) {
+            if (config_.debug) console.log('[ProjectManager] creating empty project', activeSession);
+            this.projects.unshift(new ProjectEntity(activeSession, undefined));
+          // } else {
+          //   if (config_.debug) console.log('[ProjectManager] removing temporary project');
+          //   this.removeProject('0');
+          }
+        }
+
         if (typeof callback === 'function') callback(this.projects);
       }).bind(this));
     },

@@ -29,8 +29,8 @@ app.filter('sort', function() {
     var preceding = [],
         following = [];
     // Move active project up to the top
-    for (var id in projects) {
-      var project = projects[id];
+    for (var i = 0; i < projects.length; i++) {
+      var project = projects[i];
       if (project.id === '0' || project.id === projectId) {
         preceding.push(project);
       } else {

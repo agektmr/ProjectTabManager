@@ -22,8 +22,12 @@ var bookmarkManager,
     projectManager;
 
 chrome.runtime.onInstalled.addListener(function(details) {
-  if (details.reason === 'update') {
+  // Pop up history page only if the version changes in major (ex 2.0.0) or minor (ex 2.1.0).
+  // Trivial change (ex 2.1.1) won't popu up.
+  if (details.reason === 'update' && chrome.runtime.getManifest().version.match(/0$/)) {
     chrome.tabs.create({url:chrome.extension.getURL('/ng-layout.html#history')});
+
+  // Pop up help page on first installation
   } else if (details.reason === 'install') {
     chrome.tabs.create({url:chrome.extension.getURL('/ng-layout.html#help')});
   }

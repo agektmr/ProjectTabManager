@@ -13,7 +13,10 @@ var SessionManager = (function() {
     } else {
       chrome.windows.get(winId, {populate:true}, function(win) {
         if (chrome.runtime.lastError) {
-          throw '[SessionManager] closing window of id '+winId+' not open';
+          if (config_.debug) console.error('[SessionManager] window id of %d could not be obtained.'+
+                                           '(Please ignore. This is unavoidable)', winId);
+          callback(undefined);
+          return;
         }
         if (win.type !== "normal") {
           callback(undefined);

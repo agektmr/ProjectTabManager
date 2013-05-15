@@ -279,21 +279,15 @@ var ProjectManager = (function() {
 
           // Create bookmark
           bookmarkManager.addBookmark(folder.id, tab.title, util.unlazify(tab.url), (function() {
-
             // When all bookmarks are processed
             if (++count === session.tabs.length) {
 
-              // update folder object to get bookmarks (otherwise not updated)
-              folder = bookmarkManager.getFolder(folder.id);
+              // update session with new project
+              session.setId(folder.id);
+              if (config_.debug) console.log('[ProjectManager] created new project', folder, session);
 
               // Create new project
-              var new_project = new ProjectEntity(session, folder);
-              if (config_.debug) console.log('[ProjectManager] created new project', new_project);
-
-              // Delete temporary project and replace with new one
-              this.removeProject('0');
-              this.projects[folder.id] = new_project;
-              if (typeof callback === 'function') callback(new_project);
+              if (typeof callback === 'function') callback(folder.id);
             }
           }).bind(this));
         }

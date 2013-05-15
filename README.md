@@ -5,6 +5,8 @@
 
 Worry no more! Project Tab Manager (PTM) helps you solve those problems!
 
+**Go [Chrome Web Store and install it](https://chrome.google.com/webstore/detail/project-tab-manager/iapdnheekciiecjijobcglkcgeckpoia) if you want to try it out!**
+
 ## Getting Started
 Here's the first thing you should do to get started with PTM.
 
@@ -67,6 +69,18 @@ You should now see the same tab sets restored. Got the idea? Enjoy!
 * You can optionally assign shortcut to open PTM pop up as well. Open "chrome://extensions" and go to bottom of the page to find "Keyboard shortcuts" then assign.
 
 ## Version history
+### Version 2.0.5
+* Pop up history page only if the version changes in major (ex 2.0.0) or minor (ex 2.1.0). Trivial change (ex 2.1.1) won't popu up anymore.
+* Fixed 2 issues when creating a new project.
+    * Looks 2 projects were created
+    * Order is strange
+* Fixed issue on project deletion. "New Project" will open instead of none.
+* Now you can create new project just by pressing "return" on input field.
+
+### Version 2.0.4
+* Added link to Japanese help (I mean, my blog!)
+* Fixed cache strength on session changes
+
 ### Version 2.0.3
 * Opening pop up is now much much faster.
 

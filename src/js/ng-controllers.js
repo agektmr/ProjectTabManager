@@ -23,8 +23,13 @@ app.controller('ProjectListCtrl', function($scope, $window, ProjectManager) {
   $window.addEventListener('keydown', function(event) {
     if (event.keyCode === 13) {
       event.preventDefault();
+      var elem  = angular.element(event.target)[0];
       var scope = angular.element(event.target).scope();
-      if (scope.open) {
+      // If return on project name input field
+      if (elem.nodeName === 'INPUT' && scope.save) {
+        scope.save();
+      // If return on project name
+      } else if (scope.open) {
         scope.open();
       }
     }
@@ -66,13 +71,12 @@ app.controller('ProjectListCtrl', function($scope, $window, ProjectManager) {
 });
 
 app.controller('ProjectCtrl', function($scope, ProjectManager) {
-  $scope.expand = $scope.project.winId === $scope.activeWindowId ? true : false;
+  $scope.expand = $scope.project.id === $scope.activeProjectId ? true : false;
 
   $scope.save = function() {
-    ProjectManager.createProject($scope.project_name, function(project) {
-      $scope.project = project;
-      $scope.setActiveProjectId(project.id);
-      $scope.reload(true);
+    ProjectManager.createProject($scope.project_name, function(projectId) {
+      $scope.setActiveProjectId(projectId);
+      $scope.reload();
     });
   };
 
@@ -93,6 +97,7 @@ app.controller('ProjectCtrl', function($scope, ProjectManager) {
 
   $scope.remove = function() {
     ProjectManager.removeProject($scope.project.id, function() {
+      $scope.setActiveProjectId('0');
       $scope.reload();
     });
   };

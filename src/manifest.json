@@ -35,7 +35,8 @@
   "commands": {
     "_execute_browser_action": {
       "suggested_key": {
-        "default": "Ctrl+P"
+        "default": "Ctrl+P",
+        "mac": "Ctrl+P"
       },
       "description": "Opens browser action popup window"
     }

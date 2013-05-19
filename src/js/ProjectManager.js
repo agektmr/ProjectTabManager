@@ -346,7 +346,7 @@ var ProjectManager = (function() {
       for (var i = 0; i < this.projects.length; i++) {
         if (this.projects[i].id === id) {
           // Remove project from list first
-          var project = this.projects.splice(i, 1);
+          var project = this.projects.splice(i, 1)[0];
           // Then remove bookmark
           if (project.bookmark) {
             bookmarkManager.archiveFolder(id, (function() {

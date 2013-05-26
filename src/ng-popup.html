@@ -40,7 +40,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
         <span class="button options" ng-click="openOptions()" chrome-i18n="options:title"></span>
       </header>
       <ul id="projects">
-        <li class="accordion" ng-class="{expand: expand || project.id==activeProjectId}" ng-repeat="project in projects | sort:activeProjectId | filter:query" ng-controller="ProjectCtrl" ng-init="hover=false" ng-mouseover="hover=true" ng-mouseleave="hover=false">
+        <li class="accordion" ng-class="{expand: query || expand || project.id==activeProjectId}" ng-repeat="project in projects | sort:activeProjectId | filter:query" ng-controller="ProjectCtrl" ng-init="hover=false" ng-mouseover="hover=true" ng-mouseleave="hover=false">
           <div class="project">
             <span class="button arrow" ng-class="{expand: expand || project.id==activeProjectId}" ng-click="flip()"></span>
             <span class="name" ng-class="{current: project.id==activeProjectId}" ng-click="open()" data-project="{{project.id}}" tabindex="{{$index+2}}">{{project.title}}</span>

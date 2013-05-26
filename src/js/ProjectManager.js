@@ -74,7 +74,7 @@ var ProjectManager = (function() {
       } else if (this.session) {
         if (config_.debug) console.log('[ProjectEntity] Opening a project from previous session', this.session);
         this.session.openTabs((function(win) {
-          this.winId = win.id;
+          this.associateWindow(win.id);
         }).bind(this));
 
       // If this is a new session
@@ -88,8 +88,6 @@ var ProjectManager = (function() {
           url: bookmarks[0].url,
           focused: true
         }, (function(win) {
-          sessionManager.createSession(win);
-
           // In case this is only 1 tab session
           if (bookmarks.length === 1) this.associateWindow(win.id);
 
@@ -196,6 +194,7 @@ var ProjectManager = (function() {
     // associateSession: function(session) {
     associateWindow: function(winId) {
       this.winId = winId;
+      sessionManager.removeSessionFromProjectId(this.id);
       this.session = sessionManager.getSessionFromWinId(winId);
       this.session.setId(this.id);
       this.load(this.session.tabs, this.bookmark.children);

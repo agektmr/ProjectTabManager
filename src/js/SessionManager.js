@@ -306,6 +306,7 @@ var SessionManager = (function() {
     chrome.tabs.onDetached.addListener(this.ondetached.bind(this));
     chrome.tabs.onActivated.addListener(this.onactivated.bind(this));
 
+    chrome.windows.onCreated.addListener(this.onwindowcreated.bind(this));
     chrome.windows.onFocusChanged.addListener(this.onfocuschanged.bind(this));
 
     // Recover and set up sessions
@@ -323,6 +324,7 @@ var SessionManager = (function() {
         if (session) {
           session.updateTab(tab);
         } else {
+          // This shouldn't happen. onwindowcreated should catch and create session first.
           getWindowInfo(tab.windowId, (function(win) {
             this.createSession(win);
           }).bind(this));
@@ -453,6 +455,11 @@ var SessionManager = (function() {
       }).bind(this));
     },
 
+    onwindowcreated: function(win) {
+      if (config_.debug) console.log('[SessionManager] chrome.windows.onCreated', win);
+      this.createSession(win);
+    },
+
     /**
      * [onfocuschanged description]
      * @param  {[type]} winId [description]
@@ -511,13 +518,11 @@ var SessionManager = (function() {
     removeSessionFromProjectId: function(projectId) {
       for (var i = 0; i < this.sessions.length; i++) {
         if (this.sessions[i].id === projectId) {
-          this.sessions.splice(i, 1);
+          this.sessions.splice(i--, 1);
           if (config_.debug) console.log('[SessionManager] removed session of project id:', projectId);
-          UpdateManager.storeSessions();
-          return true;
         }
       }
-      return false;
+      UpdateManager.storeSessions();
     },
 
     /**

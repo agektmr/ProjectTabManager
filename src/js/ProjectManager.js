@@ -8,7 +8,8 @@ var ProjectManager = (function() {
    * @return {[type]}     [description]
    */
   var normalizeBookmarks = function(src, dst) {
-    if (dst === undefined) dst = [];
+    src = src || [];
+    dst = dst || [];
     for (var i = 0; i < src.length; i++) {
       if (src[i].url) {
         dst.push(src[i]);
@@ -237,10 +238,10 @@ var ProjectManager = (function() {
     config_ = config;
     this.projects = [];
 
-    chrome.windows.onRemoved.addListener((function(windowId) {
-      if (windowId === chrome.windows.WINDOW_ID_NONE) return;
-      if (config_.debug) console.log('[ProjectManager] chrome.windows.onRemoved', windowId);
-      var project = this.getProjectFromWinId(windowId);
+    chrome.windows.onRemoved.addListener((function(winId) {
+      if (winId === chrome.windows.WINDOW_ID_NONE) return;
+      if (config_.debug) console.log('[ProjectManager] chrome.windows.onRemoved', winId);
+      var project = this.getProjectFromWinId(winId);
       if (project) {
         project.diassociateWindow();
         if (config_.debug) console.log('[ProjectManager] unsetting window id from session', project);

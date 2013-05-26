@@ -466,7 +466,7 @@ var SessionManager = (function() {
      * @return {[type]}       [description]
      */
     onfocuschanged: function(winId) {
-      if (config_.debug) console.log('[SessionManager] chrome.window.onFocusChanged', winId);
+      if (config_.debug) console.log('[SessionManager] chrome.windows.onFocusChanged', winId);
       // Put in database only if active session exists
       if (this.activeInfo.start !== null) {
         this.activeInfo.end = (new Date()).getTime();
@@ -504,10 +504,16 @@ var SessionManager = (function() {
      * @return {[type]}     [description]
      */
     createSession: function(win) {
-      var session = new SessionEntity(win);
-      this.sessions.push(session);
-      if (config_.debug) console.log('[SessionManager] session created', win);
-      return session;
+      var session = this.getSessionFromWinId(win.id);
+      if (session) {
+        if (config_.debug) console.log('[SessionManager] session found', session);
+        return session;
+      } else {
+        session = new SessionEntity(win);
+        this.sessions.push(session);
+        if (config_.debug) console.log('[SessionManager] session %o created from %o', session, win);
+        return session;
+      }
     },
 
     /**
@@ -608,6 +614,7 @@ var SessionManager = (function() {
     recoverSessions: function(callback) {
       UpdateManager.restoreSessions((function(prev_sessions) {
         chrome.windows.getAll({populate: true}, (function(windows) {
+          if (config_.debug) console.log('[SessionManager] restoring session from windows', windows);
           // Loop through all open windows
           Array.prototype.forEach.call(windows, (function(win) {
             if (win.type !== "normal" || win.id === chrome.windows.WINDOW_ID_NONE) return;
@@ -620,7 +627,7 @@ var SessionManager = (function() {
                   count = 0,
                   prev_session = prev_sessions[i];
 
-              if (config_.debug) console.log('[SessionManager] ***** restoring session', prev_session);
+              if (config_.debug) console.log('[SessionManager] ***** matching session with window', prev_session);
               if (!prev_session.id) {
                 // If there's no project id assigned to a session, no way to recover.
                 continue;

@@ -4,7 +4,7 @@ var SessionManager = (function() {
 
   /**
    * [getWindowInfo description]
-   * @param  {[type]}   winId    [description]
+   * @param  {Integer}   winId    [description]
    * @param  {Function} callback [description]
    */
   var getWindowInfo = function(winId, callback) {
@@ -32,7 +32,6 @@ var SessionManager = (function() {
 
     /**
      * [initialize description]
-     * @return {[type]} [description]
      */
     restoreSessions: function(callback) {
       // restore projects from chrome.storage.local
@@ -172,6 +171,7 @@ var SessionManager = (function() {
         // Loop through all tabs and look for tab with similar url
         for (var i = 0; i < this.tabs.length; i++) {
           if (this.tabs[i].id === tab.id) {
+            // TODO: better logic
             var new_tab = new TabEntity(tab);
             if (config_.debug) console.log('[SessionEntity] updating tab %o to %o', this.tabs[i], new_tab);
             delete this.tabs[i];
@@ -212,7 +212,6 @@ var SessionManager = (function() {
     /**
      * [openSession description]
      * @param  {Function} callback [description]
-     * @return {[type]}            [description]
      */
     openTabs: function(callback) {
       // open first tab with window
@@ -243,13 +242,16 @@ var SessionManager = (function() {
 
     /**
      * Sets project id of this session
-     * @param {Integer} projectId  project id
+     * @param {String} projectId  project id
      */
     setId: function(projectId) {
       this.id = projectId;
       if (config_.debug) console.log('[SessionEntity] assigned project id of', projectId, 'to session', this);
     },
 
+    /**
+     * Unsets project id of this session
+     */
     unsetId: function() {
       if (config_.debug) console.log('[SessionEntity] removed project id of', this.id, 'from session', this);
       this.id = null;
@@ -257,7 +259,7 @@ var SessionManager = (function() {
 
     /**
      * [setWinId description]
-     * @param {[type]} winId [description]
+     * @param {Integer} winId
      */
     setWinId: function(winId) {
       this.winId = winId;
@@ -266,7 +268,6 @@ var SessionManager = (function() {
 
     /**
      * [unsetWinId description]
-     * @return {[type]} [description]
      */
     unsetWinId: function() {
       if (config_.debug) console.log('[SessionEntity] removed window id of', this.winId, 'from session', this);
@@ -377,9 +378,8 @@ var SessionManager = (function() {
 
     /**
      * [onmoved description]
-     * @param  {[type]} tabId    [description]
-     * @param  {[type]} moveInfo [description]
-     * @return {[type]}          [description]
+     * @param  {Integer} tabId    [description]
+     * @param  {Object} moveInfo [description]
      */
     onmoved: function(tabId, moveInfo) {
       if (config_.debug) console.log('[SessionManager] chrome.tabs.onMoved', tabId, moveInfo);
@@ -392,19 +392,18 @@ var SessionManager = (function() {
 
     /**
      * [onreplaced description]
-     * @param  {[type]} addedTabId   [description]
-     * @param  {[type]} removedTabId [description]
-     * @return {[type]}              [description]
+     * @param  {Integer} addedTabId   [description]
+     * @param  {Integer} removedTabId [description]
      */
     onreplaced: function(addedTabId, removedTabId) {
       if (config_.debug) console.log('[SessionManager] chrome.tabs.onReplaced', addedTabId, removedTabId);
+      this.removeTab(removedTabId);
     },
 
     /**
      * [onattached description]
-     * @param  {[type]} tabId      [description]
-     * @param  {[type]} attachInfo [description]
-     * @return {[type]}            [description]
+     * @param  {Integer} tabId      [description]
+     * @param  {Object} attachInfo [description]
      */
     onattached: function(tabId, attachInfo) {
       if (config_.debug) console.log('[SessionManager] chrome.tabs.onAttached', tabId, attachInfo);
@@ -425,9 +424,8 @@ var SessionManager = (function() {
 
     /**
      * [ondetached description]
-     * @param  {[type]} tabId      [description]
-     * @param  {[type]} detachInfo [description]
-     * @return {[type]}            [description]
+     * @param  {Integer} tabId      [description]
+     * @param  {Object} detachInfo [description]
      */
     ondetached: function(tabId, detachInfo) {
       if (config_.debug) console.log('[SessionManager] chrome.tabs.onDetached', tabId, detachInfo);
@@ -443,8 +441,7 @@ var SessionManager = (function() {
 
     /**
      * [onactivated description]
-     * @param  {[type]} activeInfo [description]
-     * @return {[type]}            [description]
+     * @param  {Integer} activeInfo [description]
      */
     onactivated: function(activeInfo) {
       if (config_.debug) console.log('[SessionManager] chrome.tabs.onActivated', activeInfo);
@@ -462,8 +459,7 @@ var SessionManager = (function() {
 
     /**
      * [onfocuschanged description]
-     * @param  {[type]} winId [description]
-     * @return {[type]}       [description]
+     * @param  {Integer} winId [description]
      */
     onfocuschanged: function(winId) {
       if (config_.debug) console.log('[SessionManager] chrome.windows.onFocusChanged', winId);
@@ -500,8 +496,8 @@ var SessionManager = (function() {
 
     /**
      * [createSession description]
-     * @param  {[type]} win [description]
-     * @return {[type]}     [description]
+     * @param  {chrome.windows.Window} win [description]
+     * @return {SessionEntity}     [description]
      */
     createSession: function(win) {
       var session = this.getSessionFromWinId(win.id);
@@ -518,8 +514,7 @@ var SessionManager = (function() {
 
     /**
      * [removeSessionFromProjectId description]
-     * @param  {[type]} projectId [description]
-     * @return {[type]}           [description]
+     * @param  {String} projectId [description]
      */
     removeSessionFromProjectId: function(projectId) {
       for (var i = 0; i < this.sessions.length; i++) {
@@ -550,7 +545,7 @@ var SessionManager = (function() {
 
     /**
      * [getSession description]
-     * @param  {Integer}                  projectId   project id of the session to get
+     * @param  {String}                  projectId   project id of the session to get
      * @return {SessionEntity|undefined}
      */
     getSessionFromProjectId: function(projectId) {
@@ -564,7 +559,7 @@ var SessionManager = (function() {
 
     /**
      * [getSessionFromWinId description]
-     * @param  {[type]} winId [description]
+     * @param  {Integer} winId [description]
      * @return {[type]}       [description]
      */
     getSessionFromWinId: function(winId) {
@@ -578,7 +573,7 @@ var SessionManager = (function() {
 
     /**
      * [getActiveSession description]
-     * @return {[type]} [description]
+     * @return {SessionEntity} [description]
      */
     getActiveSession: function() {
       var winId = this.activeInfo.windowId || null;
@@ -596,6 +591,24 @@ var SessionManager = (function() {
      */
     getCurrentWindowId: function() {
       return this.activeInfo.windowId || null;
+    },
+
+    /**
+     * Removes tab from session without knowing which session it belongs to.
+     * @param  {Integer} tabId  Tab id of which to remove
+     * @return {Boolean}       [description]
+     */
+    removeTab: function(tabId) {
+      for (var i = 0; i < this.sessions.length; i++) {
+        var session = this.sessions[i];
+        for (var j = 0; j < session.tabs.length; j++) {
+          if (session.tabs[j].id === tabId) {
+            session.removeTab(tabId);
+            return true;
+          }
+        }
+      }
+      return false;
     },
 
     /**

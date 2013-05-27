@@ -59,10 +59,13 @@ app.controller('ProjectListCtrl', function($scope, $window, ProjectManager) {
 
   $scope.setActiveProjectId(activeProject && activeProject.id || '0');
 
-  ProjectManager.update(false, function(projects) {
-    $scope.projects = projects;
-    if (!$scope.$$phase) $scope.$apply();
-  });
+  // Delay loading hoping it will load faster
+  setTimeout(function() {
+    ProjectManager.update(false, function(projects) {
+      $scope.projects = projects;
+      if (!$scope.$$phase) $scope.$apply();
+    });
+  }, 0);
 });
 
 app.controller('ProjectCtrl', function($scope, ProjectManager) {

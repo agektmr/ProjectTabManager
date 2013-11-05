@@ -19,24 +19,16 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 
 app.value('ProjectManager', chrome.extension.getBackgroundPage().projectManager);
 
-app.controller('ProjectListCtrl', function($scope, $window, ProjectManager) {
-  $window.addEventListener('keydown', function(event) {
-    if (event.keyCode === 13) {
-      event.preventDefault();
-      var scope = angular.element(event.target).scope();
-      if (scope.open) {
-        scope.open();
-      }
-    }
-  });
-
+app.controller('ProjectListCtrl', function($scope, ProjectManager) {
   $scope.setActiveProjectId = function(id) {
     $scope.activeProjectId = id;
   },
 
   $scope.reload = function() {
+    $scope.$emit('start-loading');
     ProjectManager.update(true, function(projects) {
       $scope.projects = projects;
+      $scope.$emit('end-loading');
     });
   };
 
@@ -59,83 +51,12 @@ app.controller('ProjectListCtrl', function($scope, $window, ProjectManager) {
 
   $scope.setActiveProjectId(activeProject && activeProject.id || '0');
 
-  // Delay loading hoping it will load faster
-  setTimeout(function() {
-    ProjectManager.update(false, function(projects) {
-      $scope.projects = projects;
-      if (!$scope.$$phase) $scope.$apply();
-    });
-  }, 0);
-});
-
-app.controller('ProjectCtrl', function($scope, ProjectManager) {
-  $scope.expand = $scope.project.winId === $scope.activeWindowId ? true : false;
-
-  $scope.save = function() {
-    ProjectManager.createProject($scope.project_name, function(project) {
-      $scope.project = project;
-      $scope.setActiveProjectId(project.id);
-      $scope.reload(true);
-    });
-  };
-
-  $scope.associate = function() {
-    var winId = ProjectManager.getActiveWindowId();
-    $scope.project.associateWindow(winId);
-    $scope.setActiveProjectId($scope.project.id);
-    $scope.reload(true);
-  };
-
-  $scope.flip = function() {
-    $scope.expand = !$scope.expand;
-  };
-
-  $scope.open = function() {
-    $scope.project.open();
-  };
-
-  $scope.remove = function() {
-    ProjectManager.removeProject($scope.project.id, function() {
-      $scope.reload();
-    });
-  };
-});
-
-app.controller('FieldCtrl', function($scope, ProjectManager) {
-  $scope.toggle = function() {
-    if ($scope.field.id !== undefined) {
-      $scope.project.removeBookmark($scope.field.id, function() {
-        $scope.field.id = undefined;
-        $scope.$apply();
-      });
-    } else {
-      $scope.project.addBookmark($scope.field.tabId, function(bookmark) {
-        $scope.field.id = bookmark.id;
-        $scope.$apply();
-      });
-    }
-  };
-
-  $scope.open = function() {
-    var tabId = $scope.field.tabId;
-    // If tab id is not assigned
-    if (!tabId) {
-      // Open new project field
-      chrome.tabs.create({url: $scope.field.url, active: true});
-    } else {
-      chrome.tabs.get(tabId, function(tab) {
-        // If the project filed is not open yet
-        if (!tab) {
-          // Open new project field
-          chrome.tabs.create({url: $scope.field.url, active: true});
-        // If the project filed is already open
-        } else {
-          // Just activate open project field
-          chrome.tabs.update(tabId, {active: true});
-        }
-      });
-    }
-  };
+  var start = window.performance.now();
+  ProjectManager.update(false, function(projects) {
+    $scope.projects = projects;
+    if (!$scope.$$phase) $scope.$apply();
+    console.log('loading time:', window.performance.now() - start);
+  });
 });
 
 // app.controller('DebugCtrl', function($scope, ProjectManager) {

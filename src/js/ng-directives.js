@@ -17,6 +17,172 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 */
 'use strict';
 
+app.directive('project', function(ProjectManager, $window) {
+  return {
+    restrict: 'E',
+    templateUrl: 'project.html',
+    controller: function($scope) {
+      $scope.active = $scope.project.id === $scope.activeProjectId ? true: false;
+      $scope.expand = $scope.project.winId === $scope.activeWindowId ? true : false;
+      $scope.hover = false;
+
+      $scope.save = function() {
+        $scope.$emit('start-loading');
+        ProjectManager.createProject($scope.project_name, function(project) {
+          $scope.project = project;
+          $scope.setActiveProjectId(project.id);
+          $scope.$emit('end-loading');
+          $scope.reload(true);
+        });
+      };
+
+      $scope.associate = function() {
+        var winId = ProjectManager.getActiveWindowId();
+        $scope.project.associateWindow(winId);
+        $scope.setActiveProjectId($scope.project.id);
+        $scope.reload(true);
+      };
+
+      $scope.flip = function() {
+        $scope.expand = !$scope.expand;
+      };
+
+      $scope.open = function() {
+        $scope.project.open();
+      };
+
+      $scope.remove = function() {
+        $scope.$emit('start-loading');
+        ProjectManager.removeProject($scope.project.id, function() {
+          $scope.$emit('end-loading');
+          $scope.reload();
+        });
+      };
+    },
+    link: function(scope, elem, attr) {
+      if (scope.active) {
+        scope.expand = true;
+      }
+
+      elem.bind('keydown', function(e) {
+        switch (e.keyCode) {
+          case 13:
+            scope.open();
+            break;
+          case 39:
+            scope.expand = true;
+            scope.$apply();
+            break;
+          case 37:
+            scope.expand = false;
+            scope.$apply();
+            break;
+          default:
+            return;
+        }
+        e.preventDefault();
+      });
+
+      elem.bind('mouseover', function(e) {
+        scope.hover = true;
+        scope.$apply();
+      });
+
+      elem.bind('mouseleave', function(e) {
+        scope.hover = false;
+        scope.$apply();
+      });
+    }
+  }
+});
+
+app.directive('bookmark', function() {
+  return {
+    restrict: 'E',
+    templateUrl: 'bookmark.html',
+    controller: function($scope) {
+      $scope.open = function() {
+        var tabId = $scope.field.tabId;
+        // If tab id is not assigned
+        if (!tabId) {
+          // Open new project field
+          chrome.tabs.create({url: $scope.field.url, active: true});
+        } else {
+          chrome.tabs.get(tabId, function(tab) {
+            // If the project filed is not open yet
+            if (!tab) {
+              // Open new project field
+              chrome.tabs.create({url: $scope.field.url, active: true});
+            // If the project filed is already open
+            } else {
+              // Just activate open project field
+              chrome.tabs.update(tabId, {active: true});
+            }
+          });
+        }
+      };
+    },
+    link: function(scope, elem, attr) {
+    }
+  }
+});
+
+app.directive('reload', function(ProjectManager) {
+  return {
+    restrict: 'C',
+    link: function(scope, elem, attr) {
+      scope.$on('start-loading', function() {
+        elem.addClass('loading');
+      });
+      scope.$on('end-loading', function() {
+        elem.removeClass('loading');
+      });
+    }
+  }
+});
+
+app.directive('star', function() {
+  return {
+    restrict: 'C',
+    link: function(scope, elem, attr) {
+      attr.$set('bookmarked', !!scope.field.id);
+      attr.$set('chrome-i18n', 'add:title');
+      if (scope.project.id == 0) {
+        elem.css('display', 'none');
+      }
+      elem.bind('click', function() {
+        if (scope.field.id !== undefined) {
+          scope.project.removeBookmark(scope.field.id, function() {
+            scope.field.id = undefined;
+            attr.$set('bookmarked', false);
+            scope.$apply();
+          });
+        } else {
+          scope.$emit('start-loading');
+          scope.project.addBookmark(scope.field.tabId, function(bookmark) {
+            scope.field.id = bookmark.id;
+            attr.$set('bookmarked', true);
+            scope.$emit('end-loading');
+            scope.$apply();
+          });
+        }
+      });
+    }
+  }
+});
+
+app.directive('pin', function() {
+  return {
+    restrict: 'C',
+    link: function(scope, elem, attr) {
+      if (scope.active) {
+        elem.remove();
+      }
+      elem.bind('click', scope.associate);
+    }
+  }
+});
+
 app.directive('chromeI18n', function() {
   var cache = {};
   return function(scope, element, attrs) {

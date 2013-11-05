@@ -117,12 +117,12 @@ var SessionManager = (function() {
    * @param {chrome.windows.Window} win
    */
   var SessionEntity = function(target) {
-    // if target.focused is set, this is chrome.windows.Window object
+    // if target.focused is set, target is chrome.windows.Window object
     if (target.focused !== undefined) {
       this.id     = null;
       this.winId  = target.id;
 
-    // otherwise, this is SessionEntity object recovering from previous session
+    // otherwise, target is SessionEntity object recovering from previous session
     } else {
       this.id     = target.id;
       this.winId  = null;
@@ -232,7 +232,7 @@ var SessionManager = (function() {
             index:    tab.index,
             url:      url,
             pinned:   tab.pinned,
-            active:   false
+            active:   i ? false : true
           }, (function(tab) {
             this.tabs[i].id = tab.id;
           }).bind(this));

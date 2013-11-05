@@ -69,7 +69,10 @@ You should now see the same tab sets restored. Got the idea? Enjoy!
 ## Version history
 
 ### Version 2.1.0
+* Refactored internal structure for better maintenance.
 * Project order is now aligned to what appears on actual bookmark list.
+* Session handling is significantly improved.
+* Slight design change.
 
 ### Version 2.0.5
 * Pop up history page only if the version changes in major (ex 2.0.0) or minor (ex 2.1.0). Trivial change (ex 2.1.1) won't popu up anymore.

@@ -21,39 +21,72 @@ app.factory('Background', function() {
   return {
     // Open project tabs. If existing project window found, activate it.
     open: function(projectId) {
-      chrome.extension.sendRequest({command: 'open', projectId: projectId});
+      chrome.extension.sendRequest({
+        command: 'open',
+        projectId: projectId
+      });
     },
     // Assign project id to specified window
     pin: function(projectId, winId, callback) {
-      chrome.extension.sendRequest({command: 'pin', winId: winId, projectId: projectId}, callback);
+      chrome.extension.sendRequest({
+        command: 'pin',
+        winId: winId,
+        projectId: projectId
+      }, callback);
     },
     // Move specified bookmark to passive folder
     deactivate: function(projectId, bookmarkId, callback) {
-      chrome.extension.sendRequest({command: 'deactivate', projectId: projectId, bookmarkId: ''+bookmarkId}, callback);
+      chrome.extension.sendRequest({
+        command: 'deactivate',
+        projectId: projectId,
+        bookmarkId: ''+bookmarkId
+      }, callback);
     },
     // Move specified bookmark out of passive folder
     activate: function(projectId, bookmarkId, callback) {
-      chrome.extension.sendRequest({command: 'activate', projectId: projectId, bookmarkId: ''+bookmarkId}, callback);
+      chrome.extension.sendRequest({
+        command: 'activate',
+        projectId: projectId,
+        bookmarkId: ''+bookmarkId
+      }, callback);
     },
     // Add new bookmark
     add: function(projectId, bookmark, callback) {
-      chrome.extension.sendRequest({command: 'add', projectId: projectId, tab: bookmark}, callback);
+      chrome.extension.sendRequest({
+        command: 'add',
+        projectId: projectId,
+        tab: bookmark
+      }, callback);
     },
     // Create folder and add all tabs in specified window there
     addProject: function(name, winId, tabs, callback) {
-      chrome.extension.sendRequest({command: 'addProject', name: name, winId: winId, tabs: tabs}, callback);
+      chrome.extension.sendRequest({
+        command: 'addProject',
+        name: name,
+        winId: winId,
+        tabs: tabs
+      }, callback);
     },
     // Remove specified bookmark from project
     remove: function(bookmarkId, callback) {
-      chrome.extension.sendRequest({command: 'remove', bookmarkId: ''+bookmarkId}, callback);
+      chrome.extension.sendRequest({
+        command: 'remove',
+        bookmarkId: ''+bookmarkId
+      }, callback);
     },
     // Remove specified project folder
     removeProject: function(projectId, callback) {
-      chrome.extension.sendRequest({command: 'removeProject', projectId: projectId}, callback);
+      chrome.extension.sendRequest({
+        command: 'removeProject',
+        projectId: projectId
+      }, callback);
     },
     // Get folders of projects
     projects: function(callback, force_reload) {
-      chrome.extension.sendRequest({command: 'projects', forceReload: force_reload}, function(projects) {
+      chrome.extension.sendRequest({
+        command: 'projects',
+        forceReload: force_reload
+      }, function(projects) {
         if (projects && projects.length > 0) {
           callback(projects.slice(0));
         } else {
@@ -63,27 +96,42 @@ app.factory('Background', function() {
     },
     // Get project id assigned to active window
     current: function(winId, callback) {
-      chrome.extension.sendRequest({command: 'current', winId: winId}, callback);
+      chrome.extension.sendRequest({
+        command: 'current',
+        winId: winId
+      }, callback);
     },
     // Get bookmarks of specified project id
     // bookmarks: function() {
-    //   chrome.extension.sendRequest({command: 'bookmarks', winId: winId, projectId: projectId});
+    //   chrome.extension.sendRequest({
+    //   command: 'bookmarks',
+    //   winId: winId,
+    //   projectId: projectId
+    // });
     // },
     // Open bookmark manager tab
     edit: function() {
-      chrome.extension.sendRequest({command: 'edit'});
+      chrome.extension.sendRequest({
+        command: 'edit'
+      });
     },
     // Receive timesummary data for debug use
     timesummary: function(callback) {
-      chrome.extension.sendRequest({command: 'timesummary'}, callback);
+      chrome.extension.sendRequest({
+        command: 'timesummary'
+      }, callback);
     },
     // Receive summary data for debug use
     summary: function(callback) {
-      chrome.extension.sendRequest({command: 'summary'}, callback);
+      chrome.extension.sendRequest({
+        command: 'summary'
+      }, callback);
     },
     // Receive window status for debug use
     windows: function(callback) {
-      chrome.extension.sendRequest({command: 'windows'}, callback);
+      chrome.extension.sendRequest({
+        command: 'windows'
+      }, callback);
     }
   };
 });

@@ -39,6 +39,14 @@ ul {
   text-overflow:ellipsis;
   vertical-align:top;
 }
+@-webkit-keyframes rolling {
+  from {
+    -webkit-transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(360deg);
+  }
+}
 button {
   outline: none;
   border: none;
@@ -77,6 +85,10 @@ button {
   }
   &.reload {
     background-position-y: -224px;
+    &.loading {
+      -webkit-animation: rolling 1.0s linear infinite;
+      -webkit-transform-origin-y: 56%;
+    }
   }
   &.options {
     background-position-y:-32px;

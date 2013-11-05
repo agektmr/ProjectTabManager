@@ -29,48 +29,47 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     <script src="js/ng-controllers.js"></script>
     <script src="js/ng-filters.js"></script>
     <script src="js/ng-directives.js"></script>
+    <script type="text/ng-template" id="project.html">
+      <header ng-hide="project.id==0">
+        <button class="arrow" ng-click="flip()"></button>
+        <span class="name" ng-class="{current: active}" ng-click="open()" tabindex="{{$index+2}}">{{project.title}}</span>
+        <div class="menu" ng-show="hover">
+          <button class="pin" chrome-i18n="pin:title"></button>
+          <button class="remove" ng-click="remove()" chrome-i18n="remove:title"></button>
+        </div>
+      </header>
+      <header ng-hide="project.id!=0">
+        <button class="arrow"></button>
+        <input type="text" ng-model="project_name" chrome-i18n="project_name:placeholder" />
+        <button class="add" ng-click="save()" chrome-i18n="save:value"></button>
+      </header>
+      <div class="bookmarks" ng-show="expand">
+        <bookmark ng-repeat="field in project.fields | filter:query" bookmark-id="{{field.id}}"></bookmark>
+        <div ng-show="project.fields.length==0">
+          <img src="../img/favicon.png" class="favicon" />
+          <span class="name" chrome-i18n="no_bookmarks_found:inner"></span>
+        </div>
+      </div>
+    </script>
+    <script type="text/ng-template" id="bookmark.html">
+      <img ng-src="{{field.favIconUrl}}" class="favicon" />
+      <span class="name" ng-class="{current:!!field.tabId}" title="{{field.title}}
+{{field.url}}" ng-click="open()">{{field.title}}</span>
+      <button class="star"></button>
+    </script>
   </head>
   <body>
     <div id="container" ng-controller="ProjectListCtrl">
       <header>
-        <input type="search" class="search" ng-model="query" value="" placeholder="Search Projects and Bookmarks" tabindex="1" />
-        <span class="button reload" ng-click="reload()" chrome-i18n="reload:title"></span>
-        <span class="button edit" ng-click="openBookmarks()" chrome-i18n="edit:title"></span>
-        <span class="button summary" ng-click="openSummary()" chrome-i18n="todays_project_summary:title"></span>
-        <span class="button options" ng-click="openOptions()" chrome-i18n="options:title"></span>
+        <input type="search" ng-model="query" value="" placeholder="Search Projects and Bookmarks" tabindex="1" />
+        <button class="reload" ng-click="reload()" chrome-i18n="reload:title"></button>
+        <button class="edit" ng-click="openBookmarks()" chrome-i18n="edit:title"></button>
+        <button class="summary" ng-click="openSummary()" chrome-i18n="todays_project_summary:title"></button>
+        <button class="options" ng-click="openOptions()" chrome-i18n="options:title"></button>
       </header>
-      <ul id="projects">
-        <li class="accordion" ng-class="{expand: query || expand || project.id==activeProjectId}" ng-repeat="project in projects | sort:activeProjectId | filter:query" ng-controller="ProjectCtrl" ng-init="hover=false" ng-mouseover="hover=true" ng-mouseleave="hover=false">
-          <div class="project">
-            <span class="button arrow" ng-class="{expand: expand || project.id==activeProjectId}" ng-click="flip()"></span>
-            <span class="name" ng-class="{current: project.id==activeProjectId}" ng-click="open()" data-project="{{project.id}}" tabindex="{{$index+2}}">{{project.title}}</span>
-            <div class="menu" ng-show="hover&&project.id!=0">
-              <span class="button pin" ng-click="associate()" ng-hide="project.id==activeProjectId" chrome-i18n="pin:title"></span>
-              <span class="button remove" ng-click="remove()" chrome-i18n="remove:title"></span>
-            </div>
-          </div>
-          <ul>
-            <li ng-show="project.id==0" class="new_project_name">
-              <input type="text" ng-model="project_name" chrome-i18n="project_name:placeholder" />
-              <div class="menu">
-                <input type="button" ng-click="save()" chrome-i18n="save:value" />
-              </div>
-            </li>
-            <li ng-repeat="field in project.fields | filter:query" ng-controller="FieldCtrl">
-              <img ng-src="{{field.favIconUrl}}" class="favicon" />
-              <span class="name" ng-class="{current:!!field.tabId}" title="{{field.title}}
-{{field.url}}" ng-click="open()">{{field.title}}</span>
-              <div class="menu">
-                <span class="bookmark" ng-class="{star:field.id}" ng-click="toggle()" ng-show="project.id!=0" chrome-i18n="add:title"></span>
-              </div>
-            </li>
-            <li ng-show="project.fields.length==0&&project.id!=0">
-              <img src="../img/favicon.png" class="favicon" />
-              <span class="name" chrome-i18n="no_bookmarks_found:inner"></span>
-            </li>
-          </ul>
-        </li>
-      </ul>
+      <section id="projects">
+        <project ng-class="{expand: query || expand}" ng-repeat="project in projects | sort:activeProjectId | filter:query" project-id="{{project.id}}" window-id="{{project.winId}}"></project>
+      </section>
 <!--       <div ng-controller="DebugCtrl">
         <div id="debug_expander" ng-show="debug">
           <span class="button arrow" ng-class="{expand: expand}" ng-click="flip()"></span>

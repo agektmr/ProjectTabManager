@@ -68,6 +68,10 @@ You should now see the same tab sets restored. Got the idea? Enjoy!
 
 ## Version history
 
+### Version 2.1.1
+* Fixed flexbox issue for non-vendorprefix unsupported stable channel
+* Added starring effect
+
 ### Version 2.1.0
 * Refactored internal structure for better maintenance.
 * Project order is now aligned to what appears on actual bookmark list.

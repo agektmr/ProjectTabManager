@@ -15,6 +15,42 @@ limitations under the License.
 
 Author: Eiji Kitamura (agektmr@gmail.com)
 */
+@-webkit-keyframes rolling {
+  from {
+    -webkit-transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(360deg);
+  }
+}
+@-webkit-keyframes shake {
+  0% {
+    -webkit-transform: rotate(0deg) scale(3.0);
+    opacity: 0.5;
+  }
+  50% {
+    -webkit-transform: rotate(10deg);
+    opacity: 1.0;
+  }
+  65% {
+    -webkit-transform: rotate(-10deg);
+  }
+  80% {
+    -webkit-transform: rotate(10deg);
+  }
+  90% {
+    -webkit-transform: rotate(-10deg);
+  }
+  95% {
+    -webkit-transform: rotate(7deg);
+  }
+  98% {
+    -webkit-transform: rotate(-5deg);
+  }
+  100% {
+    -webkit-transform: rotate(0deg);
+  }
+}
 * {
   margin:0;
   padding:0;
@@ -38,14 +74,6 @@ ul {
   overflow:hidden;
   text-overflow:ellipsis;
   vertical-align:top;
-}
-@-webkit-keyframes rolling {
-  from {
-    -webkit-transform: rotate(0deg);
-  }
-  to {
-    -webkit-transform: rotate(360deg);
-  }
 }
 button {
   outline: none;
@@ -115,15 +143,21 @@ button {
 }
 header {
   display: flex;
+  display: -webkit-flex;
   justify-content: space-between;
+  -webkit-justify-content: space-between;
   align-items: center;
+  -webkit-align-items: center;
   * {
     flex: 0 0 auto;
+    -webkit-flex: 0 0 auto;
   }
   input, span {
     flex: 1 0 auto;
+    -webkit-flex: 1 0 auto;
     &[type="search"] {
       flex: 0 0 196px;
+      -webkit-flex: 0 0 196px;
     }
   }
 }
@@ -182,14 +216,17 @@ project {
       margin:2px 2px 0 5px;
       height: 18px;
       display:flex;
+      display:-webkit-flex;
       .favicon {
         flex: 0 0 auto;
+        -webkit-flex: 0 0 auto;
         width:16px;
         height:16px;
         margin-right: 8px;
       }
       .name {
         flex: 1 1 auto;
+        -webkit-flex: 1 1 auto;
         color:#333;
         text-decoration:none;
         white-space:nowrap;
@@ -206,15 +243,14 @@ project {
       }
       .star {
         flex: 0 0 auto;
+        -webkit-flex: 0 0 auto;
         background:url(../img/star.png);
         width:17px;
         height:17px;
         cursor:pointer;
-        &:hover {
-          background-position-x:-17px;
-        }
         &[bookmarked="true"] {
           background-position-x:-17px;
+          -webkit-animation: shake 0.5s;
         }
       }
     }

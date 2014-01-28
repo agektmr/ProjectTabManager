@@ -1,0 +1,19 @@
+{
+  "name": "ProjectTabManager",
+  "version": "2.2.0",
+  "authors": [
+    "Eiji Kitamura <agektmr@gmail.com>"
+  ],
+  "description": "Project tab management per window on your Chrome",
+  "main": "app/js/background.js",
+  "keywords": [
+    "ProjectTabManager"
+  ],
+  "license": "Apache2.0",
+  "homepage": "http://google.com/+agektmr",
+  "private": true,
+  "dependencies": {
+    "angular": "1.0.8",
+    "angular-route": "~1.2.6"
+  }
+}

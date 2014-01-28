@@ -65,22 +65,25 @@ app.directive('project', function(ProjectManager, $window) {
       }
 
       elem.bind('keydown', function(e) {
-        switch (e.keyCode) {
-          case 13:
-            scope.open();
-            break;
-          case 39:
-            scope.expand = true;
-            scope.$apply();
-            break;
-          case 37:
-            scope.expand = false;
-            scope.$apply();
-            break;
-          default:
-            return;
-        }
+        // Avoid shotcut on input element
+        if (e.target.nodeName !== 'INPUT') {
+          switch (e.keyCode) {
+            case 13:
+              scope.open();
+              break;
+            case 39:
+              scope.expand = true;
+              scope.$apply();
+              break;
+            case 37:
+              scope.expand = false;
+              scope.$apply();
+              break;
+            default:
+              return;
+          }
         e.preventDefault();
+        }
       });
 
       elem.bind('mouseover', function(e) {
@@ -127,7 +130,7 @@ app.directive('bookmark', function() {
   }
 });
 
-app.directive('reload', function(ProjectManager) {
+app.directive('reload', function() {
   return {
     restrict: 'C',
     link: function(scope, elem, attr) {
@@ -198,4 +201,10 @@ app.directive('chromeI18n', function() {
       attrs.$set(name, cache[key]);
     };
   };
+});
+
+app.config(function($routeProvider) {
+  $routeProvider.when('/', {
+    templateUrl: 'main.html'
+  })
 });

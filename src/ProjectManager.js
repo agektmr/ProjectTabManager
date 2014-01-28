@@ -412,9 +412,6 @@ var ProjectManager = (function() {
           if (activeSession.id === null) {
             if (config_.debug) console.log('[ProjectManager] creating empty project', activeSession);
             this.projects.unshift(new ProjectEntity(activeSession, undefined));
-          // } else {
-          //   if (config_.debug) console.log('[ProjectManager] removing temporary project');
-          //   this.removeProject('0');
           }
         }
 

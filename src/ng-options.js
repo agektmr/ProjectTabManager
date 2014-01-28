@@ -17,7 +17,6 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 */
 
 app.value('config', new Config());
-app.value('ProjectManager', chrome.extension.getBackgroundPage().projectManager);
 
 app.controller('OptionsCtrl', function($scope, config) {
   $scope.config = config;

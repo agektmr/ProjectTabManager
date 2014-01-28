@@ -17,24 +17,22 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 */
 'use strict';
 
-app.value('ProjectManager', chrome.extension.getBackgroundPage().projectManager);
-
-app.controller('ProjectListCtrl', function($scope, ProjectManager) {
+app.controller('ProjectListCtrl', function($scope, ProjectManager, Background) {
   $scope.setActiveProjectId = function(id) {
     $scope.activeProjectId = id;
   },
 
   $scope.reload = function() {
     $scope.$emit('start-loading');
-    ProjectManager.update(true, function(projects) {
-      $scope.projects = projects;
+    Background.update(true, function() {
+      $scope.projects = ProjectManager.projects;
       $scope.$emit('end-loading');
     });
   };
 
   $scope.openBookmarks = function() {
     var projectId = $scope.activeProjectId === '0' ? null : $scope.activeProjectId;
-    ProjectManager.openBookmarkEditWindow(projectId);
+    Background.openBookmarkEditWindow(projectId);
   };
 
   $scope.openSummary = function() {
@@ -52,14 +50,14 @@ app.controller('ProjectListCtrl', function($scope, ProjectManager) {
   $scope.setActiveProjectId(activeProject && activeProject.id || '0');
 
   var start = window.performance.now();
-  ProjectManager.update(false, function(projects) {
-    $scope.projects = projects;
+  Background.update(false, function() {
+    $scope.projects = ProjectManager.projects;
     if (!$scope.$$phase) $scope.$apply();
     console.log('loading time:', window.performance.now() - start);
   });
 });
 
-// app.controller('DebugCtrl', function($scope, ProjectManager) {
+// app.controller('DebugCtrl', function($scope, Background) {
 //   $scope.debug = true;
 //   $scope.expand = false;
 //   $scope.tracker = [];

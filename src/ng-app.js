@@ -18,3 +18,4 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 'use strict';
 
 var app = angular.module('ProjectTabManager', []);
+app.value('ProjectManager', chrome.extension.getBackgroundPage().projectManager);

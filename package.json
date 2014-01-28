@@ -1,0 +1,20 @@
+{
+  "name": "ProjectTabManager",
+  "version": "2.2.0",
+  "description": "Project tab management per window on your Chrome",
+  "main": "app/js/background.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": "",
+  "keywords": [
+    "ProjectTabManager"
+  ],
+  "author": "Eiji Kitamura <agektmr+github@gmail.com>",
+  "license": "Apache2.0",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-bower-task": "~0.3.4"
+  }
+}

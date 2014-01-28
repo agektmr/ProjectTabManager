@@ -15,8 +15,6 @@ limitations under the License.
 
 Author: Eiji Kitamura (agektmr@gmail.com)
 */
-app.value('ProjectManager', chrome.extension.getBackgroundPage().projectManager);
-
 app.controller('SummaryCtrl', function($scope, ProjectManager) {
   var now   = new Date(),
       year  = now.getFullYear(),

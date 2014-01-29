@@ -45,17 +45,10 @@ var config = new Config(function() {
 chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
   var params = [];
   for (var key in msg) {
-    if (key == 'command' || key == 'object') continue;
+    if (key == 'command') continue;
     params.push(msg[key]);
   }
   params.push(respond);
-  switch (msg.object) {
-    case 'ProjectManager':
-      ProjectManager.prototype[msg.command].apply(projectManager, params);
-      break;
-    case 'ProjectEntity':
-      var project = ProjectManager.getProjectById(msg.projectId);
-      ProjectEntity.prototype[msg.command].apply(project, params);
-      break;
-  }
+  ProjectManager.prototype[msg.command].apply(projectManager, params);
+  return true;
 });

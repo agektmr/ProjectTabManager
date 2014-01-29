@@ -1,4 +1,4 @@
-/*! ProjectTabManager - v2.2.0 - 2014-01-28
+/*! ProjectTabManager - v2.2.0 - 2014-01-29
 * Copyright (c) 2014 ; Licensed  */
 var Config = (function() {
   var rootParentId_ = '2',
@@ -1732,17 +1732,10 @@ var config = new Config(function() {
 chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
   var params = [];
   for (var key in msg) {
-    if (key == 'command' || key == 'object') continue;
+    if (key == 'command') continue;
     params.push(msg[key]);
   }
   params.push(respond);
-  switch (msg.object) {
-    case 'ProjectManager':
-      ProjectManager.prototype[msg.command].apply(projectManager, params);
-      break;
-    case 'ProjectEntity':
-      var project = ProjectManager.getProjectById(msg.projectId);
-      ProjectEntity.prototype[msg.command].apply(project, params);
-      break;
-  }
+  ProjectManager.prototype[msg.command].apply(projectManager, params);
+  return true;
 });

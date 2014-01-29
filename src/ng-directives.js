@@ -202,9 +202,3 @@ app.directive('chromeI18n', function() {
     };
   };
 });
-
-app.config(function($routeProvider) {
-  $routeProvider.when('/', {
-    templateUrl: 'main.html'
-  })
-});

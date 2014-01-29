@@ -32,7 +32,7 @@ app.controller('ProjectListCtrl', function($scope, ProjectManager, Background) {
 
   $scope.openBookmarks = function() {
     var projectId = $scope.activeProjectId === '0' ? null : $scope.activeProjectId;
-    Background.openBookmarkEditWindow(projectId);
+    ProjectManager.openBookmarkEditWindow(projectId);
   };
 
   $scope.openSummary = function() {

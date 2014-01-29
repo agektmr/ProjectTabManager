@@ -50,6 +50,17 @@ Author: Eiji Kitamura (agektmr@gmail.com)
       <button class="star"></button>
     </script>
     <script type="text/ng-template" id="main.html">
+    </script>
+  </head>
+  <body>
+    <div id="container" ng-controller="ProjectListCtrl">
+      <header>
+        <input type="search" ng-model="query" value="" placeholder="Search Projects and Bookmarks" tabindex="1" />
+        <button class="reload" ng-click="reload()" chrome-i18n="reload:title"></button>
+        <button class="edit" ng-click="openBookmarks()" chrome-i18n="edit:title"></button>
+        <button class="summary" ng-click="openSummary()" chrome-i18n="todays_project_summary:title"></button>
+        <button class="options" ng-click="openOptions()" chrome-i18n="options:title"></button>
+      </header>
       <section id="projects">
         <project ng-class="{expand: query || expand}" ng-repeat="project in projects | sort:activeProjectId | filter:query" project-id="{{project.id}}" window-id="{{project.winId}}"></project>
       </section>
@@ -84,20 +95,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
             </ul>
           </li>
         </ul>
-        </div> -->
-    </script>
-  </head>
-  <body>
-    <div id="container" ng-controller="ProjectListCtrl">
-      <header>
-        <input type="search" ng-model="query" value="" placeholder="Search Projects and Bookmarks" tabindex="1" />
-        <button class="reload" ng-click="reload()" chrome-i18n="reload:title"></button>
-        <button class="edit" ng-click="openBookmarks()" chrome-i18n="edit:title"></button>
-        <button class="summary" ng-click="openSummary()" chrome-i18n="todays_project_summary:title"></button>
-        <button class="options" ng-click="openOptions()" chrome-i18n="options:title"></button>
-      </header>
-      <div ng-view></div>
-    </div>
+      </div> -->
     <script src="js/popup.js"></script>
   </body>
 </html>

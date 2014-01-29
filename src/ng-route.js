@@ -12,7 +12,7 @@ app.config(function($routeProvider) {
       templateUrl: 'partials/help.html'
     }).
     when('/history', {
-      templateUrl: 'partials/history.html'
+      templateUrl: 'partials/HISTORY.html'
     }).
     otherwise({
       templateUrl: 'partials/options.html',

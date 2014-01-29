@@ -65,15 +65,29 @@ module.exports = function(grunt) {
           'src/ng-services.js',
           'src/ng-summary.js',
           'src/ng-options.js'
-
         ],
-        dest: 'app/js/layout.js',
-        lazy: {
-          src: [
-            'src/util.js',
-            'src/lazy.js'
-          ],
-          dest: 'app/js/lazy.js'
+        dest: 'app/js/layout.js'
+      },
+      lazy: {
+        src: [
+          'src/util.js',
+          'src/lazy.js'
+        ],
+        dest: 'app/js/lazy.js'
+      }
+    },
+    markdown: {
+      all: {
+        files: [
+          {
+            expand: true,
+            src: 'HISTORY.md',
+            dest: 'app/partials/',
+            ext: '.html'
+          }
+        ],
+        options: {
+          template: 'src/template.jst'
         }
       }
     }
@@ -82,6 +96,7 @@ module.exports = function(grunt) {
   // These plugins provide necessary tasks.
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-bower-task');
+  grunt.loadNpmTasks('grunt-markdown');
 
   // Default task.
   grunt.registerTask('default', ['bower', 'concat']);

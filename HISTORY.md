@@ -1,3 +1,6 @@
+## Version 2.2.1
+* Add new project by typing "return" on project name input
+
 ## Version 2.2.0
 * **Drastic performance improvement**
 * Source code re-organization

@@ -14,7 +14,7 @@ Here's the first thing you should do to get started with PTM.
 4. Enter a name of the window then save. This will be your first poject.
 5. You're all set.
 
-![](src/img/assets/new_project.png)  
+![](assets/new_project.png)  
 PTM is that simple. Whenever you want to resume the project, just click on the project name from PTM pop up. Try following to see how powerful this extension is.
 
 1. Open new tabs in previously saved window.
@@ -22,7 +22,7 @@ PTM is that simple. Whenever you want to resume the project, just click on the p
 3. Open PTM by clicking on folder icon.
 4. Click on the saved project to resume.
 
-![](src/img/assets/saved_project.png)  
+![](assets/saved_project.png)  
 You should now see the same tab sets restored. Got the idea? Enjoy!
 
 ## Further Instructions

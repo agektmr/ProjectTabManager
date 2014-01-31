@@ -26,6 +26,7 @@ app.controller('ProjectListCtrl', function($scope, ProjectManager, Background) {
     $scope.$emit('start-loading');
     Background.update(true, function() {
       $scope.projects = ProjectManager.projects;
+      $scope.$apply();
       $scope.$emit('end-loading');
     });
   };

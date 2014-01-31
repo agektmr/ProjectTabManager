@@ -1,4 +1,4 @@
-/*! ProjectTabManager - v2.2.0 - 2014-01-29
+/*! ProjectTabManager - v2.2.0 - 2014-01-31
 * Copyright (c) 2014 ; Licensed  */
 var Config = (function() {
   var rootParentId_ = '2',
@@ -386,6 +386,7 @@ app.controller('ProjectListCtrl', function($scope, ProjectManager, Background) {
     $scope.$emit('start-loading');
     Background.update(true, function() {
       $scope.projects = ProjectManager.projects;
+      $scope.$apply();
       $scope.$emit('end-loading');
     });
   };
@@ -463,7 +464,7 @@ app.filter('sort', function() {
 });
 'use strict';
 
-app.directive('project', function(ProjectManager, $window) {
+app.directive('project', function(ProjectManager, Background, $window) {
   return {
     restrict: 'E',
     templateUrl: 'project.html',
@@ -473,11 +474,11 @@ app.directive('project', function(ProjectManager, $window) {
       $scope.hover = false;
 
       $scope.save = function() {
-        $scope.$emit('start-loading');
-        ProjectManager.createProject($scope.project_name, function(project) {
-          $scope.project = project;
+        // $scope.$emit('start-loading');
+        Background.createProject($scope.project_name, function(project) {
+          // $scope.project = ProjectManager.project;
           $scope.setActiveProjectId(project.id);
-          $scope.$emit('end-loading');
+          // $scope.$emit('end-loading');
           $scope.reload(true);
         });
       };
@@ -498,10 +499,10 @@ app.directive('project', function(ProjectManager, $window) {
       };
 
       $scope.remove = function() {
-        $scope.$emit('start-loading');
-        ProjectManager.removeProject($scope.project.id, function() {
-          $scope.$emit('end-loading');
-          $scope.reload();
+        // $scope.$emit('start-loading');
+        Background.removeProject($scope.project.id, function() {
+          // $scope.$emit('end-loading');
+          $scope.reload(true);
         });
       };
     },
@@ -512,7 +513,10 @@ app.directive('project', function(ProjectManager, $window) {
 
       elem.bind('keydown', function(e) {
         // Avoid shotcut on input element
-        if (e.target.nodeName !== 'INPUT') {
+        if (e.target.nodeName == 'INPUT' && e.keyCode === 13) {
+          e.target.disabled = true;
+          scope.save();
+        } else {
           switch (e.keyCode) {
             case 13:
               scope.open();
@@ -528,7 +532,7 @@ app.directive('project', function(ProjectManager, $window) {
             default:
               return;
           }
-        e.preventDefault();
+          e.preventDefault();
         }
       });
 

@@ -98,6 +98,15 @@ module.exports = function(grunt) {
           'app/manifest.json'
         ]
       }
+    },
+    compress: {
+      main: {
+        options: {
+          archive: 'app.zip',
+          mode: 'zip'
+        },
+        src: ['app/**']
+      }
     }
   });
 
@@ -106,10 +115,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-bower-task');
   grunt.loadNpmTasks('grunt-markdown');
   grunt.loadNpmTasks('grunt-version');
+  grunt.loadNpmTasks('grunt-contrib-compress');
 
   // Default task.
   grunt.registerTask('default', ['bower', 'concat']);
   grunt.registerTask('install', ['bower']);
-  grunt.registerTask('build', ['concat', 'markdown', 'version']);
+  grunt.registerTask('build', ['concat', 'markdown', 'version', 'compress']);
 
 };

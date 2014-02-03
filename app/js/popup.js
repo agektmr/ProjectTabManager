@@ -1,4 +1,4 @@
-/*! ProjectTabManager - v2.2.2 - 2014-02-03
+/*! ProjectTabManager - v2.2.3 - 2014-02-04
 * Copyright (c) 2014 ; Licensed  */
 var Config = (function() {
   var rootParentId_ = '2',
@@ -568,8 +568,14 @@ app.directive('bookmark', function() {
               chrome.tabs.create({url: $scope.field.url, active: true});
             // If the project filed is already open
             } else {
-              // Just activate open project field
-              chrome.tabs.update(tabId, {active: true});
+              chrome.windows.get(tab.windowId, function(win) {
+                if (!win.focused) {
+                  // Move focus to the window
+                  chrome.windows.update(tab.windowId, {focused:true});
+                }
+                // Activate open project field
+                chrome.tabs.update(tabId, {active: true});
+              });
             }
           });
         }

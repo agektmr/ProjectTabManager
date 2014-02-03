@@ -121,8 +121,14 @@ app.directive('bookmark', function() {
               chrome.tabs.create({url: $scope.field.url, active: true});
             // If the project filed is already open
             } else {
-              // Just activate open project field
-              chrome.tabs.update(tabId, {active: true});
+              chrome.windows.get(tab.windowId, function(win) {
+                if (!win.focused) {
+                  // Move focus to the window
+                  chrome.windows.update(tab.windowId, {focused:true});
+                }
+                // Activate open project field
+                chrome.tabs.update(tabId, {active: true});
+              });
             }
           });
         }

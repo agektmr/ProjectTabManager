@@ -1,4 +1,4 @@
-/*! ProjectTabManager - v2.2.0 - 2014-01-31
+/*! ProjectTabManager - v2.2.2 - 2014-02-03
 * Copyright (c) 2014 ; Licensed  */
 var Config = (function() {
   var rootParentId_ = '2',

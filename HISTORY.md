@@ -1,3 +1,6 @@
+## Version 2.2.2
+* Bold project name when the project is open
+
 ## Version 2.2.1
 * Add new project by typing "return" on project name input
 

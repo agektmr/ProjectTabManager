@@ -90,6 +90,14 @@ module.exports = function(grunt) {
           template: 'src/template.jst'
         }
       }
+    },
+    version: {
+      defaults: {
+        src: [
+          'bower.json',
+          'app/manifest.json'
+        ]
+      }
     }
   });
 
@@ -97,10 +105,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-bower-task');
   grunt.loadNpmTasks('grunt-markdown');
+  grunt.loadNpmTasks('grunt-version');
 
   // Default task.
   grunt.registerTask('default', ['bower', 'concat']);
   grunt.registerTask('install', ['bower']);
-  grunt.registerTask('build', ['concat']);
+  grunt.registerTask('build', ['concat', 'markdown', 'version']);
 
 };

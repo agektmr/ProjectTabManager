@@ -1,6 +1,6 @@
 {
   "name": "ProjectTabManager",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "Project tab management per window on your Chrome",
   "main": "app/js/background.js",
   "scripts": {
@@ -16,6 +16,7 @@
     "grunt": "~0.4.1",
     "grunt-contrib-concat": "~0.3.0",
     "grunt-bower-task": "~0.3.4",
-    "grunt-markdown": "~0.5.0"
+    "grunt-markdown": "~0.5.0",
+    "grunt-version": "~0.3.0"
   }
 }

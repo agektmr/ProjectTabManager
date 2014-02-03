@@ -24,7 +24,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     <script type="text/ng-template" id="project.html">
       <header ng-hide="project.id==0">
         <button class="arrow" ng-click="flip()"></button>
-        <span class="name" ng-class="{current: active}" ng-click="open()" tabindex="{{$index+2}}">{{project.title}}</span>
+        <span class="name" ng-class="{current: project.winId}" ng-click="open()" tabindex="{{$index+2}}">{{project.title}}</span>
         <div class="menu" ng-show="hover">
           <button class="pin" chrome-i18n="pin:title"></button>
           <button class="remove" ng-click="remove()" chrome-i18n="remove:title"></button>

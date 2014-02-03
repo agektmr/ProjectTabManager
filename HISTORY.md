@@ -1,3 +1,6 @@
+## Version 2.2.3
+* Fixed a bug that changes active tab behind focused window when clicking on a bookmark that is open project but not active.
+
 ## Version 2.2.2
 * Bold project name when the project is open
 

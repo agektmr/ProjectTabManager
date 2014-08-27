@@ -23,6 +23,17 @@ module.exports = function(grunt) {
       '* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;' +
       ' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */\n',
     // Task configuration.
+    sass: {
+      styles: {
+        files: [{
+          expand: true,
+          cwd: 'src/styles',
+          src: ['*.scss'],
+          dest: 'app/css',
+          ext: '.css'
+        }]
+      }
+    },
     concat: {
       options: {
         banner: '<%= banner %>',
@@ -30,48 +41,48 @@ module.exports = function(grunt) {
       },
       background: {
         src: [
-          'src/config.js',
-          'src/util.js',
-          'src/idb.js',
-          'src/SessionManager.js',
-          'src/BookmarkManager.js',
-          'src/ProjectManager.js',
-          'src/background.js'
+          'src/js/config.js',
+          'src/js/util.js',
+          'src/js/idb.js',
+          'src/js/SessionManager.js',
+          'src/js/BookmarkManager.js',
+          'src/js/ProjectManager.js',
+          'src/js/background.js'
         ],
         dest: 'app/js/background.js'
       },
       popup: {
         src: [
-          'src/config.js',
-          'src/util.js',
+          'src/js/config.js',
+          'src/js/util.js',
           'bower_components/angular/angular.min.js',
           'bower_components/angular-route/angular-route.min.js',
-          'src/ng-app.js',
-          'src/ng-services.js',
-          'src/ng-controllers.js',
-          'src/ng-filters.js',
-          'src/ng-directives.js'
+          'src/js/ng-app.js',
+          'src/js/ng-services.js',
+          'src/js/ng-controllers.js',
+          'src/js/ng-filters.js',
+          'src/js/ng-directives.js'
         ],
         dest: 'app/js/popup.js'
       },
       layout: {
         src: [
-          'src/config.js',
-          'src/util.js',
+          'src/js/config.js',
+          'src/js/util.js',
           'bower_components/angular/angular.min.js',
-          'src/ng-app.js',
-          'src/ng-route.js',
-          'src/ng-directives.js',
-          'src/ng-services.js',
-          'src/ng-summary.js',
-          'src/ng-options.js'
+          'src/js/ng-app.js',
+          'src/js/ng-route.js',
+          'src/js/ng-directives.js',
+          'src/js/ng-services.js',
+          'src/js/ng-summary.js',
+          'src/js/ng-options.js'
         ],
         dest: 'app/js/layout.js'
       },
       lazy: {
         src: [
-          'src/util.js',
-          'src/lazy.js'
+          'src/js/util.js',
+          'src/js/lazy.js'
         ],
         dest: 'app/js/lazy.js'
       }
@@ -116,10 +127,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-markdown');
   grunt.loadNpmTasks('grunt-version');
   grunt.loadNpmTasks('grunt-contrib-compress');
+  grunt.loadNpmTasks('grunt-contrib-sass');
 
   // Default task.
   grunt.registerTask('default', ['bower', 'concat']);
   grunt.registerTask('install', ['bower']);
-  grunt.registerTask('build', ['concat', 'markdown', 'version', 'compress']);
+  grunt.registerTask('build', ['sass', 'concat', 'markdown', 'version', 'compress']);
 
 };

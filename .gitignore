@@ -1,3 +1,5 @@
+*.crx
+*.pem
 *.sublime*
 .DS_Store
 *.zip

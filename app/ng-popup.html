@@ -22,18 +22,15 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     <meta charset="utf-8"/>
     <link href="css/style.css" rel="stylesheet" type="text/css">
     <script type="text/ng-template" id="project.html">
-      <header ng-hide="project.id==0">
+      <header win-id="{{project.winId}}" project-id="{{project.id}}">
         <button class="arrow" ng-click="flip()"></button>
-        <span class="name" ng-class="{current: project.winId}" ng-click="open()" tabindex="{{$index+2}}">{{project.title}}</span>
+        <span class="name" ng-class="{current: project.winId}" ng-click="open()" tabindex="{{$index+2}}" ng-hide="editing">{{project.title}}</span>
+        <input class="project-name" type="text" ng-model="title" ng-show="editing">
         <div class="menu" ng-show="hover">
+          <button class="edit" chrome-i18n="edit:title"></button>
           <button class="pin" chrome-i18n="pin:title"></button>
-          <button class="remove" ng-click="remove()" chrome-i18n="remove:title"></button>
+          <button class="remove" ng-hide="project.winId" ng-click="remove()" chrome-i18n="remove:title"></button>
         </div>
-      </header>
-      <header ng-hide="project.id!=0">
-        <button class="arrow"></button>
-        <input type="text" ng-model="project_name" chrome-i18n="project_name:placeholder" />
-        <button class="add" ng-click="save()" chrome-i18n="save:value"></button>
       </header>
       <div class="bookmarks" ng-show="query || expand">
         <bookmark ng-repeat="field in project.fields | filter:query" bookmark-id="{{field.id}}"></bookmark>
@@ -53,7 +50,15 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     </script>
   </head>
   <body>
-    <div id="container" ng-controller="ProjectListCtrl">
+    <div id="container" class="project_list">
+      <dialog>
+        <form method="dialog">
+          <label>Project Name: <input id="dialog_title" type="text" value="{{dialog_title}}" autofocus /></label>
+          <br/>
+          <button type="reset">Cancel</button>
+          <button type="submit">OK</button>
+        </form>
+      </dialog>
       <header>
         <input type="search" ng-model="query" value="" placeholder="Search Projects and Bookmarks" tabindex="1" />
         <button class="reload" ng-click="reload()" chrome-i18n="reload:title"></button>

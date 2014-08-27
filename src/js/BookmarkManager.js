@@ -103,6 +103,16 @@ var BookmarkManager = (function() {
     },
 
     /**
+     * Renames folder bookmark under root
+     * @param {[type]}   id       Bookmark id
+     * @param {[type]}   title    New title
+     * @param {Function} callback [description]
+     */
+    renameFolder: function(id, title, callback) {
+      chrome.bookmarks.update(id, {title: title}, callback);
+    },
+
+    /**
      * Gets chrome.bookmarks.BookmarkTreeNode of given bookmark id
      * @param  {String}           bookmarkId
      */

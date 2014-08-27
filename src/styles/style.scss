@@ -17,44 +17,48 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 */
 @-webkit-keyframes rolling {
   from {
-    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
   }
   to {
-    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
   }
 }
 @-webkit-keyframes shake {
   0% {
-    -webkit-transform: rotate(0deg) scale(3.0);
+    transform: rotate(0deg) scale(3.0);
     opacity: 0.5;
   }
   50% {
-    -webkit-transform: rotate(10deg);
+    transform: rotate(10deg);
     opacity: 1.0;
   }
   65% {
-    -webkit-transform: rotate(-10deg);
+    transform: rotate(-10deg);
   }
   80% {
-    -webkit-transform: rotate(10deg);
+    transform: rotate(10deg);
   }
   90% {
-    -webkit-transform: rotate(-10deg);
+    transform: rotate(-10deg);
   }
   95% {
-    -webkit-transform: rotate(7deg);
+    transform: rotate(7deg);
   }
   98% {
-    -webkit-transform: rotate(-5deg);
+    transform: rotate(-5deg);
   }
   100% {
-    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
   }
 }
 * {
   margin:0;
   padding:0;
   box-sizing: border-box;
+}
+body, input {
+  font-size: 100%;
+  font-family: 'Noto Sans', Helvetica, Arial;
 }
 ul {
   list-style: none;
@@ -64,10 +68,24 @@ ul {
   margin:0;
   padding:6px;
   font-size:0.8em;
-  background: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.4));
-  background-color:#ddd;
+  background-color:#ccc;
   border-radius:5px;
   overflow:hidden;
+}
+dialog {
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  padding: 3px 6px;
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+  width: 80%;
+}
+dialog::backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
 }
 .name {
   display:inline-block;
@@ -80,29 +98,43 @@ button {
   border: none;
   background-color: transparent;
   background-repeat: no-repeat;
-  background:url(../img/buttons.png);
+  background:url(../img/buttons.svg);
   width:16px;
   height:16px;
   display:inline-block;
-  &.add {
-    background-position-y:-64px;
-  }
-  &.delete {
-    background-position-y:-96px;
+  &.options {
+    background-position-y:-16px;
   }
   &.open {
     background-position-y:-32px;
   }
-  &.edit {
-    background-position-y:-288px;
+  &.add {
+    background-position-y:-64px;
   }
   &.pin {
-    background-position-y:-128px;
-  }
-  &.summary {
-    background-position-y:-320px;
+    background-position-y:-64px;
   }
   &.remove {
+    background-position-y:-80px;
+  }
+  &.delete {
+    background-position-y:-96px;
+  }
+  &.arrow {
+    background-position-y:-96px;
+    transition:transform 0.08s ease-out;
+  }
+  &.reload {
+    background-position-y: -112px;
+    &.loading {
+      animation: rolling 1.0s linear infinite;
+      transform-origin-y: 50%;
+    }
+  }
+  &.edit {
+    background-position-y:-144px;
+  }
+  &.summary {
     background-position-y:-160px;
   }
   &.activate {
@@ -110,20 +142,6 @@ button {
   }
   &.deactivate {
     background-position-y:-192px;
-  }
-  &.reload {
-    background-position-y: -224px;
-    &.loading {
-      -webkit-animation: rolling 1.0s linear infinite;
-      -webkit-transform-origin-y: 56%;
-    }
-  }
-  &.options {
-    background-position-y:-32px;
-  }
-  &.arrow {
-    background-position-y:-256px;
-    -webkit-transition:-webkit-transform 0.08s ease-out;
   }
   &:hover {
     background-position-x:-16px;
@@ -138,39 +156,32 @@ button {
   background:url(../img/arrow.png);
   float:left;
   &.open {
-    -webkit-transform:rotate(90deg);
+    transform:rotate(90deg);
   }
 }
 header {
   display: flex;
-  display: -webkit-flex;
   justify-content: space-between;
-  -webkit-justify-content: space-between;
   align-items: center;
-  -webkit-align-items: center;
   * {
     flex: 0 0 auto;
-    -webkit-flex: 0 0 auto;
   }
   input, span {
     flex: 1 0 auto;
-    -webkit-flex: 1 0 auto;
     &[type="search"] {
       flex: 0 0 196px;
-      -webkit-flex: 0 0 196px;
     }
   }
 }
 #projects {
   margin-top:6px;
   padding:0;
-  font-family:Helvetica, Arial;
   overflow-y:auto;
   max-height:538px;
 }
 project {
   display: block;
-  -webkit-transition:max-height 0.1s ease-out;
+  transition:max-height 0.1s ease-out;
   max-height:24px;
   overflow:hidden;
   position:relative;
@@ -179,20 +190,19 @@ project {
     max-height:550px;
     overflow-y:auto;
     button.arrow {
-      -webkit-transform:rotate(90deg);
+      transform:rotate(90deg);
     }
   }
   header {
     background: -webkit-gradient(linear, left bottom, left top, from(rgba(0, 0, 0, 0)), to(hsla(0, 0%, 0%, 0.15))) hsla(0, 0%, 95%, 0.85);
     box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.5), 0 1px 0 rgba(0, 0, 0, 0.05), 0 -1px 0 hsla(0, 0%, 0%, 0.4), inset 1px 0 0 hsla(0, 0%, 100%, 0.4), inset 0 1px 0 hsl(0, 0%, 100%);
-    padding:4px 4px 2px 4px;
+    padding:4px 4px 4px 0px;
     height:24px;
     overflow:hidden;
     input {
-      margin: 0 4px 2px 4px;
-      border: solid 1px #aaa;
-      padding: 0 5px;
-      height: 16px;
+      margin: 0;
+      padding: 0;
+      height: 18px;
     }
     span.name {
       cursor:pointer;
@@ -216,23 +226,20 @@ project {
       margin:2px 2px 0 5px;
       height: 18px;
       display:flex;
-      display:-webkit-flex;
       .favicon {
         flex: 0 0 auto;
-        -webkit-flex: 0 0 auto;
         width:16px;
         height:16px;
         margin-right: 8px;
       }
       .name {
         flex: 1 1 auto;
-        -webkit-flex: 1 1 auto;
-        color:#333;
+        color:#999;
         text-decoration:none;
         white-space:nowrap;
         cursor: pointer;
         &.current {
-          font-weight:bold;
+          color: #333;
         }
         &:hover {
           text-decoration:underline;
@@ -243,14 +250,14 @@ project {
       }
       .star {
         flex: 0 0 auto;
-        -webkit-flex: 0 0 auto;
         background:url(../img/star.png);
-        width:17px;
+        background-size: 200%;
+        width:18px;
         height:17px;
         cursor:pointer;
         &[bookmarked="true"] {
-          background-position-x:-17px;
-          -webkit-animation: shake 0.5s;
+          background-position-x:-18px;
+          animation: shake 0.5s;
         }
       }
     }
@@ -258,4 +265,5 @@ project {
 }
 .menu {
   display:inline-block;
+  height: 16px;
 }

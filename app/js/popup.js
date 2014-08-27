@@ -1,4 +1,4 @@
-/*! ProjectTabManager - v2.2.3 - 2014-02-18
+/*! ProjectTabManager - v2.3.0 - 2014-08-27
 * Copyright (c) 2014 ; Licensed  */
 var Config = (function() {
   var rootParentId_ = '2',
@@ -359,6 +359,14 @@ app.factory('Background', function() {
         title: title
       }, callback);
     },
+    // Rename specified project folder
+    renameProject: function(projectId, newTitle, callback) {
+      chrome.runtime.sendMessage({
+        command: 'renameProject',
+        projectId: projectId,
+        title: newTitle
+      }, callback);
+    },
     // Remove specified project folder
     removeProject: function(projectId, callback) {
       chrome.runtime.sendMessage({
@@ -464,18 +472,81 @@ app.filter('sort', function() {
 });
 'use strict';
 
+app.directive('projectList', function(ProjectManager, Background) {
+  return {
+    restrict: 'C',
+    controller: function($scope) {
+      $scope.setActiveProjectId = function(id) {
+        $scope.activeProjectId = id;
+      },
+
+      $scope.reload = function() {
+        $scope.$emit('start-loading');
+        Background.update(true, function() {
+          $scope.projects = ProjectManager.projects;
+          $scope.$apply();
+          $scope.$emit('end-loading');
+        });
+      };
+
+      $scope.set_dialog_title = function(title) {
+        $scope.dialog_title = title;
+      };
+
+      $scope.openBookmarks = function() {
+        var projectId = $scope.activeProjectId === '0' ? null : $scope.activeProjectId;
+        ProjectManager.openBookmarkEditWindow(projectId);
+      };
+
+      $scope.openSummary = function() {
+        chrome.tabs.create({url:chrome.extension.getURL('/ng-layout.html#summary')});
+      };
+
+      $scope.openOptions = function() {
+        chrome.tabs.create({url:chrome.extension.getURL('/ng-layout.html#options')});
+      };
+
+      // TODO: merge active window and active project id into active project?
+      $scope.activeWindowId   = ProjectManager.getActiveWindowId();
+      var activeProject       = ProjectManager.getActiveProject();
+
+      $scope.setActiveProjectId(activeProject && activeProject.id || '0');
+
+      var start = window.performance.now();
+      Background.update(false, function() {
+        $scope.projects = ProjectManager.projects;
+        if (!$scope.$$phase) $scope.$apply();
+        console.log('loading time:', window.performance.now() - start);
+      });
+    },
+    link: function(scope, elem, attr) {
+    }
+  }
+});
+
+app.directive('dialog', function() {
+  return {
+    restrict: 'E',
+    link: function(scope, elem, attr) {
+    }
+  }
+});
+
 app.directive('project', function(ProjectManager, Background, $window) {
   return {
     restrict: 'E',
     templateUrl: 'project.html',
     controller: function($scope) {
+      $scope.title = $scope.project.title;
       $scope.active = $scope.project.id === $scope.activeProjectId ? true: false;
       $scope.expand = $scope.project.winId === $scope.activeWindowId ? true : false;
       $scope.hover = false;
+      $scope.editing = false;
 
+      // TODO: deprecate this method
       $scope.save = function() {
         // $scope.$emit('start-loading');
-        Background.createProject($scope.project_name, function(project) {
+        Background.createProject($scope.project.title, function(project) {
           // $scope.project = ProjectManager.project;
           $scope.setActiveProjectId(project.id);
           // $scope.$emit('end-loading');
@@ -496,6 +567,17 @@ app.directive('project', function(ProjectManager, Background, $window) {
 
       $scope.open = function() {
         $scope.project.open();
+      };
+
+      $scope.toggle_editing = function() {
+        if ($scope.editing && $scope.project.title !== $scope.title) {
+          $scope.$emit('start-loading');
+          Background.renameProject($scope.project.id, $scope.title, function() {
+            $scope.$emit('end-loading');
+            $scope.reload(true);
+          });
+        }
+        $scope.editing = !$scope.editing;
       };
 
       $scope.remove = function() {
@@ -629,6 +711,44 @@ app.directive('star', function() {
     }
   }
 });
+
+app.directive('projectName', function() {
+  return {
+    restrict: 'C',
+    link: function(scope, elem, attr) {
+      scope.compositing = false;
+      elem.bind('compositionstart', function(e) {
+        scope.compositing = true;
+      });
+      elem.bind('compositionend', function(e) {
+        scope.compositing = false;
+      });
+      elem.bind('keydown', function(e) {
+        if (e.keyCode === 13 && !scope.compositing) {
+          scope.toggle_editing();
+        }
+        e.stopPropagation();
+      });
+      elem.bind('blur', function(e) {
+        scope.compositing = false;
+        scope.toggle_editing();
+      });
+    }
+  }
+})
+
+app.directive('edit', function() {
+  return {
+    restrict: 'C',
+    link: function(scope, elem, attr) {
+      elem.bind('click', scope.toggle_editing);
+      // elem.bind('click', function() {
+      //   scope.set_dialog_title(scope.project.title);
+      //   scope.dialog.showModal();
+      // });
+    }
+  }
+})
 
 app.directive('pin', function() {
   return {

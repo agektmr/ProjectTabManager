@@ -26,6 +26,14 @@ app.factory('Background', function() {
         title: title
       }, callback);
     },
+    // Rename specified project folder
+    renameProject: function(projectId, newTitle, callback) {
+      chrome.runtime.sendMessage({
+        command: 'renameProject',
+        projectId: projectId,
+        title: newTitle
+      }, callback);
+    },
     // Remove specified project folder
     removeProject: function(projectId, callback) {
       chrome.runtime.sendMessage({

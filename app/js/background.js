@@ -307,21 +307,23 @@ var SessionManager = (function() {
    * @param  {Integer}   winId    [description]
    * @param  {Function} callback [description]
    */
-  var getWindowInfo = function(winId, callback) {
-    if (winId === chrome.windows.WINDOW_ID_NONE) {
-      callback(undefined);
-    } else {
-      chrome.windows.get(winId, {populate:true}, function(win) {
-        if (chrome.runtime.lastError) {
-          throw '[SessionManager] window of id '+winId+' not open';
-        }
-        if (win.type !== "normal") {
-          callback(undefined);
-        } else {
-          callback(win);
-        }
-      });
-    }
+  var getWindowInfo = function(winId) {
+    return new Promise(function(resolve, reject) {
+      if (winId === chrome.windows.WINDOW_ID_NONE) {
+        resolve(undefined);
+      } else {
+        chrome.windows.get(winId, {populate:true}, function(win) {
+          if (chrome.runtime.lastError) {
+            reject('[SessionManager] window of id '+winId+' not open');
+          }
+          if (win.type !== "normal") {
+            resolve(undefined);
+          } else {
+            resolve(win);
+          }
+        });
+      }
+    });
   }
 
   /**
@@ -670,9 +672,11 @@ var SessionManager = (function() {
           session.updateTab(tab);
         } else {
           // This shouldn't happen. onwindowcreated should catch and create session first.
-          getWindowInfo(tab.windowId, (function(win) {
+          getWindowInfo(tab.windowId).then(function(win) {
             this.createSession(win);
-          }).bind(this));
+          }, function(err) {
+            throw err;
+          });
         }
       }
     },
@@ -758,7 +762,7 @@ var SessionManager = (function() {
      */
     onattached: function(tabId, attachInfo) {
       if (config_.debug) console.log('[SessionManager] chrome.tabs.onAttached', tabId, attachInfo);
-      getWindowInfo(attachInfo.newWindowId, (function(win) {
+      getWindowInfo(attachInfo.newWindowId).then(function(win) {
         if (win === undefined) return;
         var session = this.getSessionFromWinId(attachInfo.newWindowId);
         // If this tab generates new window, it should be a new session
@@ -770,7 +774,9 @@ var SessionManager = (function() {
           session.addTab(tab);
           if (config_.debug) console.log('[SessionManager] added tab %d to window', tabId, attachInfo.newWindowId);
         }).bind(this));
-      }).bind(this));
+      }, function(err) {
+        throw err;
+      });
     },
 
     /**
@@ -796,11 +802,13 @@ var SessionManager = (function() {
      */
     onactivated: function(activeInfo) {
       if (config_.debug) console.log('[SessionManager] chrome.tabs.onActivated', activeInfo);
-      getWindowInfo(activeInfo.windowId, (function(win) {
+      getWindowInfo(activeInfo.windowId).then(function(win) {
         if (win === undefined) return;
         this.activeInfo.tabId    = activeInfo.tabId; // not used
         this.activeInfo.windowId = activeInfo.windowId;
-      }).bind(this));
+      }, function(err) {
+        throw err;
+      });
     },
 
     onwindowcreated: function(win) {
@@ -823,7 +831,7 @@ var SessionManager = (function() {
         db.put(db.SUMMARIES, this.activeInfo);
       }
 
-      getWindowInfo(winId, (function(win) {
+      getWindowInfo(winId).then(function(win) {
         // Focus changed to another window
         if (win !== undefined) {
           // Creates new activeInfo
@@ -845,7 +853,9 @@ var SessionManager = (function() {
           this.activeInfo.end       = null;
           this.activeInfo.windowId  = winId;
         }
-      }).bind(this));
+      }, function(err) {
+        throw err;
+      });
     },
 
     /**

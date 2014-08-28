@@ -1,4 +1,4 @@
-/*! ProjectTabManager - v2.3.0 - 2014-08-27
+/*! ProjectTabManager - v2.3.0 - 2014-08-28
 * Copyright (c) 2014 ; Licensed  */
 var Config = (function() {
   var rootParentId_ = '2',
@@ -313,7 +313,7 @@ var SessionManager = (function() {
     } else {
       chrome.windows.get(winId, {populate:true}, function(win) {
         if (chrome.runtime.lastError) {
-          throw '[SessionManager] closing window of id '+winId+' not open';
+          throw '[SessionManager] window of id '+winId+' not open';
         }
         if (win.type !== "normal") {
           callback(undefined);
@@ -511,7 +511,9 @@ var SessionManager = (function() {
           if (config_.debug) console.log('[SessionEntity] removed tab %d from session %s', this.tabs[i].id, this.id);
           // Remove TabEntity
           this.tabs.splice(i, 1);
-          this.sortTabs();
+          if (this.tabs.length > 0) {
+            this.sortTabs();
+          }
           return true;
         }
       }
@@ -574,7 +576,7 @@ var SessionManager = (function() {
             index:    i,
             url:      url,
             pinned:   tab.pinned,
-            active:   i ? false : true
+            active:   false
           }, (function(tab) {
             this.tabs[i].id = tab.id;
           }).bind(this));
@@ -703,17 +705,24 @@ var SessionManager = (function() {
      * @param  {Object} removeInfo    second argument of chrome.tabs.onRemoved.addListener
      */
     onremoved: function(tabId, removeInfo) {
+      var winId = removeInfo.windowId;
       if (config_.debug) console.log('[SessionManager] chrome.tabs.onRemoved', tabId, removeInfo);
+
+      var session = this.getSessionFromWinId(winId);
+      // When closing the window, do not remove tab from the session
       if (removeInfo.isWindowClosing) {
-        if (config_.debug) console.log('[SessionManager] skip removing this tab since window is closing', tabId);
+        session.unsetWinId();
+        if (config_.debug) console.log('[SessionManager] skip removing a tab since the window is closing', winId);
       } else {
-        var session = this.getSessionFromWinId(removeInfo.windowId);
         if (session) {
           session.removeTab(tabId);
-          if (config_.debug) console.log('[SessionManager] removed tab of id %d from session %o', tabId, session);
+          if (session.tabs.length === 0) {
+            if (config_.debug) console.log('[SessionManager] removing the session %o itself since all tabs are closing', session);
+            this.removeSessionFromProjectId(session.id);
+          }
           UpdateManager.storeSessions();
         } else {
-          if (config_.debug) console.log('[SessionManager] removing tab was not being tracked', tabId);
+          if (config_.debug) console.log('[SessionManager] tab %s being removed was not in the session being tracked', tabId);
         }
       }
     },
@@ -851,7 +860,7 @@ var SessionManager = (function() {
         return session;
       } else {
         session = new SessionEntity(win);
-        this.sessions.push(session);
+        this.sessions.unshift(session);
         if (config_.debug) console.log('[SessionManager] session %o created from %o', session, win);
         return session;
       }

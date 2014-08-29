@@ -1,4 +1,4 @@
-/*! ProjectTabManager - v2.3.0 - 2014-08-28
+/*! ProjectTabManager - v2.3.0 - 2014-08-29
 * Copyright (c) 2014 ; Licensed  */
 var Config = (function() {
   var rootParentId_ = '2',
@@ -353,98 +353,44 @@ app.value('ProjectManager', chrome.extension.getBackgroundPage().projectManager)
 app.factory('Background', function() {
   return {
     // Create folder and add all tabs in specified window there
-    createProject: function(title, callback) {
-      chrome.runtime.sendMessage({
-        command: 'createProject',
-        title: title
-      }, callback);
+    createProject: function(title) {
+      return new Promise(function(resolve) {
+        chrome.runtime.sendMessage({
+          command: 'createProject',
+          title: title
+        }, resolve);
+      });
     },
     // Rename specified project folder
-    renameProject: function(projectId, newTitle, callback) {
-      chrome.runtime.sendMessage({
-        command: 'renameProject',
-        projectId: projectId,
-        title: newTitle
-      }, callback);
+    renameProject: function(projectId, newTitle) {
+      return new Promise(function(resolve) {
+        chrome.runtime.sendMessage({
+          command: 'renameProject',
+          projectId: projectId,
+          title: newTitle
+        }, resolve);
+      });
     },
     // Remove specified project folder
     removeProject: function(projectId, callback) {
-      chrome.runtime.sendMessage({
-        command: 'removeProject',
-        projectId: projectId
-      }, callback);
+      return new Promise(function(resolve) {
+        chrome.runtime.sendMessage({
+          command: 'removeProject',
+          projectId: projectId
+        }, resolve);
+      });
     },
     // Get folders of projects
     update: function(force_reload, callback) {
-      chrome.runtime.sendMessage({
-        command: 'update',
-        forceReload: force_reload
-      }, callback);
+      return new Promise(function(resolve) {
+        chrome.runtime.sendMessage({
+          command: 'update',
+          forceReload: force_reload
+        }, resolve);
+      });
     }
   };
 });
-'use strict';
-
-app.controller('ProjectListCtrl', function($scope, ProjectManager, Background) {
-  $scope.setActiveProjectId = function(id) {
-    $scope.activeProjectId = id;
-  },
-
-  $scope.reload = function() {
-    $scope.$emit('start-loading');
-    Background.update(true, function() {
-      $scope.projects = ProjectManager.projects;
-      $scope.$apply();
-      $scope.$emit('end-loading');
-    });
-  };
-
-  $scope.openBookmarks = function() {
-    var projectId = $scope.activeProjectId === '0' ? null : $scope.activeProjectId;
-    ProjectManager.openBookmarkEditWindow(projectId);
-  };
-
-  $scope.openSummary = function() {
-    chrome.tabs.create({url:chrome.extension.getURL('/ng-layout.html#summary')});
-  };
-
-  $scope.openOptions = function() {
-    chrome.tabs.create({url:chrome.extension.getURL('/ng-layout.html#options')});
-  };
-
-  // TODO: merge active window and active project id into active project?
-  $scope.activeWindowId   = ProjectManager.getActiveWindowId();
-  var activeProject       = ProjectManager.getActiveProject();
-
-  $scope.setActiveProjectId(activeProject && activeProject.id || '0');
-
-  var start = window.performance.now();
-  Background.update(false, function() {
-    $scope.projects = ProjectManager.projects;
-    if (!$scope.$$phase) $scope.$apply();
-    console.log('loading time:', window.performance.now() - start);
-  });
-});
-
-// app.controller('DebugCtrl', function($scope, Background) {
-//   $scope.debug = true;
-//   $scope.expand = false;
-//   $scope.tracker = [];
-//   $scope.windows = {};
-
-//   $scope.flip = function() {
-//     $scope.expand = !$scope.expand;
-//   };
-
-//   // Background.timesummary(function(tracker) {
-//   //   $scope.tracker = tracker;
-//   // });
-//   // Background.windows(function(windows) {
-//   //   $scope.windows = windows;
-//   // });
-// });
-
-
 'use strict';
 
 app.filter('percentage', function() {
@@ -482,7 +428,7 @@ app.directive('projectList', function(ProjectManager, Background) {
 
       $scope.reload = function() {
         $scope.$emit('start-loading');
-        Background.update(true, function() {
+        Background.update(true).then(function() {
           $scope.projects = ProjectManager.projects;
           $scope.$apply();
           $scope.$emit('end-loading');
@@ -507,16 +453,14 @@ app.directive('projectList', function(ProjectManager, Background) {
       };
 
       // TODO: merge active window and active project id into active project?
-      $scope.activeWindowId   = ProjectManager.getActiveWindowId();
+      // $scope.activeWindowId   = ProjectManager.getActiveWindowId();
       var activeProject       = ProjectManager.getActiveProject();
 
       $scope.setActiveProjectId(activeProject && activeProject.id || '0');
 
-      var start = window.performance.now();
-      Background.update(false, function() {
+      Background.update(false).then(function() {
         $scope.projects = ProjectManager.projects;
         if (!$scope.$$phase) $scope.$apply();
-        console.log('loading time:', window.performance.now() - start);
       });
     },
     link: function(scope, elem, attr) {
@@ -539,20 +483,10 @@ app.directive('project', function(ProjectManager, Background, $window) {
     controller: function($scope) {
       $scope.title = $scope.project.title;
       $scope.active = $scope.project.id === $scope.activeProjectId ? true: false;
-      $scope.expand = $scope.project.winId === $scope.activeWindowId ? true : false;
+      // $scope.expand = $scope.project.winId === $scope.activeWindowId ? true : false;
+      $scope.expand = false;
       $scope.hover = false;
       $scope.editing = false;
-
-      // TODO: deprecate this method
-      $scope.save = function() {
-        // $scope.$emit('start-loading');
-        Background.createProject($scope.project.title, function(project) {
-          // $scope.project = ProjectManager.project;
-          $scope.setActiveProjectId(project.id);
-          // $scope.$emit('end-loading');
-          $scope.reload(true);
-        });
-      };
 
       $scope.associate = function() {
         var winId = ProjectManager.getActiveWindowId();
@@ -572,7 +506,7 @@ app.directive('project', function(ProjectManager, Background, $window) {
       $scope.toggle_editing = function() {
         if ($scope.editing && $scope.project.title !== $scope.title) {
           $scope.$emit('start-loading');
-          Background.renameProject($scope.project.id, $scope.title, function() {
+          Background.renameProject($scope.project.id, $scope.title).then(function() {
             $scope.$emit('end-loading');
             $scope.reload(true);
           });
@@ -582,7 +516,7 @@ app.directive('project', function(ProjectManager, Background, $window) {
 
       $scope.remove = function() {
         // $scope.$emit('start-loading');
-        Background.removeProject($scope.project.id, function() {
+        Background.removeProject($scope.project.id).then(function() {
           // $scope.$emit('end-loading');
           $scope.reload(true);
         });

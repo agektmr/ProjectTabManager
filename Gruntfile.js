@@ -59,7 +59,6 @@ module.exports = function(grunt) {
           'bower_components/angular-route/angular-route.min.js',
           'src/js/ng-app.js',
           'src/js/ng-services.js',
-          'src/js/ng-controllers.js',
           'src/js/ng-filters.js',
           'src/js/ng-directives.js'
         ],

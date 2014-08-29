@@ -66,8 +66,8 @@ Author: Eiji Kitamura (agektmr@gmail.com)
         <button class="summary" ng-click="openSummary()" chrome-i18n="todays_project_summary:title"></button>
         <button class="options" ng-click="openOptions()" chrome-i18n="options:title"></button>
       </header>
-      <section id="projects">
-        <project ng-class="{expand: query || expand}" ng-repeat="project in projects | sort:activeProjectId | filter:query" project-id="{{project.id}}" window-id="{{project.winId}}"></project>
+      <section id="projects" active-id="{{activeProjectId}}">
+        <project ng-class="{expand: query || expand}" ng-repeat="project in projects | sort:activeProjectId | filter:query" project-id="{{project.id}}" window-id="{{project.winId}}" active="{{active}}" expand="{{expand}}"></project>
       </section>
 <!--  <div ng-controller="DebugCtrl">
         <div id="debug_expander" ng-show="debug">

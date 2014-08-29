@@ -459,7 +459,12 @@ var ProjectManager = (function() {
      */
     getActiveProject: function() {
       var winId = sessionManager.getCurrentWindowId();
-      return this.getProjectFromWinId(winId);
+      if (winId) {
+        var project = this.getProjectFromWinId(winId);
+        if (config_.debug) console.log('[SessionManager] Got active project', project);
+        return project;
+      }
+      return undefined;
     },
 
     /**

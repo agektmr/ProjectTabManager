@@ -20,33 +20,41 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 app.factory('Background', function() {
   return {
     // Create folder and add all tabs in specified window there
-    createProject: function(title, callback) {
-      chrome.runtime.sendMessage({
-        command: 'createProject',
-        title: title
-      }, callback);
+    createProject: function(title) {
+      return new Promise(function(resolve) {
+        chrome.runtime.sendMessage({
+          command: 'createProject',
+          title: title
+        }, resolve);
+      });
     },
     // Rename specified project folder
-    renameProject: function(projectId, newTitle, callback) {
-      chrome.runtime.sendMessage({
-        command: 'renameProject',
-        projectId: projectId,
-        title: newTitle
-      }, callback);
+    renameProject: function(projectId, newTitle) {
+      return new Promise(function(resolve) {
+        chrome.runtime.sendMessage({
+          command: 'renameProject',
+          projectId: projectId,
+          title: newTitle
+        }, resolve);
+      });
     },
     // Remove specified project folder
     removeProject: function(projectId, callback) {
-      chrome.runtime.sendMessage({
-        command: 'removeProject',
-        projectId: projectId
-      }, callback);
+      return new Promise(function(resolve) {
+        chrome.runtime.sendMessage({
+          command: 'removeProject',
+          projectId: projectId
+        }, resolve);
+      });
     },
     // Get folders of projects
     update: function(force_reload, callback) {
-      chrome.runtime.sendMessage({
-        command: 'update',
-        forceReload: force_reload
-      }, callback);
+      return new Promise(function(resolve) {
+        chrome.runtime.sendMessage({
+          command: 'update',
+          forceReload: force_reload
+        }, resolve);
+      });
     }
   };
 });

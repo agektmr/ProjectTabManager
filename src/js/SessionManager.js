@@ -7,24 +7,22 @@ var SessionManager = (function() {
    * @param  {Integer}   winId    [description]
    * @param  {Function} callback [description]
    */
-  var getWindowInfo = function(winId) {
-    return new Promise(function(resolve, reject) {
-      if (winId === chrome.windows.WINDOW_ID_NONE) {
-        resolve(undefined);
-      } else {
-        chrome.windows.get(winId, {populate:true}, function(win) {
-          if (chrome.runtime.lastError) {
-            reject('[SessionManager] window of id '+winId+' not open');
-          }
-          if (win.type !== "normal") {
-            resolve(undefined);
-          } else {
-            resolve(win);
-          }
-        });
-      }
-    });
-  }
+  var getWindowInfo = function(winId, callback) {
+    if (winId === chrome.windows.WINDOW_ID_NONE) {
+      callback(undefined);
+    } else {
+      chrome.windows.get(winId, {populate:true}, function(win) {
+        if (chrome.runtime.lastError) {
+          throw '[SessionManager] window of id '+winId+' not open';
+        }
+        if (win.type !== "normal") {
+          callback(undefined);
+        } else {
+          callback(win);
+        }
+      });
+    }
+  };
 
   /**
    * Synchronize session status on chrome.storage
@@ -329,7 +327,7 @@ var SessionManager = (function() {
     db              = new idb(config);
     this.sessions   = [];
     this.activeInfo = {
-      id:       null,
+      // id:       null,
       start:    null,
       end:      null,
       tabId:    null,
@@ -372,11 +370,9 @@ var SessionManager = (function() {
           session.updateTab(tab);
         } else {
           // This shouldn't happen. onwindowcreated should catch and create session first.
-          getWindowInfo(tab.windowId).then(function(win) {
+          getWindowInfo(tab.windowId, (function(win) {
             this.createSession(win);
-          }, function(err) {
-            throw err;
-          });
+          }).bind(this));
         }
       }
     },
@@ -462,21 +458,19 @@ var SessionManager = (function() {
      */
     onattached: function(tabId, attachInfo) {
       if (config_.debug) console.log('[SessionManager] chrome.tabs.onAttached', tabId, attachInfo);
-      getWindowInfo(attachInfo.newWindowId).then(function(win) {
+      getWindowInfo(attachInfo.newWindowId, (function(win) {
         if (win === undefined) return;
         var session = this.getSessionFromWinId(attachInfo.newWindowId);
         // If this tab generates new window, it should be a new session
         if (!session) {
           session = new SessionEntity(win);
-          this.sessions.push(session);
+          this.sessions.unshift(session);
         }
         chrome.tabs.get(tabId, (function(tab) {
           session.addTab(tab);
           if (config_.debug) console.log('[SessionManager] added tab %d to window', tabId, attachInfo.newWindowId);
         }).bind(this));
-      }, function(err) {
-        throw err;
-      });
+      }).bind(this));
     },
 
     /**
@@ -502,13 +496,11 @@ var SessionManager = (function() {
      */
     onactivated: function(activeInfo) {
       if (config_.debug) console.log('[SessionManager] chrome.tabs.onActivated', activeInfo);
-      getWindowInfo(activeInfo.windowId).then(function(win) {
+      getWindowInfo(activeInfo.windowId, (function(win) {
         if (win === undefined) return;
         this.activeInfo.tabId    = activeInfo.tabId; // not used
         this.activeInfo.windowId = activeInfo.windowId;
-      }, function(err) {
-        throw err;
-      });
+      }).bind(this));
     },
 
     onwindowcreated: function(win) {
@@ -531,31 +523,20 @@ var SessionManager = (function() {
         db.put(db.SUMMARIES, this.activeInfo);
       }
 
-      getWindowInfo(winId).then(function(win) {
-        // Focus changed to another window
-        if (win !== undefined) {
-          // Creates new activeInfo
-          var session = this.getSessionFromWinId(win.id);
-          if (session) {
-            this.activeInfo.id        = session.id;
-            this.activeInfo.start     = (new Date()).getTime();
-            this.activeInfo.end       = null;
-            this.activeInfo.windowId  = session.winId;
+      var session = this.getSessionFromWinId(winId);
+      if (session) {
+        this.activeInfo.start     = (new Date()).getTime();
+        this.activeInfo.end       = null;
+        this.activeInfo.windowId  = winId;
 
-            // Put in database
-            db.put(db.SUMMARIES, this.activeInfo);
-          }
-
-        // Focus changed to somewhere else
-        } else {
-          this.activeInfo.id        = null;
-          this.activeInfo.start     = null;
-          this.activeInfo.end       = null;
-          this.activeInfo.windowId  = winId;
-        }
-      }, function(err) {
-        throw err;
-      });
+        // Put in database
+        db.put(db.SUMMARIES, this.activeInfo);
+      } else {
+        this.activeInfo.start     = null;
+        this.activeInfo.end       = null;
+        this.activeInfo.windowId  = winId;
+      }
+      if (config_.debug) console.log('[SessionManager] active session info updated', this.activeInfo);
     },
 
     /**
@@ -659,7 +640,7 @@ var SessionManager = (function() {
      * @return {SessionEntity} [description]
      */
     getActiveSession: function() {
-      var winId = this.activeInfo.windowId || null;
+      var winId = this.getCurrentWindowId();
       if (winId) {
         var session = this.getSessionFromWinId(winId);
         if (config_.debug) console.log('[SessionManager] Got active session', session);

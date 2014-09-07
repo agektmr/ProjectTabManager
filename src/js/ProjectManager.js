@@ -424,12 +424,10 @@ var ProjectManager = (function() {
         table.forEach((function(session) {
           if (session.id) {
             var project = this.getProjectFromId(session.id);
-            if (project) {
-              session.title = project.title;
-            } else {
-              var _session = this.getSessionFromProjectId(session.id);
-              session.title = _session.title;
-            }
+            var _session = sessionManager.getSessionFromProjectId(session.id);
+            session.title = project && project.title || _session && _session.title;
+          } else {
+            session.title = 'Unknown';
           }
         }).bind(this));
         callback(table);

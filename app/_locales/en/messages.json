@@ -38,6 +38,9 @@
   "description": {
     "message": "Have too many tabs opened on Chrome? This extension helps you organize your tabs on windows per projects."
   },
+  "bookmark": {
+    "message": "Toggle bookmark"
+  },
   "no_bookmarks_found": {
     "message": "No Bookmarks Found"
   },

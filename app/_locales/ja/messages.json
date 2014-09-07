@@ -38,6 +38,9 @@
   "description": {
     "message": "Chromeでタブを開きすぎていませんか？このExtensionを使うことで、ウィンドウごとにタブを保存することができるようになります。"
   },
+  "bookmark": {
+    "message": "ブックマークを追加・削除"
+  },
   "no_bookmarks_found": {
     "message": "ブックマークがありません"
   },

@@ -29,7 +29,6 @@ Author: Eiji Kitamura (agektmr@gmail.com)
         <input class="project-name" type="text" ng-model="title" ng-show="editing">
         <div class="menu" ng-show="hover">
           <button class="edit" chrome-i18n="edit:title"></button>
-          <!--button class="pin" ng-hide="project.id==activeProjectId" chrome-i18n="pin:title"></button-->
           <button class="remove" ng-hide="project.session.winId" chrome-i18n="remove:title"></button>
         </div>
       </header>
@@ -45,7 +44,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
       <img ng-src="{{field.favIconUrl}}" class="favicon" />
       <span class="name" ng-class="{current:!!field.tabId}" title="{{field.title}}
 {{field.url}}" ng-click="open()">{{field.title}}</span>
-      <button class="star"></button>
+      <button class="star" chrome-i18n="bookmark:title"></button>
     </script>
     <script type="text/ng-template" id="main.html">
     </script>

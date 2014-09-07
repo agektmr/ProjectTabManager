@@ -51,10 +51,7 @@ app.directive('projectList', function(ProjectManager, Background) {
         chrome.tabs.create({url:chrome.extension.getURL('/ng-layout.html#options')});
       };
 
-      // TODO: merge active window and active project id into active project?
-      // $scope.activeWindowId   = ProjectManager.getActiveWindowId();
-      var activeProject       = ProjectManager.getActiveProject();
-
+      var activeProject = ProjectManager.getActiveProject();
       $scope.setActiveProjectId(activeProject && activeProject.id || '0');
 
       Background.update(false).then(function() {
@@ -81,21 +78,13 @@ app.directive('project', function(ProjectManager, Background, $window) {
     templateUrl: 'project.html',
     controller: function($scope) {
       $scope.title = $scope.project.title;
-      $scope.active = $scope.project.id === $scope.activeProjectId ? true: false;
-      // $scope.expand = $scope.project.winId === $scope.activeWindowId ? true : false;
-      $scope.expand = false;
+      $scope.expand = $scope.project.id === $scope.activeProjectId || false;
       $scope.hover = false;
       $scope.editing = false;
 
-      $scope.associate = function() {
-        var winId = ProjectManager.getActiveWindowId();
-        $scope.project.associateWindow(winId);
-        $scope.setActiveProjectId($scope.project.id);
-        $scope.reload(true);
-      };
-
       $scope.flip = function() {
         $scope.expand = !$scope.expand;
+        $scope.$apply();
       };
 
       $scope.open = function() {
@@ -122,10 +111,6 @@ app.directive('project', function(ProjectManager, Background, $window) {
       };
     },
     link: function(scope, elem, attr) {
-      if (scope.active) {
-        scope.expand = true;
-      }
-
       elem.bind('keydown', function(e) {
         // Avoid shotcut on input element
         if (e.target.nodeName == 'INPUT' && e.keyCode === 13) {
@@ -281,16 +266,22 @@ app.directive('edit', function() {
       // });
     }
   }
-})
+});
 
-app.directive('pin', function() {
+app.directive('remove', function() {
   return {
     restrict: 'C',
     link: function(scope, elem, attr) {
-      if (scope.active) {
-        elem.remove();
-      }
-      elem.bind('click', scope.associate);
+      elem.bind('click', scope.remove);
+    }
+  }
+});
+
+app.directive('arrow', function() {
+  return {
+    restrict: 'C',
+    link: function(scope, elem, attr) {
+      elem.bind('click', scope.flip);
     }
   }
 });

@@ -1,4 +1,4 @@
-/*! ProjectTabManager - v2.3.0 - 2014-08-29
+/*! ProjectTabManager - v2.3.0 - 2014-09-07
 * Copyright (c) 2014 ; Licensed  */
 'use strict';
 

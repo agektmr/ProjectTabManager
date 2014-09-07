@@ -35,7 +35,7 @@ app.controller('SummaryCtrl', function($scope, ProjectManager) {
       for (var id in summary) {
         var session = summary[id];
         max += session.duration;
-        session.backgroundColor = 'hsl('+((parseInt(id)*135)%360)+', 100%, 50%)';
+        session.backgroundColor = 'hsl('+((parseInt(id || 0)*135)%360)+', 100%, 50%)';
       };
       $scope.max = max;
       $scope.summary = summary;
@@ -55,7 +55,7 @@ app.controller('SummaryCtrl', function($scope, ProjectManager) {
         } else {
           session.width = (((session.end - session.start) / $scope.work_hour * 100))+'%';
         }
-        session.backgroundColor = 'hsl('+((parseInt(session.id)*135)%360)+', 100%, 50%)';
+        session.backgroundColor = 'hsl('+((parseInt(session.id || 0)*135)%360)+', 100%, 50%)';
       });
       $scope.table = table;
       $scope.$apply();

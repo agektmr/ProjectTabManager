@@ -31,7 +31,6 @@ ul.timesummary {
   margin-bottom: 50px; }
   ul.timesummary .session {
     position: absolute;
-    background-image: -webkit-linear-gradient(top, black 0%, rgba(255, 255, 255, 0.1) 3%, rgba(255, 255, 255, 0.4) 33%, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0) 100%);
     height: 100%; }
     ul.timesummary .session:hover::after {
       position: absolute;

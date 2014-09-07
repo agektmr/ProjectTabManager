@@ -426,6 +426,9 @@ var ProjectManager = (function() {
             var project = this.getProjectFromId(session.id);
             if (project) {
               session.title = project.title;
+            } else {
+              var _session = this.getSessionFromProjectId(session.id);
+              session.title = _session.title;
             }
           }
         }).bind(this));

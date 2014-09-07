@@ -191,7 +191,7 @@ var SessionManager = (function() {
           if (this.tabs[i].id === tab.id) {
             // TODO: better logic
             var new_tab = new TabEntity(tab);
-            var old_tab = this.tabs.splice(i, 1, new_tab);
+            var old_tab = this.tabs.splice(i, 1, new_tab)[0];
             if (config_.debug) console.log('[SessionEntity] updating tab %o to %o', old_tab, new_tab);
             return;
           }
@@ -328,7 +328,7 @@ var SessionManager = (function() {
     this.prev_sessions = [];
     this.openingProject = null;
     this.activeInfo = {
-      // id:       null,
+      id:       null,
       start:    null,
       end:      null,
       tabId:    null,
@@ -553,6 +553,7 @@ var SessionManager = (function() {
 
       var session = this.getSessionFromWinId(winId);
       if (session) {
+        this.activeInfo.id        = session.id;
         this.activeInfo.start     = (new Date()).getTime();
         this.activeInfo.end       = null;
         this.activeInfo.windowId  = winId;
@@ -560,6 +561,7 @@ var SessionManager = (function() {
         // Put in database
         db.put(db.SUMMARIES, this.activeInfo);
       } else {
+        this.activeInfo.id        = null;
         this.activeInfo.start     = null;
         this.activeInfo.end       = null;
         this.activeInfo.windowId  = winId;
@@ -580,23 +582,6 @@ var SessionManager = (function() {
         UpdateManager.storeSessions();
       }
     },
-
-    // /**
-    //  * [createSession description]
-    //  * @param  {chrome.windows.Window} win [description]
-    //  * @return {SessionEntity}     [description]
-    //  */
-    // createSession: function(win) {
-    //   var session = this.getSessionFromWinId(win.id);
-    //   if (session) {
-    //     if (config_.debug) console.log('[SessionManager] session found', session);
-    //     return session;
-    //   } else {
-    //     session = new SessionEntity(win);
-    //     this.sessions.unshift(session);
-    //     return session;
-    //   }
-    // },
 
     /**
      * [removeSessionFromProjectId description]

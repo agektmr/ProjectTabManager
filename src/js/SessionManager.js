@@ -337,10 +337,8 @@ var SessionManager = (function() {
 
     // set initial window id
     chrome.windows.getCurrent({populate:true}, (function(win) {
-      // if (win.type === "normal" && win.id !== chrome.windows.WINDOW_ID_NONE) {
-        this.activeInfo.tabId    = null;
-        this.activeInfo.windowId = win.id;
-      // }
+      this.activeInfo.tabId    = null;
+      this.activeInfo.windowId = win.id;
     }).bind(this));
 
     // chrome.tabs.onCreated.addListener(this.oncreated.bind(this));
@@ -518,6 +516,7 @@ var SessionManager = (function() {
             this.sessions.unshift(session);
             session.setId(this.openingProject);
           }
+          this.openingProject = null;
         } else {
           if (config_.debug) console.log('[SessionManager] Unintentionally opened window', win);
           // Loop through existing sessions to see if there's an identical one
@@ -526,15 +525,19 @@ var SessionManager = (function() {
           // * Opening a profile
           // * Opening a new window after closing all
           for (var i = 0; i < this.sessions.length; i++) {
+            if (this.sessions[i].winId) continue;
             if (this.compareTabs(win, this.sessions[i])) {
               // set project id and title to this session and make it bound session
               this.sessions[i].setWinId(win.id);
               if (config_.debug) console.log('[SessionManager] Associated with a previous session', this.sessions[i]);
-              break;
+              UpdateManager.storeSessions();
+              return;
             }
           }
+          // Create new session
+          session = new SessionEntity(win);
+          this.sessions.unshift(session);
         }
-        this.openingProject = null;
         UpdateManager.storeSessions();
       }).bind(this));
     },
@@ -710,9 +713,6 @@ var SessionManager = (function() {
     compareTabs: function(win, session) {
       var similar = 0,
           count = 0;
-
-      // Skip sessions with winId assigned
-      if (session.winId !== null) return false;
 
       // Loop through all tabs in temporary session
       for (var j = 0; j < win.tabs.length; j++) {

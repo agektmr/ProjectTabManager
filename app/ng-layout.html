@@ -20,33 +20,31 @@ Author: Eiji Kitamura (agektmr@gmail.com)
   <head>
     <title>Project Tab Manager setting</title>
     <meta charset="utf-8"/>
-    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="lib/bootstrap/bootstrap.css">
     <link rel="stylesheet" href="css/summary.css">
     <script src="js/layout.js"></script>
   </head>
   <body>
-    <header id="header" class="navbar">
-      <div class="navbar-inner">
-        <div class="container">
-          <span class="brand">Project Tab Manager</span>
-          <ul class="nav">
-            <li>
-              <a href="#/options" title="Options">Options</a>
-            </li>
-            <li>
-              <a href="#/summary" title="Summary">Summary</a>
-            </li>
-            <li>
-              <a href="#/history" title="History">History</a>
-            </li>
-            <li>
-              <a href="#/help" title="Help">Help</a>
-            </li>
-            <li>
-              <a href="http://blog.agektmr.com/2013/05/chrome-project-tab-manager-20.html" target="_blank">日本語ヘルプ</a>
-            </li>
-          </ul>
-        </div>
+    <header id="header" class="navbar navbar-inverse">
+      <div class="container">
+        <span class="navbar-brand">Project Tab Manager</span>
+        <ul class="nav navbar-nav">
+          <li>
+            <a href="#/options" title="Options">Options</a>
+          </li>
+          <li>
+            <a href="#/summary" title="Summary">Summary</a>
+          </li>
+          <li>
+            <a href="#/history" title="History">History</a>
+          </li>
+          <li>
+            <a href="#/help" title="Help">Help</a>
+          </li>
+          <li>
+            <a href="http://blog.agektmr.com/2013/05/chrome-project-tab-manager-20.html" target="_blank">日本語ヘルプ</a>
+          </li>
+        </ul>
       </div>
     </header>
     <div class="container" ng-view></div>

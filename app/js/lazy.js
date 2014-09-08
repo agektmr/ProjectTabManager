@@ -97,8 +97,60 @@ var util = {
     var UTCMidnight = date.getTime();
     var TimezoneOffset = date.getTimezoneOffset() * 60 * 1000;
     return UTCMidnight + TimezoneOffset;
-  }
+  },
+
+  getFavicon: (function() {
+    var DEFAULT_FAVICON = chrome.extension.getURL('/img/favicon.png');
+    var blob_url = {};
+    var fetchFavicon = function(domain) {
+      return new Promise(function(resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        var url = util.FAVICON_URL+encodeURIComponent(domain);
+        xhr.open('GET', url);
+        xhr.responseType = 'blob';
+        xhr.onload = function() {
+          resolve(xhr.response);
+        };
+        xhr.onerror = function() {
+          reject(null);
+        };
+        xhr.send();
+      });
+    };
+
+    return function(url) {
+      return new Promise(function(resolve, reject) {
+        var domain = url.replace(/^.*?\/\/(.*?)\/.*$/, "$1");
+        if (blob_url[domain]) {
+          resolve(blob_url[domain]);
+        } else {
+          db.get(db.FAVICONS, domain).then(function(entry) {
+            // Favicon is in database
+            return entry.blob;
+          }).catch(function () {
+            // Fetch favicon from internet
+            return fetchFavicon(url).then(function(result) {
+              // Store fetched favicon in database
+              db.put(db.FAVICONS, {url:domain, blob:result});
+              return result;
+            });
+          }).then(function(blob) {
+            // Create Blob URL from resulting favicon blob
+            var blobUrl = URL.createObjectURL(blob);
+            // Cache it
+            blob_url[domain] = blobUrl;
+            // Resolve
+            resolve(blobUrl);
+          }, function() {
+            resolve(DEFAULT_FAVICON);
+          });
+        }
+      });
+    };
+  })()
 };
+
+
 var query = location.href.replace(/.*\?(.*)$/, '$1');
 var params = {};
 var _params = query.split('&');

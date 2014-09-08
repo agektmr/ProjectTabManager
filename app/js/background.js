@@ -172,8 +172,60 @@ var util = {
     var UTCMidnight = date.getTime();
     var TimezoneOffset = date.getTimezoneOffset() * 60 * 1000;
     return UTCMidnight + TimezoneOffset;
-  }
+  },
+
+  getFavicon: (function() {
+    var DEFAULT_FAVICON = chrome.extension.getURL('/img/favicon.png');
+    var blob_url = {};
+    var fetchFavicon = function(domain) {
+      return new Promise(function(resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        var url = util.FAVICON_URL+encodeURIComponent(domain);
+        xhr.open('GET', url);
+        xhr.responseType = 'blob';
+        xhr.onload = function() {
+          resolve(xhr.response);
+        };
+        xhr.onerror = function() {
+          reject(null);
+        };
+        xhr.send();
+      });
+    };
+
+    return function(url) {
+      return new Promise(function(resolve, reject) {
+        var domain = url.replace(/^.*?\/\/(.*?)\/.*$/, "$1");
+        if (blob_url[domain]) {
+          resolve(blob_url[domain]);
+        } else {
+          db.get(db.FAVICONS, domain).then(function(entry) {
+            // Favicon is in database
+            return entry.blob;
+          }).catch(function () {
+            // Fetch favicon from internet
+            return fetchFavicon(url).then(function(result) {
+              // Store fetched favicon in database
+              db.put(db.FAVICONS, {url:domain, blob:result});
+              return result;
+            });
+          }).then(function(blob) {
+            // Create Blob URL from resulting favicon blob
+            var blobUrl = URL.createObjectURL(blob);
+            // Cache it
+            blob_url[domain] = blobUrl;
+            // Resolve
+            resolve(blobUrl);
+          }, function() {
+            resolve(DEFAULT_FAVICON);
+          });
+        }
+      });
+    };
+  })()
 };
+
+
 'use strict';
 
 var idb = (function(config) {
@@ -182,7 +234,7 @@ var idb = (function(config) {
     console.error('IndexedDB Error!', e);
   };
 
-  var version = 3,
+  var version = 4,
       db      = null,
       config_ = config;
 
@@ -207,24 +259,50 @@ var idb = (function(config) {
         db.deleteObjectStore(this.SESSIONS);
       }
       db.createObjectStore(this.SESSIONS, {keyPath: 'id'});
+      if (db.objectStoreNames.contains(this.FAVICONS)) {
+        db.deleteObjectStore(this.FAVICONS);
+      }
+      db.createObjectStore(this.FAVICONS, {keyPath: 'url'});
       if (config_.debug) console.log('[IndexedDB] Database upgraded');
     }).bind(this);
   };
   idb.prototype = {
     SUMMARIES: 'summaries',
     SESSIONS:  'sessions',
+    FAVICONS:  'favicons',
     oncomplete: null,
     onprogress: null,
     put: function(storeName, entry, callback) {
       if (!db) return;
       var transaction = db.transaction([storeName], 'readwrite');
       transaction.oncomplete = (function() {
-        if (config_.debug) console.log('[IndexedDB] Summary stored', entry);
+        if (config_.debug) console.log('[IndexedDB] %s stored', storeName, entry);
         if (typeof callback === 'function') callback();
       }).bind(this);
       transaction.onerror = error;
-      var store = transaction.objectStore(storeName);
-      store.put(entry);
+      transaction.objectStore(storeName).put(entry);
+    },
+    get: function(storeName, key) {
+      return new Promise(function(resolve, reject) {
+        var result = null;
+        var transaction = db.transaction([storeName], 'readonly');
+        transaction.oncomplete = function() {
+          if (config_.debug) console.log('[IndexedDB] Got %s', storeName, result);
+          if (result) {
+            resolve(result);
+          } else {
+            reject();
+          }
+        };
+        transaction.onerror = function(e) {
+          if (config_.debug) console.log('[IndexedDB] Database Error: %s', e.target.error.name);
+          reject();
+        };
+        var req = transaction.objectStore(storeName).get(key);
+        req.onsuccess = function(e) {
+          result = e.target.result || null;
+        };
+      });
     },
     getAll: function(storeName, callback) {
       if (!db) return;
@@ -299,8 +377,7 @@ var idb = (function(config) {
   return idb;
 })();
 var SessionManager = (function() {
-  var config_ = null,
-      db      = null;
+  var config_ = null;
 
   /**
    * [getWindowInfo description]
@@ -623,7 +700,6 @@ var SessionManager = (function() {
    */
   var SessionManager = function(config, callback) {
     config_         = config;
-    db              = new idb(config);
     this.sessions   = [];
     this.prev_sessions = [];
     this.openingProject = null;
@@ -1406,7 +1482,9 @@ var ProjectManager = (function() {
     this.title      = tab && tab.title || bookmark.title;
     this.url        = url;
     this.pinned     = tab && tab.pinned || false;
-    this.favIconUrl = favIconUrl;
+    util.getFavicon(url).then((function(url) {
+      this.favIconUrl = url;
+    }).bind(this));
   };
 
   /**
@@ -1832,7 +1910,8 @@ var ProjectManager = (function() {
 
 var bookmarkManager,
     sessionManager,
-    projectManager;
+    projectManager,
+    db;
 
 chrome.runtime.onInstalled.addListener(function(details) {
   // Pop up history page only if the version changes in major (ex 2.0.0) or minor (ex 2.1.0).
@@ -1848,6 +1927,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
 
 var config = new Config(function() {
   bookmarkManager = new BookmarkManager(config, function() {
+    db = new idb(config);
     sessionManager = new SessionManager(config, function() {
       projectManager = new ProjectManager(config);
       projectManager.update(true);

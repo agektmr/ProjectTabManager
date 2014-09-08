@@ -1,6 +1,5 @@
 var SessionManager = (function() {
-  var config_ = null,
-      db      = null;
+  var config_ = null;
 
   /**
    * [getWindowInfo description]
@@ -323,7 +322,6 @@ var SessionManager = (function() {
    */
   var SessionManager = function(config, callback) {
     config_         = config;
-    db              = new idb(config);
     this.sessions   = [];
     this.prev_sessions = [];
     this.openingProject = null;

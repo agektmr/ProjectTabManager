@@ -172,8 +172,60 @@ var util = {
     var UTCMidnight = date.getTime();
     var TimezoneOffset = date.getTimezoneOffset() * 60 * 1000;
     return UTCMidnight + TimezoneOffset;
-  }
+  },
+
+  getFavicon: (function() {
+    var DEFAULT_FAVICON = chrome.extension.getURL('/img/favicon.png');
+    var blob_url = {};
+    var fetchFavicon = function(domain) {
+      return new Promise(function(resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        var url = util.FAVICON_URL+encodeURIComponent(domain);
+        xhr.open('GET', url);
+        xhr.responseType = 'blob';
+        xhr.onload = function() {
+          resolve(xhr.response);
+        };
+        xhr.onerror = function() {
+          reject(null);
+        };
+        xhr.send();
+      });
+    };
+
+    return function(url) {
+      return new Promise(function(resolve, reject) {
+        var domain = url.replace(/^.*?\/\/(.*?)\/.*$/, "$1");
+        if (blob_url[domain]) {
+          resolve(blob_url[domain]);
+        } else {
+          db.get(db.FAVICONS, domain).then(function(entry) {
+            // Favicon is in database
+            return entry.blob;
+          }).catch(function () {
+            // Fetch favicon from internet
+            return fetchFavicon(url).then(function(result) {
+              // Store fetched favicon in database
+              db.put(db.FAVICONS, {url:domain, blob:result});
+              return result;
+            });
+          }).then(function(blob) {
+            // Create Blob URL from resulting favicon blob
+            var blobUrl = URL.createObjectURL(blob);
+            // Cache it
+            blob_url[domain] = blobUrl;
+            // Resolve
+            resolve(blobUrl);
+          }, function() {
+            resolve(DEFAULT_FAVICON);
+          });
+        }
+      });
+    };
+  })()
 };
+
+
 (function(P,T,q){'use strict';function m(b,a,c){var d;if(b)if(H(b))for(d in b)d!="prototype"&&d!="length"&&d!="name"&&b.hasOwnProperty(d)&&a.call(c,b[d],d);else if(b.forEach&&b.forEach!==m)b.forEach(a,c);else if(!b||typeof b.length!=="number"?0:typeof b.hasOwnProperty!="function"&&typeof b.constructor!="function"||b instanceof L||aa&&b instanceof aa||ma.call(b)!=="[object Object]"||typeof b.callee==="function")for(d=0;d<b.length;d++)a.call(c,b[d],d);else for(d in b)b.hasOwnProperty(d)&&a.call(c,b[d],
 d);return b}function nb(b){var a=[],c;for(c in b)b.hasOwnProperty(c)&&a.push(c);return a.sort()}function hc(b,a,c){for(var d=nb(b),e=0;e<d.length;e++)a.call(c,b[d[e]],d[e]);return d}function ob(b){return function(a,c){b(c,a)}}function xa(){for(var b=Z.length,a;b;){b--;a=Z[b].charCodeAt(0);if(a==57)return Z[b]="A",Z.join("");if(a==90)Z[b]="0";else return Z[b]=String.fromCharCode(a+1),Z.join("")}Z.unshift("0");return Z.join("")}function pb(b,a){a?b.$$hashKey=a:delete b.$$hashKey}function D(b){var a=
 b.$$hashKey;m(arguments,function(a){a!==b&&m(a,function(a,c){b[c]=a})});pb(b,a);return b}function G(b){return parseInt(b,10)}function ya(b,a){return D(new (D(function(){},{prototype:b})),a)}function s(){}function na(b){return b}function I(b){return function(){return b}}function u(b){return typeof b=="undefined"}function v(b){return typeof b!="undefined"}function M(b){return b!=null&&typeof b=="object"}function B(b){return typeof b=="string"}function Ra(b){return typeof b=="number"}function oa(b){return ma.apply(b)==
@@ -372,7 +424,7 @@ app.factory('Background', function() {
       });
     },
     // Remove specified project folder
-    removeProject: function(projectId, callback) {
+    removeProject: function(projectId) {
       return new Promise(function(resolve) {
         chrome.runtime.sendMessage({
           command: 'removeProject',
@@ -381,7 +433,7 @@ app.factory('Background', function() {
       });
     },
     // Get folders of projects
-    update: function(force_reload, callback) {
+    update: function(force_reload) {
       return new Promise(function(resolve) {
         chrome.runtime.sendMessage({
           command: 'update',

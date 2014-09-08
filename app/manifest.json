@@ -11,7 +11,8 @@
     "contextMenus",
     "bookmarks",
     "storage",
-    "tabs"
+    "tabs",
+    "http://www.google.com/"
   ],
   "default_locale": "en",
   "background": {

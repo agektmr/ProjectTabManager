@@ -19,7 +19,8 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 
 var bookmarkManager,
     sessionManager,
-    projectManager;
+    projectManager,
+    db;
 
 chrome.runtime.onInstalled.addListener(function(details) {
   // Pop up history page only if the version changes in major (ex 2.0.0) or minor (ex 2.1.0).
@@ -35,6 +36,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
 
 var config = new Config(function() {
   bookmarkManager = new BookmarkManager(config, function() {
+    db = new idb(config);
     sessionManager = new SessionManager(config, function() {
       projectManager = new ProjectManager(config);
       projectManager.update(true);

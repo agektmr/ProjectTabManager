@@ -36,7 +36,9 @@ var ProjectManager = (function() {
     this.title      = tab && tab.title || bookmark.title;
     this.url        = url;
     this.pinned     = tab && tab.pinned || false;
-    this.favIconUrl = favIconUrl;
+    util.getFavicon(url).then((function(url) {
+      this.favIconUrl = url;
+    }).bind(this));
   };
 
   /**

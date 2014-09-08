@@ -39,7 +39,7 @@ app.factory('Background', function() {
       });
     },
     // Remove specified project folder
-    removeProject: function(projectId, callback) {
+    removeProject: function(projectId) {
       return new Promise(function(resolve) {
         chrome.runtime.sendMessage({
           command: 'removeProject',
@@ -48,7 +48,7 @@ app.factory('Background', function() {
       });
     },
     // Get folders of projects
-    update: function(force_reload, callback) {
+    update: function(force_reload) {
       return new Promise(function(resolve) {
         chrome.runtime.sendMessage({
           command: 'update',

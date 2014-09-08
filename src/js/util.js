@@ -55,18 +55,6 @@ var util = {
   },
 
   /**
-   * [getFavIconUrl description]
-   * @param  {[type]} favIconUrl [description]
-   * @param  {[type]} url        [description]
-   * @return {[type]}            [description]
-   */
-  getFavIconUrl: function(favIconUrl, url) {
-    var domain = url.replace(/^.*?\/\/(.*?)\/.*$/, "$1");
-    var favIconUrl_ = favIconUrl || util.FAVICON_URL+encodeURIComponent(domain);
-    return favIconUrl_;
-  },
-
-  /**
    * [resembleUrls description]
    * @param  {[type]} url1 [description]
    * @param  {[type]} url2 [description]
@@ -112,5 +100,59 @@ var util = {
     var UTCMidnight = date.getTime();
     var TimezoneOffset = date.getTimezoneOffset() * 60 * 1000;
     return UTCMidnight + TimezoneOffset;
-  }
+  },
+
+  /**
+   * [description]
+   * @return {[type]}
+   */
+  getFavicon: (function() {
+    var blob_url = {};
+    var fetchFavicon = function(domain) {
+      return new Promise(function(resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        var url = util.FAVICON_URL+encodeURIComponent(domain);
+        xhr.open('GET', url);
+        xhr.responseType = 'blob';
+        xhr.onload = function() {
+          resolve(xhr.response);
+        };
+        xhr.onerror = function() {
+          reject(null);
+        };
+        xhr.send();
+      });
+    };
+
+    return function(url) {
+      return new Promise(function(resolve, reject) {
+        var domain = url.replace(/^.*?\/\/(.*?)\/.*$/, "$1");
+        if (blob_url[domain]) {
+          resolve(blob_url[domain]);
+        } else {
+          db.get(db.FAVICONS, domain).then(function(entry) {
+            // Favicon is in database
+            return entry.blob;
+          }).catch(function () {
+            // Fetch favicon from internet
+            return fetchFavicon(url).then(function(result) {
+              // Store fetched favicon in database
+              db.put(db.FAVICONS, {url:domain, blob:result});
+              return result;
+            });
+          }).then(function(blob) {
+            // Create Blob URL from resulting favicon blob
+            var blobUrl = URL.createObjectURL(blob);
+            // Cache it
+            blob_url[domain] = blobUrl;
+            // Resolve
+            resolve(blobUrl);
+          }, function() {
+            resolve(chrome.extension.getURL('/img/favicon.png'));
+          });
+        }
+      });
+    };
+  })()
 };
+

@@ -23,7 +23,7 @@ var idb = (function(config) {
     console.error('IndexedDB Error!', e);
   };
 
-  var version = 3,
+  var version = 4,
       db      = null,
       config_ = config;
 
@@ -48,24 +48,50 @@ var idb = (function(config) {
         db.deleteObjectStore(this.SESSIONS);
       }
       db.createObjectStore(this.SESSIONS, {keyPath: 'id'});
+      if (db.objectStoreNames.contains(this.FAVICONS)) {
+        db.deleteObjectStore(this.FAVICONS);
+      }
+      db.createObjectStore(this.FAVICONS, {keyPath: 'url'});
       if (config_.debug) console.log('[IndexedDB] Database upgraded');
     }).bind(this);
   };
   idb.prototype = {
     SUMMARIES: 'summaries',
     SESSIONS:  'sessions',
+    FAVICONS:  'favicons',
     oncomplete: null,
     onprogress: null,
     put: function(storeName, entry, callback) {
       if (!db) return;
       var transaction = db.transaction([storeName], 'readwrite');
       transaction.oncomplete = (function() {
-        if (config_.debug) console.log('[IndexedDB] Summary stored', entry);
+        if (config_.debug) console.log('[IndexedDB] %s stored', storeName, entry);
         if (typeof callback === 'function') callback();
       }).bind(this);
       transaction.onerror = error;
-      var store = transaction.objectStore(storeName);
-      store.put(entry);
+      transaction.objectStore(storeName).put(entry);
+    },
+    get: function(storeName, key) {
+      return new Promise(function(resolve, reject) {
+        var result = null;
+        var transaction = db.transaction([storeName], 'readonly');
+        transaction.oncomplete = function() {
+          if (config_.debug) console.log('[IndexedDB] Got %s', storeName, result);
+          if (result) {
+            resolve(result);
+          } else {
+            reject();
+          }
+        };
+        transaction.onerror = function(e) {
+          if (config_.debug) console.log('[IndexedDB] Database Error: %s', e.target.error.name);
+          reject();
+        };
+        var req = transaction.objectStore(storeName).get(key);
+        req.onsuccess = function(e) {
+          result = e.target.result || null;
+        };
+      });
     },
     getAll: function(storeName, callback) {
       if (!db) return;

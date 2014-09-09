@@ -51,7 +51,7 @@ var idb = (function(config) {
       if (db.objectStoreNames.contains(this.FAVICONS)) {
         db.deleteObjectStore(this.FAVICONS);
       }
-      db.createObjectStore(this.FAVICONS, {keyPath: 'url'});
+      db.createObjectStore(this.FAVICONS, {keyPath: 'domain'});
       if (config_.debug) console.log('[IndexedDB] Database upgraded');
     }).bind(this);
   };

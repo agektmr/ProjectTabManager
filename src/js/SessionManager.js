@@ -109,7 +109,7 @@ var SessionManager = (function() {
     this.title =      tab.title;
     this.url =        url;
     this.pinned =     tab.pinned || false;
-    this.favIconUrl = tab.favIconUrl || 'http://www.google.com/s2/favicons?domain='+encodeURIComponent(domain);
+    this.favIconUrl = tab.favIconUrl;
   };
 
   /**

@@ -231,6 +231,9 @@ project {
         width:16px;
         height:16px;
         margin-right: 8px;
+        &[src=""] {
+          background: url(../img/favicon.png) no-repeat;
+        }
       }
       .name {
         flex: 1 1 auto;

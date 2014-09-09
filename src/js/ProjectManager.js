@@ -27,8 +27,7 @@ var ProjectManager = (function() {
    * @param {chrome.bookmarks.BookmarkTreeNode} bookmark [description]
    */
   var FieldEntity = function(tab, bookmark) {
-    var url         = util.unlazify(tab && tab.url || bookmark.url),
-        favIconUrl  = util.getFavIconUrl(tab && tab.favIconUrl, url);
+    var url         = util.unlazify(tab && tab.url || bookmark.url);
 
     this.id         = bookmark && bookmark.id || undefined;
     this.tabId      = tab && tab.id || undefined;
@@ -36,7 +35,7 @@ var ProjectManager = (function() {
     this.title      = tab && tab.title || bookmark.title;
     this.url        = url;
     this.pinned     = tab && tab.pinned || false;
-    util.getFavicon(url).then((function(url) {
+    util.getFavicon(url, tab && tab.favIconUrl).then((function(url) {
       this.favIconUrl = url;
     }).bind(this));
   };

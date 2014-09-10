@@ -15,6 +15,9 @@ limitations under the License.
 
 Author: Eiji Kitamura (agektmr@gmail.com)
 */
+* {
+  font-family: 'Noto Sans', Helvetica, Arial; }
+
 .color_swatch {
   width: 20px;
   height: 20px;

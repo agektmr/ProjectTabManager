@@ -110,12 +110,11 @@ var util = {
     var cache = {};
     var fetchFavicon = function(url) {
       return new Promise(function(resolve, reject) {
-console.log('[util] Fetching favicon from %s', url);
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url);
         xhr.responseType = 'blob';
         xhr.onload = function() {
-          if (xhr.status == 200) {
+          if (xhr.status === 200 || xhr.status === 304) {
             resolve(xhr.response);
           } else {
             reject();

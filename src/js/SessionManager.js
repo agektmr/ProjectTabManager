@@ -514,6 +514,7 @@ var SessionManager = (function() {
             this.sessions.unshift(session);
             session.setId(this.openingProject);
           }
+          this.setActiveSession(win.id, session);
           this.openingProject = null;
         } else {
           if (config_.debug) console.log('[SessionManager] Unintentionally opened window', win);
@@ -528,6 +529,7 @@ var SessionManager = (function() {
               // set project id and title to this session and make it bound session
               this.sessions[i].setWinId(win.id);
               if (config_.debug) console.log('[SessionManager] Associated with a previous session', this.sessions[i]);
+              this.setActiveSession(win.id, this.sessions[i]);
               UpdateManager.storeSessions();
               return;
             }
@@ -535,6 +537,7 @@ var SessionManager = (function() {
           // Create new session
           session = new SessionEntity(win);
           this.sessions.unshift(session);
+          this.setActiveSession(win.id, session);
         }
         UpdateManager.storeSessions();
       }).bind(this));
@@ -553,21 +556,7 @@ var SessionManager = (function() {
       }
 
       var session = this.getSessionFromWinId(winId);
-      if (session) {
-        this.activeInfo.id        = session.id;
-        this.activeInfo.start     = (new Date()).getTime();
-        this.activeInfo.end       = null;
-        this.activeInfo.windowId  = winId;
-
-        // Put in database
-        db.put(db.SUMMARIES, this.activeInfo);
-      } else {
-        this.activeInfo.id        = null;
-        this.activeInfo.start     = null;
-        this.activeInfo.end       = null;
-        this.activeInfo.windowId  = winId;
-      }
-      if (config_.debug) console.log('[SessionManager] active session info updated', this.activeInfo);
+      this.setActiveSession(winId, session);
     },
 
     /**
@@ -660,6 +649,29 @@ var SessionManager = (function() {
         }
       }
       return undefined;
+    },
+
+    /**
+     * [setActiveSession description]
+     * @param {integer} winId   session window id
+     * @param {string}  session optional session id
+     */
+    setActiveSession: function(winId, session) {
+      if (session) {
+        this.activeInfo.id        = session.id;
+        this.activeInfo.start     = (new Date()).getTime();
+        this.activeInfo.end       = null;
+        this.activeInfo.windowId  = session.winId;
+
+        // Put in database
+        db.put(db.SUMMARIES, this.activeInfo);
+      } else {
+        this.activeInfo.id        = null;
+        this.activeInfo.start     = null;
+        this.activeInfo.end       = null;
+        this.activeInfo.windowId  = winId;
+      }
+      if (config_.debug) console.log('[SessionManager] active session info updated', this.activeInfo);
     },
 
     /**

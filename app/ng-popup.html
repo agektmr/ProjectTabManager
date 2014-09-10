@@ -33,7 +33,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
         </div>
       </header>
       <div class="bookmarks" ng-show="query || expand">
-        <bookmark ng-repeat="field in project.fields | filter:query" bookmark-id="{{field.id}}"></bookmark>
+        <bookmark ng-repeat="field in project.fields | filter:query" bookmark-id="{{field.id}}" url="{{field.url}}"></bookmark>
         <div ng-show="project.fields.length==0">
           <img src="../img/favicon.png" class="favicon" />
           <span class="name" chrome-i18n="no_bookmarks_found:inner"></span>

@@ -8,7 +8,6 @@
     "128": "img/128.png"
   },
   "permissions": [
-    "contextMenus",
     "bookmarks",
     "storage",
     "tabs",
@@ -31,9 +30,9 @@
   "commands": {
     "_execute_browser_action": {
       "suggested_key": {
-        "default": "Ctrl+P"
-      },
-      "description": "Opens Project Tab Manager"
+        "default": "Ctrl+Shift+P",
+        "mac": "MacCtrl+Shift+P"
+      }
     }
   }
 }

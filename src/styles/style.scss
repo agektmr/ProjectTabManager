@@ -231,8 +231,12 @@ project {
         width:16px;
         height:16px;
         margin-right: 8px;
+        opacity: 0.3;
         &[src=""] {
           background: url(../img/favicon.png) no-repeat;
+        }
+        &.current {
+          opacity: 1.0;
         }
       }
       .name {

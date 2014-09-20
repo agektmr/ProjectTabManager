@@ -191,9 +191,12 @@ project {
         flex: 0 0 auto;
         width: 16px;
         height: 16px;
-        margin-right: 8px; }
+        margin-right: 8px;
+        opacity: 0.3; }
         project .bookmarks bookmark .favicon[src=""], project .bookmarks > div .favicon[src=""] {
           background: url(../img/favicon.png) no-repeat; }
+        project .bookmarks bookmark .favicon.current, project .bookmarks > div .favicon.current {
+          opacity: 1.0; }
       project .bookmarks bookmark .name, project .bookmarks > div .name {
         flex: 1 1 auto;
         color: #999;

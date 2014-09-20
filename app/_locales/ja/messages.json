@@ -6,7 +6,7 @@
     "message": "タブを追加する"
   },
   "edit": {
-    "message": "ブックマークマネージャでプロジェクトを編集する"
+    "message": "プロジェクト名を編集する"
   },
   "pin": {
     "message": "このプロジェクトをウィンドウに関連付ける"
@@ -45,7 +45,7 @@
     "message": "ブックマークがありません"
   },
   "todays_project_summary": {
-    "message": "本日のプロジェクト時間まとめ"
+    "message": "プロジェクト使用時間の統計"
   },
   "options": {
     "message": "オプション"

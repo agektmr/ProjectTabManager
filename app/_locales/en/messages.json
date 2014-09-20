@@ -6,7 +6,7 @@
     "message": "Append Tabs"
   },
   "edit": {
-    "message": "Edit projects on Bookmark Manager"
+    "message": "Edit the project name"
   },
   "pin": {
     "message": "Associate this project to the window"
@@ -45,7 +45,7 @@
     "message": "No Bookmarks Found"
   },
   "todays_project_summary": {
-    "message": "Today's Project Summary"
+    "message": "Summary of Project Usage"
   },
   "options": {
     "message": "Options"

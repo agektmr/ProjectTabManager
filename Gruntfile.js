@@ -87,15 +87,13 @@ module.exports = function(grunt) {
       }
     },
     markdown: {
-      all: {
-        files: [
-          {
-            expand: true,
-            src: 'HISTORY.md',
-            dest: 'app/partials/',
-            ext: '.html'
-          }
+      defaults: {
+        expand: true,
+        src: [
+          'HISTORY.md', 'HELP.md'
         ],
+        dest: 'app/partials/',
+        ext: '.html',
         options: {
           template: 'src/template.jst'
         }

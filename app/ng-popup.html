@@ -41,7 +41,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
       </div>
     </script>
     <script type="text/ng-template" id="bookmark.html">
-      <img ng-src="{{field.favIconUrl}}" class="favicon" />
+      <img ng-src="{{field.favIconUrl}}" ng-class="{current:!!field.tabId}" class="favicon" />
       <span class="name" ng-class="{current:!!field.tabId}" title="{{field.title}}
 {{field.url}}" ng-click="open()">{{field.title}}</span>
       <button class="star" chrome-i18n="bookmark:title"></button>

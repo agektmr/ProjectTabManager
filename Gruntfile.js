@@ -90,7 +90,7 @@ module.exports = function(grunt) {
       defaults: {
         expand: true,
         src: [
-          'HISTORY.md', 'HELP.md'
+          'HISTORY.md', 'README.md'
         ],
         dest: 'app/partials/',
         ext: '.html',

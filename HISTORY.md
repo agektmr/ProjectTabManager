@@ -2,7 +2,12 @@
 * Project Tab Manager now treats **all** windows as projects.
     * No need to manually create project
     * Click on "edit" button beside project name to rename
-    * Bookmark will be created when you bookmark one of tabs
+    * Bookmark will be created when you bookmark one of tabs by clicking a star
+* Better session tracking: Sessions can be resumed in any situations including:
+    * Launching Chrome
+    * Recovery from crash
+    * Opening a profile
+* "Pin" feature is deprecated
 * Tab order is now synching better than before
 * Retina display support
 * New icons

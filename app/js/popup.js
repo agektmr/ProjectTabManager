@@ -1,4 +1,4 @@
-/*! ProjectTabManager - v2.5.0 - 2014-09-11
+/*! ProjectTabManager - v3.0.0 - 2014-09-21
 * Copyright (c) 2014 ; Licensed  */
 var Config = (function() {
   var rootParentId_ = '2',
@@ -168,64 +168,70 @@ var util = {
    */
   getFavicon: (function() {
     var cache = {};
-    var fetchFavicon = function(url) {
-      return new Promise(function(resolve, reject) {
-console.log('[util] Fetching favicon from %s', url);
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', url);
-        xhr.responseType = 'blob';
-        xhr.onload = function() {
-          if (xhr.status == 200) {
-            resolve(xhr.response);
-          } else {
+    var fetching = {};
+    var fetchFavicon = function(domain, url) {
+      if (!fetching[url]) {
+        fetching[url] = new Promise(function(resolve, reject) {
+          var xhr = new XMLHttpRequest();
+          xhr.open('GET', url);
+          xhr.responseType = 'blob';
+          xhr.onload = function() {
+            if (xhr.status === 200 || xhr.status === 304) {
+              var entry = {domain:domain, blob:xhr.response, url:url};
+              // Store fetched favicon in database
+              db.put(db.FAVICONS, entry);
+              resolve(entry);
+            } else {
+              reject();
+            }
+            delete fetching[url];
+          };
+          xhr.onerror = function() {
             reject();
-          }
-        };
-        xhr.onerror = function() {
-          reject();
-        };
-        xhr.send();
-      });
+            delete fetching[url];
+          };
+          xhr.send();
+        });
+      }
+      return fetching[url];
     };
 
     return function(url, favIconUrl) {
       return new Promise(function(resolve, reject) {
         var domain = url.replace(/^.*?\/\/(.*?)\/.*$/, "$1");
+        var entry = {domain:domain, url:url};
+        // domain is not available
         if (domain === '') {
-          resolve(chrome.extension.getURL('/img/favicon.png'));
+          entry.blobUrl = chrome.extension.getURL('/img/favicon.png');
+          resolve(entry);
+        // cache available
         } else if (cache[domain] && (cache[domain].url === favIconUrl || !favIconUrl)) {
-          resolve(cache[domain].blobUrl);
+          resolve(cache[domain]);
+        // requires fetch or database lookup
         } else {
           db.get(db.FAVICONS, domain).then(function(entry) {
             // If this icon was fetched with Google proxy
             // Overwrite with original
             if (entry && favIconUrl && entry.url !== favIconUrl) {
-              return fetchFavicon(favIconUrl).then(function(result) {
-                var entry = {domain:domain, blob:result, url:favIconUrl};
-                db.put(db.FAVICONS, entry);
-                return entry;
-              });
+              return fetchFavicon(domain, favIconUrl);
             } else {
               // Favicon is in database
               return entry;
             }
+          // Not in database
           }).catch(function () {
-            var url = favIconUrl ? favIconUrl : util.FAVICON_URL+encodeURIComponent(domain);
+            entry.url = favIconUrl ? favIconUrl : util.FAVICON_URL+encodeURIComponent(domain);
             // Fetch favicon from internet
-            return fetchFavicon(url).then(function(result) {
-              var entry = {domain:domain, blob:result, url:url};
-              // Store fetched favicon in database
-              db.put(db.FAVICONS, entry);
-              return entry;
-            });
+            return fetchFavicon(domain, entry.url);
           }).then(function(entry) {
             entry.blobUrl = URL.createObjectURL(entry.blob);
             // Cache it
             cache[domain] = entry;
             // Create Blob URL from resulting favicon blob and resolve
-            resolve(entry.blobUrl);
+            resolve(entry);
           }, function() {
-            resolve(chrome.extension.getURL('/img/favicon.png'));
+            entry.blobUrl = chrome.extension.getURL('/img/favicon.png');
+            resolve(entry);
           });
         }
       });

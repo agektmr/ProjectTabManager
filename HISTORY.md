@@ -1,8 +1,8 @@
-## Version 2.5.0
+## Version 3.0.0
 * Project Tab Manager now treats **all** windows as projects.
     * No need to manually create project
     * Click on "edit" button beside project name to rename
-    * Bookmark will be created when you bookmark one of tabs by clicking a star
+    * A bookmark will be created when you bookmark one of tabs by clicking a star
 * Better session tracking: Sessions can be resumed in any situations including:
     * Launching Chrome
     * Recovery from crash
@@ -11,6 +11,7 @@
 * Tab order is now synching better than before
 * Retina display support
 * New icons
+* Favicons are now cached in database
 
 ## Version 2.2.3
 * Fixed a bug that changes active tab behind focused window when clicking on a bookmark that is open project but not active.

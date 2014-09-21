@@ -12,19 +12,19 @@ Worry no more! Project Tab Manager (PTM) helps you solve those problems!
 PTM automatically tracks all windows you open in Chrome. You can resume those windows anytime you want. See how it works:
 
 ### 1. Click on PTM icon
-<img src="img/assets/0.png" width="289" height="40" />
+<img src="https://raw.githubusercontent.com/agektmr/ProjectTabManager/master/assets/0.png" width="289" height="40" />
 ### 2. Do you see list of dates? They are projects and represents windows!
-<img src="img/assets/1.png" width="320" height="117" />
+<img src="https://raw.githubusercontent.com/agektmr/ProjectTabManager/master/assets/1.png" width="320" height="117" />
 ### 3. You can name it more comprehensive manner by clicking on pencil icon next to the project name.
-<img src="img/assets/2.png" width="425" height="126" />
+<img src="https://raw.githubusercontent.com/agektmr/ProjectTabManager/master/assets/2.png" width="425" height="126" />
 ### 4. Change the name. It looks more like a project, doesn't it?
-<img src="img/assets/3.png" width="323" height="121" />
+<img src="https://raw.githubusercontent.com/agektmr/ProjectTabManager/master/assets/3.png" width="323" height="121" />
 ### 5. Clicking on stars stores the page permanently. This will persist and works across devices including mobile Chrome.
-<img src="img/assets/4.png" width="411" height="128" />
+<img src="https://raw.githubusercontent.com/agektmr/ProjectTabManager/master/assets/4.png" width="411" height="128" />
 ### 6. Because those pages are stored as bookmarks in &quot;Other Bookmarks&quot; (default).
-<img src="img/assets/5.png" width="617" height="92" />
+<img src="https://raw.githubusercontent.com/agektmr/ProjectTabManager/master/assets/5.png" width="617" height="92" />
 ### 7. Opaque pages mean "bookmarked but not opened". So you can recover it anytime.
-<img src="img/assets/6.png" width="325" height="162" />
+<img src="https://raw.githubusercontent.com/agektmr/ProjectTabManager/master/assets/6.png" width="325" height="162" />
 
 ## Further Instructions
 ### Removing Projects

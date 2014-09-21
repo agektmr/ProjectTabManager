@@ -1,6 +1,6 @@
 {
   "name": "ProjectTabManager",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Project tab management per window on your Chrome",
   "main": "app/js/background.js",
   "scripts": {

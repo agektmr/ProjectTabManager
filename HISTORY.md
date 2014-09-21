@@ -1,3 +1,6 @@
+## Version 3.0.1
+* Fixed critical bug for existing users that prevents PTM to be opened.
+
 ## Version 3.0.0
 * Project Tab Manager now treats **all** windows as projects.
     * No need to manually create project

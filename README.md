@@ -26,6 +26,10 @@ PTM automatically tracks all windows you open in Chrome. You can resume those wi
 ### 7. Opaque pages mean "bookmarked but not opened". So you can recover it anytime.
 <img src="https://raw.githubusercontent.com/agektmr/ProjectTabManager/master/assets/readme_6.png" width="325" height="162" />
 
+### There are just 2 rules to remember:
+- **Closing window enables you to resume project status whenever you want**
+- **Closing a tab eliminates the page from the project unless you star it**
+
 ## Further Instructions
 ### Removing Projects
 - By clicking on garbage icon beside project name removes the project.

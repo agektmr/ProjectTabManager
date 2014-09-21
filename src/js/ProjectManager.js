@@ -375,7 +375,7 @@ var ProjectManager = (function() {
       // Append non-bound sessions first
       for (i = 0; i < sessions.length; i++) {
         // Leave bound sessions
-        if (sessions[i].id.indexOf('-') === -1) continue;
+        if (sessions[i].id && sessions[i].id.indexOf('-') === -1) continue;
         session = sessions.splice(i--, 1)[0];
         project = new ProjectEntity(session, null);
         this.projects.push(project);

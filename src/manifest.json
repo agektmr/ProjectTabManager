@@ -1,0 +1,38 @@
+{
+  "name": "Project Tab Manager",
+  "description": "__MSG_description__",
+  "manifest_version": 2,
+  "version": "3.0.1",
+  "icons": {
+    "48": "img/48.png",
+    "128": "img/128.png"
+  },
+  "permissions": [
+    "bookmarks",
+    "storage",
+    "tabs",
+    "http://*/",
+    "https://*/"
+  ],
+  "default_locale": "en",
+  "background": {
+    "scripts": [
+      "js/background.js"
+    ],
+    "persistent": true
+  },
+  "browser_action": {
+    "default_icon": "img/48.png",
+    "default_title": "Project Tab Manager",
+    "default_popup": "ng-popup.html"
+  },
+  "options_page": "ng-layout.html#options",
+  "commands": {
+    "_execute_browser_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+P",
+        "mac": "MacCtrl+Shift+P"
+      }
+    }
+  }
+}

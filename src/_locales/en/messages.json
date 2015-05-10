@@ -1,0 +1,89 @@
+{
+  "open": {
+    "message": "Open project window"
+  },
+  "update": {
+    "message": "Append Tabs"
+  },
+  "edit": {
+    "message": "Edit the project name"
+  },
+  "pin": {
+    "message": "Associate this project to the window"
+  },
+  "delete": {
+    "message": "Remove from Project"
+  },
+  "remove": {
+    "message": "Remove"
+  },
+  "save": {
+    "message": "Save"
+  },
+  "add": {
+    "message": "Add to Project"
+  },
+  "activate": {
+    "message": "Activate"
+  },
+  "deactivate": {
+    "message": "Deactivate"
+  },
+  "name_this": {
+    "message": "Save as new project"
+  },
+  "add_from_tabs": {
+    "message": "Add from existing tabs"
+  },
+  "description": {
+    "message": "Have too many tabs opened on Chrome? This extension helps you organize your tabs on windows per projects."
+  },
+  "bookmark": {
+    "message": "Toggle bookmark"
+  },
+  "no_bookmarks_found": {
+    "message": "No Bookmarks Found"
+  },
+  "todays_project_summary": {
+    "message": "Summary of Project Usage"
+  },
+  "options": {
+    "message": "Options"
+  },
+  "project_name": {
+    "message": "New Project Name"
+  },
+  "amount_of_time_spent": {
+    "message": "Time spent"
+  },
+  "meter": {
+    "message": "Meter"
+  },
+  "hour_min_sec": {
+    "message": "##hour##h ##min##m ##sec##s"
+  },
+  "new_project": {
+    "message": "New Project"
+  },
+  "saved": {
+    "message": "Configuration Saved!"
+  },
+  "root_folder_location": {
+    "message": "Root Folder Location:"
+  },
+  "root_folder_location_help": {
+    "message": "Specify location of Projects Root Folder in Bookmarks."
+  },
+  "root_folder_name": {
+    "message": "Root Folder Name:"
+  },
+  "root_folder_name_help": {
+    "message": "Specify name of Projects Root Folder."
+  },
+  "disable_lazy_load": {
+    "message": "Disable Lazy Load:"
+  },
+  "disable_lazy_load_help": {
+    "message": "Lazy load prevents simultaneous load of multiple tabs when opening a project."
+  }
+}

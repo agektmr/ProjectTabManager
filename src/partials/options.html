@@ -1,0 +1,34 @@
+    <div class="container form-horizontal control-group" ng-controller="OptionsCtrl">
+      <fieldset>
+        <div class="alert alert-block" ng-show="saved">
+          <p chrome-i18n="saved:inner"></p>
+        </div>
+        <legend chrome-i18n="options:inner"></legend>
+        <div class="control-group">
+          <label class="control-label" for="root" chrome-i18n="root_folder_location:inner"></label>
+          <div class="controls">
+            <select id="root" class="input-xlarge" ng-model="config.rootParentId">
+              <option ng-repeat="folder in root_folders" value="{{folder.id}}" ng-selected="config.rootParentId == folder.id">{{folder.title}}</option>
+            </select>
+            <p class="help-block" chrome-i18n="root_folder_location_help:inner"></p>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="folderName" chrome-i18n="root_folder_name:inner"></label>
+          <div class="controls">
+            <input type="text" id="folderName" ng-model="config.rootName" class="input-xlarge" />
+            <p class="help-block" chrome-i18n="root_folder_name_help:inner"></p>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="lazyLoad" chrome-i18n="disable_lazy_load:inner"></label>
+          <div class="controls">
+            <input type="checkbox" id="lazyLoad" class="input-xlarge" ng-model="config.lazyLoad" />
+            <p chrome-i18n="disable_lazy_load_help:inner"></p>
+          </div>
+        </div>
+        <div class="form-actions">
+          Any changes will be automatically saved.
+        </div>
+      </fieldset>
+    </div>

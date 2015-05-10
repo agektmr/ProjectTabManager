@@ -1,7 +1,7 @@
 {
 "version": 3,
 "mappings": "AAAA,CAAE;EACA,WAAW,EAAE,qBAAqB;;AAEpC,yBAA0B;EACxB,gBAAgB,EAAE,KAAK;EACvB,mCAAU;IACR,YAAY,EAAE,IAAI;;AAGtB,uBAAwB;EACtB,gBAAgB,EAAE,IAAI;;AAExB,YAAa;EACX,OAAO,EAAE,KAAK;EACd,gBAAgB,EAAE,OAAO;EACzB,UAAU,EAAE,8BAA8B;EAC1C,KAAK,EAAE,KAAK;;AAEd,oBAAqB;EACnB,MAAM,EAAE,KAAK",
-"sources": ["../../src/styles/ptm-app.scss"],
+"sources": ["ptm-app.scss"],
 "names": [],
 "file": "ptm-app.css"
 }

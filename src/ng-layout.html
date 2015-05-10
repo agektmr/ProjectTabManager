@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<!--
+Copyright 2012 Eiji Kitamura
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Author: Eiji Kitamura (agektmr@gmail.com)
+-->
+<html ng-csp ng-app="ProjectTabManager">
+  <head>
+    <title>Project Tab Manager setting</title>
+    <meta charset="utf-8"/>
+    <link rel="stylesheet" href="lib/bootstrap/bootstrap.css">
+    <link rel="stylesheet" href="css/summary.css">
+    <script src="js/layout.js"></script>
+  </head>
+  <body>
+    <header id="header" class="navbar navbar-inverse">
+      <div class="container">
+        <span class="navbar-brand">Project Tab Manager</span>
+        <ul class="nav navbar-nav">
+          <li>
+            <a href="#/options" title="Options">Options</a>
+          </li>
+          <li>
+            <a href="#/summary" title="Summary">Summary</a>
+          </li>
+          <li>
+            <a href="#/history" title="History">History</a>
+          </li>
+          <li>
+            <a href="#/help" title="Help">Help</a>
+          </li>
+          <li>
+            <a href="http://blog.agektmr.com/2013/05/chrome-project-tab-manager-20.html" target="_blank">日本語ヘルプ</a>
+          </li>
+        </ul>
+      </div>
+    </header>
+    <div class="container" ng-view></div>
+  </body>
+</html>

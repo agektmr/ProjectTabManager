@@ -1,4 +1,4 @@
-/*! ProjectTabManager - v3.0.1 - 2015-05-10
+/*! ProjectTabManager - v3.0.1 - 2015-05-11
 * Copyright (c) 2015 ; Licensed  */
 var Config = (function() {
   var rootParentId_ = '2',
@@ -1301,6 +1301,7 @@ var SessionManager = (function() {
 
   return SessionManager;
 })();
+
 var BookmarkManager = (function() {
   var config_ = null;
 
@@ -1956,6 +1957,9 @@ var config = new Config(function() {
     sessionManager = new SessionManager(config, function() {
       projectManager = new ProjectManager(config);
       projectManager.update(true);
+      chrome.runtime.sendMessage({
+        command: 'app-ready'
+      });
     });
   });
 });

@@ -1,0 +1,89 @@
+{
+  "open": {
+    "message": "プロジェクトウィンドウを開く"
+  },
+  "update": {
+    "message": "タブを追加する"
+  },
+  "edit": {
+    "message": "プロジェクト名を編集する"
+  },
+  "pin": {
+    "message": "このプロジェクトをウィンドウに関連付ける"
+  },
+  "delete": {
+    "message": "プロジェクトから削除"
+  },
+  "remove": {
+    "message": "削除する"
+  },
+  "save": {
+    "message": "保存する"
+  },
+  "add": {
+    "message": "プロジェクトに追加"
+  },
+  "activate": {
+    "message": "アクティブにする"
+  },
+  "deactivate": {
+    "message": "非アクティブにする"
+  },
+  "name_this": {
+    "message": "新しいプロジェクト"
+  },
+  "add_from_tabs": {
+    "message": "開いているタブから追加"
+  },
+  "description": {
+    "message": "Chromeでタブを開きすぎていませんか？このExtensionを使うことで、ウィンドウごとにタブを保存することができるようになります。"
+  },
+  "bookmark": {
+    "message": "ブックマークを追加・削除"
+  },
+  "no_bookmarks_found": {
+    "message": "ブックマークがありません"
+  },
+  "todays_project_summary": {
+    "message": "プロジェクト使用時間の統計"
+  },
+  "options": {
+    "message": "オプション"
+  },
+  "project_name": {
+    "message": "名前をつけて下さい"
+  },
+  "amount_of_time_spent": {
+    "message": "経過時間"
+  },
+  "meter": {
+    "message": "メーター"
+  },
+  "hour_min_sec": {
+    "message": "##hour##時間##min##分##sec##秒"
+  },
+  "new_project": {
+    "message": "新しいプロジェクト"
+  },
+  "saved": {
+    "message": "設定を保存しました"
+  },
+  "root_folder_location": {
+    "message": "ルートフォルダの場所:"
+  },
+  "root_folder_location_help": {
+    "message": "ブックマーク内でのルートフォルダの場所を指定します"
+  },
+  "root_folder_name": {
+    "message": "ルートフォルダの名前:"
+  },
+  "root_folder_name_help": {
+    "message": "ルートフォルダの名前を指定します"
+  },
+  "disable_lazy_load": {
+    "message": "レイジーロードを無効にする:"
+  },
+  "disable_lazy_load_help": {
+    "message": "レイジーロードはプロジェクトから複数のタブを開く際、アクティブなタブのみをロードします"
+  }
+}

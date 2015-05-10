@@ -7,6 +7,9 @@ module.exports = function(grunt) {
   grunt.initConfig({
     // Metadata.
     pkg: grunt.file.readJSON('package.json'),
+    clean: {
+      app: ['app/*']
+    },
     bower: {
       install: {
         options: {
@@ -26,12 +29,12 @@ module.exports = function(grunt) {
       ' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */\n',
     // Task configuration.
     sass: {
-      styles: {
+      app: {
         files: [{
           expand: true,
-          cwd: 'src/styles',
-          src: ['*.scss'],
-          dest: 'app/css',
+          cwd: 'src',
+          src: ['styles/{,*/}*.{scss,sass}', 'elements/{,*/}*.{scss,sass}'],
+          dest: 'src',
           ext: '.css'
         }]
       }
@@ -63,8 +66,8 @@ module.exports = function(grunt) {
         src: [
           'src/js/config.js',
           'src/js/util.js',
-          'app/bower_components/angular/angular.min.js',
-          'app/bower_components/angular-route/angular-route.min.js',
+          'src/bower_components/angular/angular.min.js',
+          'src/bower_components/angular-route/angular-route.min.js',
           'src/js/ng-app.js',
           'src/js/ng-services.js',
           'src/js/ng-filters.js',
@@ -76,7 +79,7 @@ module.exports = function(grunt) {
         src: [
           'src/js/config.js',
           'src/js/util.js',
-          'app/bower_components/angular/angular.min.js',
+          'src/bower_components/angular/angular.min.js',
           'src/js/ng-app.js',
           'src/js/ng-route.js',
           'src/js/ng-directives.js',
@@ -92,6 +95,25 @@ module.exports = function(grunt) {
           'src/js/lazy.js'
         ],
         dest: 'app/js/lazy.js'
+      }
+    },
+    copy: {
+      app: {
+        files: [{
+          expand: true,
+          dot: true,
+          cwd: 'src',
+          dest: 'app',
+          src: [
+            '_locales/**',
+            'img/**',
+            'partials/**',
+            'styles/*.css',
+            '*.html',
+            'manifest.json',
+            'elements/vulcanized*'
+          ]
+        }]
       }
     },
     markdown: {
@@ -125,13 +147,13 @@ module.exports = function(grunt) {
       }
     },
     vulcanize: {
-      default: {
+      app: {
         options: {
-          strip: false,
+          strip: true,
           csp: true
         },
         files: {
-          'app/elements/vulcanized.elements.html': 'src/elements/elements.html'
+          'src/elements/vulcanized.elements.html': 'src/elements/elements.html'
         }
       }
     }
@@ -139,5 +161,5 @@ module.exports = function(grunt) {
 
   // Default task.
   grunt.registerTask('install', ['bower']);
-  grunt.registerTask('default', ['install', 'vulcanize', 'sass', 'concat', 'markdown', 'version', 'compress']);
+  grunt.registerTask('default', ['clean', 'sass', 'vulcanize', 'concat', 'copy', 'markdown', 'version', 'compress']);
 };

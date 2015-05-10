@@ -1,0 +1,111 @@
+<link rel="import" href="../../../app/bower_components/polymer/polymer.html">
+<link rel="import" href="../../../app/bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../../app/bower_components/core-icon-button/core-icon-button.html">
+<link rel="import" href="../../../app/bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="ptm-star.html">
+<link rel="import" href="../ptm-favicon/ptm-favicon.html">
+
+<!--
+entry {
+  id         : bookmark id if bookmarked
+  tabId      : tabId of the page if open
+  title      : title of the page
+  url        : url of the bookmark
+  pinned     : pinned flag
+  favIconUrl : favicon Url
+}
+-->
+<polymer-element name="ptm-bookmark" attributes="entry">
+  <template>
+    <style>
+      /*core-icon-button {
+        width: 24px;
+        height: 24px;
+        padding: 2px;
+        margin: 0px;
+      }
+      core-item {
+        min-height: 0;
+        height: 20px;
+        padding: 2px;
+        margin: 0;
+        cursor: pointer;
+      }*/
+      paper-item {
+        background-color: white;
+        padding: 0 10px;
+      }
+      core-icon {
+        margin: 0 9px 0 0;
+      }
+      .active {
+        color: black;
+      }
+      span {
+        font-family: 'Roboto';
+        color: #aaa;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        font-size: 1.2em;
+      }
+      paper-icon-button[icon="star"] {
+        color: yellow;
+      }
+      paper-icon-button[icon="star-outline"] {
+        color: gray;
+      }
+      /*core-icon-button::shadow core-icon {
+        width: 20px;
+        height: 20px;
+      }*/
+    </style>
+    <paper-item noink>
+      <ptm-favicon url="{{entry.favIconUrl}}"></ptm-favicon>
+      <span class="{{ {active: !!entry.tabId} | tokenList }}" on-click="{{open}}" flex>{{entry.title}}</span>
+      <ptm-star bookmarked="{{!!entry.id}}" on-toggle-star="{{starClicked}}"></ptm-star>
+    </paper-item>
+  </template>
+  <script charset="utf-8">
+    Polymer('ptm-bookmark', {
+      publish: {
+        entry: {
+          value: {},
+          reflect: true
+        }
+      },
+      created: function() {
+        this.entry = {};
+      },
+      open: function() {
+        var tabId = this.entry.tabId;
+        // If tab id is not assigned
+        if (!tabId) {
+          // Open new project entry
+          chrome.tabs.create({url: this.entry.url, active: true});
+        } else {
+          chrome.tabs.get(tabId, function(tab) {
+            // If the project filed is not open yet
+            if (!tab) {
+              // Open new project entry
+              chrome.tabs.create({url: this.entry.url, active: true});
+            // If the project filed is already open
+            } else {
+              chrome.windows.get(tab.windowId, function(win) {
+                if (!win.focused) {
+                  // Move focus to the window
+                  chrome.windows.update(tab.windowId, {focused:true});
+                }
+                // Activate open project entry
+                chrome.tabs.update(tabId, {active: true});
+              });
+            }
+          });
+        }
+      },
+      starClicked: function(e) {
+        this.fire('toggle-bookmark');
+      }
+    })
+  </script>
+</polymer-elements>

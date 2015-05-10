@@ -1,0 +1,50 @@
+* {
+  font-family: 'Roboto', 'Noto Sans';
+}
+core-header-panel[drawer] {
+  background-color: white;
+  core-icon {
+    margin-right: 10px;
+  }
+}
+core-header-panel[main] {
+  background-color: #ccc;
+}
+core-toolbar {
+  display: block;
+  background-color: #4285f4;
+  box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.5);
+  color: white;
+}
+* /deep/ ptm-project {
+  height: 100px;
+}
+/*paper-item {
+box-sizing: border-box;
+height: 24px;
+margin: 0px;
+padding: 0px;
+}
+core-icon-button {
+width: 24px;
+height: 24px;
+padding: 2px;
+margin: 0px;
+}
+core-item {
+min-height: 0;
+height: 20px;
+padding: 2px;
+margin: 0;
+cursor: pointer;
+}
+:host /deep/ #label {
+text-overflow: ellipsis;
+overflow: hidden;
+white-space: nowrap;
+font-size: 1.2em;
+}
+core-icon-button::shadow core-icon {
+width: 20px;
+height: 20px;
+}*/

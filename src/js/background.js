@@ -40,6 +40,9 @@ var config = new Config(function() {
     sessionManager = new SessionManager(config, function() {
       projectManager = new ProjectManager(config);
       projectManager.update(true);
+      chrome.runtime.sendMessage({
+        command: 'app-ready'
+      });
     });
   });
 });

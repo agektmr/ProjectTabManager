@@ -1,6 +1,8 @@
 /*global module:false*/
 module.exports = function(grunt) {
 
+  require('load-grunt-tasks')(grunt);
+
   // Project configuration.
   grunt.initConfig({
     // Metadata.
@@ -51,12 +53,18 @@ module.exports = function(grunt) {
         ],
         dest: 'app/js/background.js'
       },
+      polymer: {
+        src: [
+          'src/js/polymer-app.js'
+        ],
+        dest: 'app/js/polymer-app.js'
+      },
       popup: {
         src: [
           'src/js/config.js',
           'src/js/util.js',
-          'bower_components/angular/angular.min.js',
-          'bower_components/angular-route/angular-route.min.js',
+          'app/bower_components/angular/angular.min.js',
+          'app/bower_components/angular-route/angular-route.min.js',
           'src/js/ng-app.js',
           'src/js/ng-services.js',
           'src/js/ng-filters.js',
@@ -68,7 +76,7 @@ module.exports = function(grunt) {
         src: [
           'src/js/config.js',
           'src/js/util.js',
-          'bower_components/angular/angular.min.js',
+          'app/bower_components/angular/angular.min.js',
           'src/js/ng-app.js',
           'src/js/ng-route.js',
           'src/js/ng-directives.js',
@@ -115,20 +123,21 @@ module.exports = function(grunt) {
         },
         src: ['app/**']
       }
+    },
+    vulcanize: {
+      default: {
+        options: {
+          strip: false,
+          csp: true
+        },
+        files: {
+          'app/elements/vulcanized.elements.html': 'src/elements/elements.html'
+        }
+      }
     }
   });
 
-  // These plugins provide necessary tasks.
-  grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-bower-task');
-  grunt.loadNpmTasks('grunt-markdown');
-  grunt.loadNpmTasks('grunt-version');
-  grunt.loadNpmTasks('grunt-contrib-compress');
-  grunt.loadNpmTasks('grunt-contrib-sass');
-
   // Default task.
-  grunt.registerTask('default', ['bower', 'concat']);
   grunt.registerTask('install', ['bower']);
-  grunt.registerTask('build', ['sass', 'concat', 'markdown', 'version', 'compress']);
-
+  grunt.registerTask('default', ['install', 'vulcanize', 'sass', 'concat', 'markdown', 'version', 'compress']);
 };

@@ -15,6 +15,9 @@
   "dependencies": {
     "angular": "1.0.8",
     "angular-route": "~1.2.6",
-    "bootstrap": "~3.2.0"
+    "bootstrap": "~3.2.0",
+    "polymer": "~0.5.5",
+    "core-elements": "polymer/core-elements#~0.5.5",
+    "paper-elements": "polymer/paper-elements#~0.5.5"
   }
 }

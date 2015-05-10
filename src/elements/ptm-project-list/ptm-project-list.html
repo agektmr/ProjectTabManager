@@ -1,0 +1,69 @@
+<link rel="import" href="../../../app/bower_components/polymer/polymer.html">
+<link rel="import" href="../../../app/bower_components/core-menu/core-menu.html">
+<link rel="import" href="../ptm-project/ptm-project.html">
+
+<polymer-element name="ptm-project-list">
+  <template>
+    <style>
+      core-menu {
+        display: block;
+        margin: 0;
+        padding: 0 10px;
+      }
+    </style>
+    <core-menu>
+      <template repeat="{{project, i in projects}}">
+        <ptm-project entry="{{project}}" on-rename-project="{{renameProject}}" on-remove-project="{{removeProject}}"></ptm-project>
+      </template>
+    </core-menu>
+  </template>
+  <script>
+    Polymer('ptm-project-list', {
+      publish: {
+        projects: {
+          value: [],
+          reflect: false
+        }
+      },
+      created: function() {
+        this.projects = [];
+      },
+      renameProject: function(e, detail, sender) {
+        // TODO: implement
+        // chrome.runtime.sendMessage({
+        //   command: 'renameProject',
+        //   projectId: sender.entry.id,
+        //   title: detail.newTitle
+        // });
+      },
+      removeProject: function(e, detail, sender) {
+        chrome.runtime.sendMessage({
+          command: 'removeProject',
+          projectId: sender.entry.id
+        });
+      },
+      reload: function() {
+        chrome.runtime.sendMessage({
+          command: 'update',
+          // forceReload: force_reload
+          forceReload: true
+        }, function() {
+console.log('reloaded');
+          this.projects = ProjectManager.projects;
+        });
+      },
+      set_dialog_title: function(title) {
+        // $scope.dialog_title = title;
+      },
+      ready: function() {
+        var that = this;
+        // chrome.runtime.onMessage.addListener(function(msg, sender) {
+        //   console.log('ptm-project-list event received:', msg);
+        //   if (msg.command == 'app-ready') {
+        //     that.projects = ProjectManager.projects;
+        //   }
+        // });
+      }
+    });
+  </script>
+</polymer-element>

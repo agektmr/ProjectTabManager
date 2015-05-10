@@ -1,0 +1,74 @@
+<polymer-element name="ptm-star" on-click="{{toggleStar}}">
+  <template>
+    <style>
+      :host {
+        width: 24px;
+        height: 24px;
+      }
+      @-webkit-keyframes shake {
+        0% {
+          transform: rotate(0deg) scale(3.0);
+          opacity: 0.5;
+        }
+        50% {
+          transform: rotate(10deg);
+          opacity: 1.0;
+        }
+        65% {
+          transform: rotate(-10deg);
+        }
+        80% {
+          transform: rotate(10deg);
+        }
+        90% {
+          transform: rotate(-10deg);
+        }
+        95% {
+          transform: rotate(7deg);
+        }
+        98% {
+          transform: rotate(-5deg);
+        }
+        100% {
+          transform: rotate(0deg);
+        }
+      }
+      div {
+        background-image: url(star.png);
+        background-size: 200%;
+        padding: 3px;
+        width:18px;
+        height:17px;
+        cursor:pointer;
+      }
+      div[star="true"] {
+        background-position-x:-100%;
+      }
+      div[animate="true"] {
+        animation: shake 0.5s;
+      }
+    </style>
+    <div id="star" star="{{bookmarked}}" animate="{{animate}}" on-animationend="{{endAnim}}" ></div>
+  </template>
+  <script>
+    Polymer('ptm-star', {
+      publish: {
+        bookmarked: {
+          value: false,
+          reflect: true
+        },
+        animate: {
+          value: false,
+          reflect: true
+        }
+      },
+      endAnim: function(e, detail, sender) {
+        this.animate = false;
+      },
+      toggleStar: function(e, detail, sender) {
+        e.stopPropagation();
+        this.fire('toggle-star');
+      }
+    })
+  </script>
+</polymer-element>

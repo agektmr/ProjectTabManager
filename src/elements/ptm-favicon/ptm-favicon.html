@@ -1,0 +1,58 @@
+<link rel="import" href="../../../app/bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="../../../app/bower_components/polymer-idb/polymer-idb.html">
+
+<polymer-element name="ptm-favicon" attributes="url">
+  <template>
+    <style>
+      :host {
+        display: block;
+        margin: 3px;
+        width: 18px;
+        height: 18px;
+      }
+      #favicon-image {
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: 50% 50%;
+        background-repeat: no-repeat;
+      }
+    </style>
+    <core-ajax id="ajax" url="{{fetchUrl}}" handleAs="blob" auto on-core-response="{{faviconReceived}}"></core-ajax>
+    <polymer-idb id="db" database="ProjectTabManager" version="4" object-store="favicons" key-path="domain"></polymer-idb>
+    <div id="favicon-image" style="background-image: url({{faviconUrl}})"></div>
+  </template>
+  <script>
+    var host = '';
+    if (chrome && chrome.runtime && chrome.runtime.id) {
+      host = 'chrome-extension://'+chrome.runtime.id+'/img/';
+    } else {
+      host = 'http://localhost:8080/src/elements/ptm-favicon/';
+    }
+    Polymer('ptm-favicon', {
+      url: host+'favicon.png',
+      host: '',
+      fetchUrl: '',
+      faviconUrl: '',
+      domReady: function() {
+        this.urlChanged();
+      },
+      urlChanged: function() {
+        var that = this;
+        this.host = this.url.replace(/^.*?:\/\/(.*?)\/.*$/, "$1");
+        if (this.$.db.dbReady) {
+          this.$.db.get(this.host).then(function(item) {
+            if (!item) {
+              that.fetchUrl = that.url;
+            }
+          });
+        }
+      },
+      faviconReceived: function(e, detail, sender) {
+        var response = this.$.ajax.response;
+        this.faviconUrl = URL.createObjectURL(response);
+        // TODO: check if this is a blob
+      }
+    });
+  </script>
+</polymer-element>

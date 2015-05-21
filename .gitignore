@@ -1,10 +1,9 @@
 *.crx
 *.pem
+.sass-cache
 *.sublime*
 .DS_Store
 *.zip
-obsolete
-components
 node_modules
 bower_components
 lib

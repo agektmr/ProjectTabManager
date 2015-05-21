@@ -10,18 +10,6 @@ module.exports = function(grunt) {
     clean: {
       app: ['app/*']
     },
-    bower: {
-      install: {
-        options: {
-          targetDir: 'app/lib',
-          layout: 'byType',
-          install: true,
-          verbose: true,
-          cleanTargetDir: true,
-          cleanBowerDir: false
-        }
-      }
-    },
     banner: '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' +
       '<%= grunt.template.today("yyyy-mm-dd") %>\n' +
       '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
@@ -33,7 +21,10 @@ module.exports = function(grunt) {
         files: [{
           expand: true,
           cwd: 'src',
-          src: ['styles/{,*/}*.{scss,sass}', 'elements/{,*/}*.{scss,sass}'],
+          src: [
+            'styles/{,*/}*.{scss,sass}',
+            'elements/{,*/}*.{scss,sass}'
+          ],
           dest: 'src',
           ext: '.css'
         }]
@@ -160,6 +151,5 @@ module.exports = function(grunt) {
   });
 
   // Default task.
-  grunt.registerTask('install', ['bower']);
   grunt.registerTask('default', ['clean', 'sass', 'vulcanize', 'concat', 'copy', 'markdown', 'version', 'compress']);
 };

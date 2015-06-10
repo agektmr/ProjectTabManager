@@ -1,12 +1,12 @@
 <html>
   <head>
-    <title>PTM Project List Demo</title>
+    <title>PTM Session List Demo</title>
     <script>
       window.Polymer = {};
       window.Polymer.dom = 'shadow';
     </script>
     <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
-    <link rel="import" href="ptm-project-list.html">
+    <link rel="import" href="ptm-session-list.html">
     <style media="screen">
       body {
         background-color: #aaa;
@@ -16,12 +16,12 @@
   <body>
     <iron-ajax id="projects" url="/stab_projects.json" handle-as="json" auto></iron-ajax>
     <template id="t" is="dom-bind">
-      <ptm-project-list projects="{{projects}}"></ptm-project-list>
+      <ptm-session-list sessions="{{sessions}}"></ptm-session-list>
     </template>
     <script>
       var t = document.querySelector('#t');
       document.querySelector('#projects').addEventListener('response', function(e, detail) {
-        t.projects = e.detail.response;
+        t.sessions = e.detail.response;
       });
     </script>
   </body>

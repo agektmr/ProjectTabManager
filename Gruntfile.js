@@ -88,6 +88,20 @@ module.exports = function(grunt) {
         dest: 'app/js/lazy.js'
       }
     },
+    replace: {
+      app: {
+        options: {
+          patterns: [{
+            match: /elements\/elements\.html/g,
+            replacement: 'elements/vulcanized.elements.html'
+          }]
+        },
+        files: {
+          'app/lazy.html': 'src/lazy.html',
+          'app/polymer-layout.html': 'src/polymer-layout.html'
+        }
+      }
+    },
     copy: {
       app: {
         files: [{
@@ -100,9 +114,9 @@ module.exports = function(grunt) {
             'img/**',
             'partials/**',
             'styles/*.css',
-            '*.html',
             'manifest.json',
-            'elements/vulcanized*'
+            'elements/vulcanized*',
+            'bower_components/**'
           ]
         }]
       }
@@ -151,5 +165,5 @@ module.exports = function(grunt) {
   });
 
   // Default task.
-  grunt.registerTask('default', ['clean', 'sass', 'vulcanize', 'concat', 'copy', 'markdown', 'version', 'compress']);
+  grunt.registerTask('default', ['clean', 'sass', 'vulcanize', 'concat', 'copy', 'replace', 'markdown', 'version', 'compress']);
 };

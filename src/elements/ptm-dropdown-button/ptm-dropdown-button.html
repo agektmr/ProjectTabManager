@@ -1,0 +1,69 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+
+<dom-module id="ptm-dropdown-button">
+  <style>
+    :host {
+      position: relative;
+    }
+    #dropdown-menu {
+      top: -48px;
+    }
+    paper-item {
+      background-color: white;
+    }
+  </style>
+  <template>
+    <paper-icon-button icon="icons:link" on-tap="drop"></paper-icon-button>
+    <array-selector id="selector" items="{{items}}" selected="{{selected}}"></array-selector>
+    <template is="dom-if" if="{{selecting}}">
+      <paper-material id="dropdown-menu" elevation="2">
+        <template id="itemList" is="dom-repeat" items="{{items}}">
+          <paper-item on-tap="selectItem">
+            <paper-ripple initial-opacity="0.05" recenters></paper-ripple>
+            <div class="flex">{{item.title}}</div>
+            <template is="dom-if" if="{{isSelected(item)}}">
+              <paper-icon-button icon="icons:check"></paper-icon-button>
+            </template>
+          </paper-item>
+        </template>
+      </paper-material>
+    </template>
+  </template>
+</dom-module>
+
+<script>
+  Polymer({
+    is: 'ptm-dropdown-button',
+    properties: {
+      items: {
+        type: Array,
+        value: []
+      },
+      selected: {
+        type: Object,
+        value: {}
+      },
+      selecting: {
+        type: Boolean,
+        value: false
+      }
+    },
+    selectItem: function(e) {
+      var selected = this.$$('#itemList').itemForElement(e.target);
+      this.$.selector.select(selected);
+      this.selecting = false;
+    },
+    drop: function() {
+      this.selecting = !this.selecting;
+    },
+    isSelected: function(item) {
+      return item.id == this.selected.id;
+    }
+  })
+</script>

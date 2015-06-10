@@ -1,0 +1,18 @@
+paper-item {
+  background-color: white; }
+
+#title {
+  font-family: 'Roboto';
+  color: #aaa;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap; }
+  #title.active {
+    color: black; }
+
+#star {
+  color: #D3D3D3; }
+  #star.bookmarked {
+    color: #FAC12F; }
+
+/*# sourceMappingURL=ptm-bookmark.css.map */

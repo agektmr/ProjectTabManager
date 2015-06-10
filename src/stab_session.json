@@ -1,0 +1,185 @@
+{
+  "sessions": [
+    {
+      "id": "-674",
+      "winId": 674,
+      "title": "6/7/2015, 2:28:24 AM",
+      "tabs": [
+        {
+          "id": 675,
+          "title": "TweetDeck",
+          "url": "https://tweetdeck.twitter.com/",
+          "pinned": false,
+          "favIconUrl": "https://ton.twimg.com/tweetdeck-web/web/assets/logos/favicon.3d5d8f1cbe.ico"
+        },
+        {
+          "id": 2595,
+          "title": "Project Tab Manager",
+          "url": "http://localhost:8080/polymer-layout.html",
+          "pinned": false,
+          "favIconUrl": "http://localhost:8080/favicon.ico"
+        },
+        {
+          "id": 3654,
+          "title": "iron-ajax - Polymer Element Catalog",
+          "url": "https://elements.polymer-project.org/elements/iron-ajax",
+          "pinned": false
+        },
+        {
+          "id": 3658,
+          "title": "Data binding helper elements - Polymer",
+          "url": "https://www.polymer-project.org/1.0/docs/devguide/templates.html",
+          "pinned": false,
+          "favIconUrl": "https://www.polymer-project.org/images/logos/p-logo-32.png"
+        },
+        {
+          "id": 5001,
+          "title": "paper-menu - Polymer Element Catalog",
+          "url": "https://elements.polymer-project.org/browse?package=paper-elements",
+          "pinned": false
+        },
+        {
+          "id": 5013,
+          "title": "Events - Polymer",
+          "url": "https://www.polymer-project.org/1.0/docs/devguide/events.html",
+          "pinned": false,
+          "favIconUrl": "https://www.polymer-project.org/images/logos/p-logo-32.png"
+        },
+        {
+          "id": 5035,
+          "title": "デジタル一眼カメラα（アルファ） | ソニー",
+          "url": "http://www.sony.jp/ichigan/",
+          "pinned": false,
+          "favIconUrl": "http://www.sony.jp/favicon.ico"
+        },
+        {
+          "id": 5045,
+          "title": "Amazon.co.jp: α5100 ケース",
+          "url": "http://www.amazon.co.jp/s/ref=nb_sb_noss_2?__mk_ja_JP=%E3%82%AB%E3%82%BF%E3%82%AB%E3%83%8A&url=search-alias%3Daps&field-keywords=nikon+%E3%83%AC%E3%83%B3%E3%82%BA%E3%82%AD%E3%83%A3%E3%83%83%E3%83%97&rh=i%3Aaps%2Ck%3Anikon+%E3%83%AC%E3%83%B3%E3%82%BA%E3%82%AD%E3%83%A3%E3%83%83%E3%83%97",
+          "pinned": false,
+          "favIconUrl": "http://www.amazon.co.jp/favicon.ico"
+        },
+        {
+          "id": 5041,
+          "title": "My Sony Club会員登録の確認 | 製品登録 | ソニー",
+          "url": "https://reg.msc.sony.jp/product/au02307.html",
+          "pinned": false,
+          "favIconUrl": "https://reg.msc.sony.jp/share/images/favicon.ico"
+        },
+        {
+          "id": 5075,
+          "title": "Polymer Element Catalog",
+          "url": "https://elements.polymer-project.org/browse?package=paper-elements",
+          "pinned": false
+        },
+        {
+          "id": 5093,
+          "title": "PolymerElements",
+          "url": "https://github.com/PolymerElements?utf8=%E2%9C%93&query=",
+          "pinned": false,
+          "favIconUrl": "https://assets-cdn.github.com/favicon.ico"
+        },
+        {
+          "id": 5115,
+          "title": "Google",
+          "url": "https://www.google.co.jp/webhp?sourceid=chrome-instant&ion=1&espv=2&ie=UTF-8#q=itemforelement%20polymer",
+          "pinned": false,
+          "favIconUrl": "https://www.google.co.jp/favicon.ico"
+        },
+        {
+          "id": 5123,
+          "title": "Twitter",
+          "url": "https://twitter.com/",
+          "pinned": false,
+          "favIconUrl": "https://abs.twimg.com/favicons/favicon.ico"
+        },
+        {
+          "id": 5179,
+          "title": "PolymerElements/iron-ajax",
+          "url": "https://github.com/PolymerElements/iron-ajax/blob/master/iron-request.html",
+          "pinned": false,
+          "favIconUrl": "https://assets-cdn.github.com/favicon.ico"
+        }
+      ]
+    },
+    {
+      "id": "-8",
+      "winId": null,
+      "title": "2015/3/2 0:19:40",
+      "tabs": [
+        {
+          "id": 19,
+          "title": "agektmr (Eiji Kitamura) · GitHub",
+          "url": "https://github.com/agektmr",
+          "pinned": false,
+          "favIconUrl": "https://assets-cdn.github.com/favicon.ico"
+        },
+        {
+          "id": 21,
+          "title": "ファンタジー系BGM素材｜著作権フリーの無料音楽素材ダウンロードサイト「ミュージックノート」",
+          "url": "http://www.music-note.jp/bgm/fantasy.html",
+          "pinned": false,
+          "favIconUrl": "http://www.music-note.jp/img/favicon.ico"
+        },
+        {
+          "id": 23,
+          "title": "Atom",
+          "url": "https://atom.io/",
+          "pinned": false,
+          "favIconUrl": "https://atom.io/favicon.ico"
+        },
+        {
+          "id": 25,
+          "title": "Git submodule の基礎 - Qiita",
+          "url": "http://qiita.com/sotarok/items/0d525e568a6088f6f6bb",
+          "pinned": false,
+          "favIconUrl": "http://qiita.com/icons/favicons/public/production.png?v=4"
+        },
+        {
+          "id": 27,
+          "title": "就職しました - たごもりすメモ",
+          "url": "http://tagomoris.hatenablog.com/entry/2015/03/02/114321",
+          "pinned": false,
+          "favIconUrl": "https://blog.st-hatena.com/images/favicon.ico"
+        },
+        {
+          "id": 29,
+          "title": "GitHub · Build software better, together.",
+          "url": "https://github.com/",
+          "pinned": false,
+          "favIconUrl": "https://assets-cdn.github.com/favicon.ico"
+        },
+        {
+          "id": 31,
+          "title": "Inbox – agektmr@gmail.com",
+          "url": "https://inbox.google.com/?pli=1&hl=en-US",
+          "pinned": false,
+          "favIconUrl": "https://ssl.gstatic.com/bt/C3341AA7A1A076756462EE2E5CD71C11/ic_product_inbox_16dp_r2_2x.png"
+        }
+      ]
+    },
+    {
+      "id": "-4",
+      "winId": null,
+      "title": "2015/3/2 0:07:10",
+      "tabs": [
+        {
+          "id": 931,
+          "title": "Chrome ブラウザ",
+          "url": "https://www.google.co.jp/chrome/browser/thankyou.html?platform=mac&statcb=1&extra=canarychannel",
+          "pinned": false,
+          "favIconUrl": "https://www.google.com/images/icons/product/chrome-32.png"
+        }
+      ]
+    }
+  ],
+  "prev_sessions": [],
+  "openingProject": null,
+  "activeInfo": {
+    "id": null,
+    "start": null,
+    "end": null,
+    "tabId": 5151,
+    "windowId": 5183
+  }
+}

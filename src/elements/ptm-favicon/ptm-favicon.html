@@ -1,58 +1,106 @@
-<link rel="import" href="../../bower_components/core-ajax/core-ajax.html">
-<link rel="import" href="../../bower_components/polymer-idb/polymer-idb.html">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/idb-node/idb-node.html">
 
-<polymer-element name="ptm-favicon" attributes="url">
-  <template>
-    <style>
-      :host {
-        display: block;
-        margin: 3px;
-        width: 18px;
-        height: 18px;
-      }
-      #favicon-image {
-        width: 100%;
-        height: 100%;
-        background-size: cover;
-        background-position: 50% 50%;
-        background-repeat: no-repeat;
-      }
-    </style>
-    <core-ajax id="ajax" url="{{fetchUrl}}" handleAs="blob" auto on-core-response="{{faviconReceived}}"></core-ajax>
-    <polymer-idb id="db" database="ProjectTabManager" version="4" object-store="favicons" key-path="domain"></polymer-idb>
-    <div id="favicon-image" style="background-image: url({{faviconUrl}})"></div>
-  </template>
-  <script>
-    var host = '';
-    if (chrome && chrome.runtime && chrome.runtime.id) {
-      host = 'chrome-extension://'+chrome.runtime.id+'/img/';
-    } else {
-      host = 'http://localhost:8080/src/elements/ptm-favicon/';
+<dom-module id="ptm-favicon">
+  <style>
+    :host {
+      display: block;
+      padding: 8px;
+      width: 24px;
+      height: 24px;
+      -webkit-user-select: none;
+      @apply (--paper-icon-button)
     }
-    Polymer('ptm-favicon', {
-      url: host+'favicon.png',
-      host: '',
-      fetchUrl: '',
-      faviconUrl: '',
-      domReady: function() {
-        this.urlChanged();
+    iron-icon {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+  <template>
+    <idb-node id="db" database="ProjectTabManager" version="4" object-store="favicons" key-path="domain" on-idb-ready="readFavicon"></idb-node>
+    <iron-icon src="{{validateFavIcon(favIconUrl)}}"></iron-icon>
+  </template>
+</dom-module>
+
+<script>
+  var DEFAULT_FAVICON_URL = '/img/favicon.png';
+  var cache = {};
+  Polymer({
+    is: 'ptm-favicon',
+    properties: {
+      url: {
+        type: String,
+        value: '',
+        reflectToAttribute: true
       },
-      urlChanged: function() {
-        var that = this;
-        this.host = this.url.replace(/^.*?:\/\/(.*?)\/.*$/, "$1");
-        if (this.$.db.dbReady) {
-          this.$.db.get(this.host).then(function(item) {
-            if (!item) {
-              that.fetchUrl = that.url;
+      favIconUrl: {
+        type: String,
+        value: '',
+        reflectToAttribute: true
+      }
+    },
+    validateFavIcon: function(src) {
+      return !src ? DEFAULT_FAVICON_URL : src;
+    },
+    readFavicon: function() {
+      var that = this;
+      var domain = this._extractDomain(this.url);
+
+      // If favicon is not specified
+      if (this.favIconUrl == '') {
+        // But favicon url is already cached
+        if (cache[domain]) {
+          // Use the cache
+          this.favIconUrl = cache[domain].url || '';
+        // favicon url is not yet cached
+        } else {
+          // Look up on database
+          this.$.db.get(domain).then(function(result) {
+            // If there's an entry, use it and cache
+            // Otherwise, fallback to default icon
+            if (result) {
+              that.favIconUrl = result.url || '';
+              cache[domain] = {
+                domain: domain,
+                url: that.favIconUrl
+              }
             }
           });
         }
-      },
-      faviconReceived: function(e, detail, sender) {
-        var response = this.$.ajax.response;
-        this.faviconUrl = URL.createObjectURL(response);
-        // TODO: check if this is a blob
+      // If favicon is specified
+      } else {
+        // Check if cache exists
+        if (!cache[domain]) {
+          // Look up on database
+          this.$.db.get(domain).then(function(result) {
+            // If there's no entry or exists but differ
+            if (!result || result.url != that.favIconUrl) {
+              // Save the favicon
+              that._saveFavIconUrl(domain, that.favIconUrl);
+            }
+            // Cache it regardless of database entry exists or not
+            cache[domain] = {
+              domain: domain,
+              url: that.favIconUrl
+            }
+          })
+        }
       }
-    });
-  </script>
-</polymer-element>
+    },
+    _extractDomain: function(url) {
+      var domain = url.replace(/^.*?:\/\/(.*?)\/.*$/, "$1");
+      // Special case, if Google Docs, it could be /spreadsheet, /document or /presentation
+      if (/docs.google.com/.test(domain)) {
+        domain = url.replace(/^.*?:\/\/(.*?\/.*?)\/.*$/, "$1");
+      }
+      return domain;
+    },
+    _saveFavIconUrl: function(domain, favIconUrl) {
+      this.$.db.put({
+        domain: domain,
+        url: favIconUrl
+      });
+    }
+  });
+</script>

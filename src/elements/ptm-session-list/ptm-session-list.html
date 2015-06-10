@@ -1,14 +1,14 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/paper-material/paper-material.html">
-<link rel="import" href="../ptm-project/ptm-project.html">
+<link rel="import" href="../ptm-session/ptm-session.html">
 
-<dom-module id="ptm-project-list">
+<dom-module id="ptm-session-list">
   <style>
   </style>
   <template>
     <paper-material>
-      <template is="dom-repeat" items="{{projects}}" filter="isProject">
-        <ptm-project bookmark-id="{{item.id}}" projects="{{item.fields}}" title="{{item.title}}" on-rename-project="renameProject" on-remove-project="removeProject"></ptm-project>
+      <template is="dom-repeat" items="{{sessions}}" filter="isSession">
+        <ptm-session session-id="{{item.id}}" window-id="{{winId}}" sessions="{{item.fields}}" title="{{item.title}}"></ptm-session>
       </template>
     </paper-material>
   </template>
@@ -16,15 +16,15 @@
 
 <script>
   Polymer({
-    is: 'ptm-project-list',
+    is: 'ptm-session-list',
     properties: {
-      projects: {
+      sessions: {
         type: Array,
         value: []
       }
     },
-    isProject: function(item) {
-      return !!item.bookmark;
+    isSession: function(item) {
+      return !!item.session;
     },
     renameProject: function(e, detail, sender) {
       // TODO: implement
@@ -56,7 +56,7 @@ console.log('reloaded');
     ready: function() {
       var that = this;
       // chrome.runtime.onMessage.addListener(function(msg, sender) {
-      //   console.log('ptm-project-list event received:', msg);
+      //   console.log('ptm-session-list event received:', msg);
       //   if (msg.command == 'app-ready') {
       //     that.projects = ProjectManager.projects;
       //   }

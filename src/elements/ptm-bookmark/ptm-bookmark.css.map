@@ -1,0 +1,7 @@
+{
+"version": 3,
+"mappings": "AAAA,UAAW;EACT,gBAAgB,EAAE,KAAK;;AAEzB,MAAO;EACL,WAAW,EAAE,QAAQ;EACrB,KAAK,EAAE,IAAI;EACX,aAAa,EAAE,QAAQ;EACvB,QAAQ,EAAE,MAAM;EAChB,WAAW,EAAE,MAAM;EACnB,aAAS;IACP,KAAK,EAAE,KAAK;;AAGhB,KAAM;EACJ,KAAK,EAAE,OAAO;EACd,gBAAa;IACX,KAAK,EAAE,OAAO",
+"sources": ["ptm-bookmark.scss"],
+"names": [],
+"file": "ptm-bookmark.css"
+}

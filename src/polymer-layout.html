@@ -19,38 +19,32 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 <html>
   <head>
     <title>Project Tab Manager</title>
-    <link rel="import" href="elements/vulcanized.elements.html">
-    <link rel="stylesheet" href="/css/ptm-app.css">
+    <script>
+      window.Polymer = {};
+      window.Polymer.dom = 'shadow';
+    </script>
+    <!-- build:vulcanized elements/vulcanized.elements.html-->
+    <link rel="import" href="elements/elements.html">
+    <!-- endbuild -->
+    <link rel="stylesheet" href="/styles/ptm-app.css">
   </head>
-  <body fullbleed>
-    <template id="t" is="auto-binding">
-      <core-drawer-panel id="drawerPanel">
-        <core-header-panel drawer>
-          <core-toolbar>Project Tab Manager</core-toolbar>
-          <paper-item>
-            <core-icon icon="tab"></core-icon>Sessions
-          </paper-item>
-          <paper-item>
-            <core-icon icon="star"></core-icon>Projects
-          </paper-item>
-          <paper-item>
-            <core-icon icon="history"></core-icon>History
-          </paper-item>
-          <paper-item on-click="{{openOptions}}">
-            <core-icon icon="settings"></core-icon>Settings
-          </paper-item>
-        </core-header-panel>
-        <core-header-panel main>
-          <core-toolbar>
-            <core-icon-button icon="menu" on-click="{{toggle}}"></core-icon-button>
-            <paper-input label="Search" value="{{query}}" flex></paper-input>
-            <core-icon-button icon="refresh" on-click="{{reload}}"></core-icon-button>
-          </core-toolbar>
-          <core-pages id="main" selected="0">
-            <ptm-project-list projects="{{projects}}" query="{{query}}"></ptm-project-list>
-          </core-pages>
-        </core-header-panel>
-      </core-drawer-panel>
+  <body class="fullbleed">
+<!--     <iron-ajax id="sessions" url="stab_session.json" handle-as="json" auto></iron-ajax>
+    <iron-ajax id="bookmarks" url="stab_bookmark.json" handle-as="json" auto></iron-ajax>
+ -->    <iron-ajax id="projects" url="stab_projects.json" handle-as="json" auto></iron-ajax>
+    <template id="t" is="dom-bind">
+      <paper-toolbar>
+        <paper-icon-button icon="icons:menu"></paper-icon-button>
+        <div>Project Tab Manager</div>
+      </paper-toolbar>
+      <paper-tabs selected="{{selected}}">
+        <paper-tab>Sessions</paper-tab>
+        <paper-tab>Projects</paper-tab>
+      </paper-tabs>
+      <iron-pages selected="{{selected}}">
+        <ptm-session-list sessions="{{projectManager}}"></ptm-session-list>
+        <ptm-project-list projects="{{projectManager}}"></ptm-project-list>
+      </iron-pages>
     </template>
     <script src="js/polymer-app.js"></script>
   </body>

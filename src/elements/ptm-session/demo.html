@@ -1,6 +1,10 @@
 <html>
   <head>
-    <title>PTM Project Demo</title>
+    <title>PTM Session Demo</title>
+    <script>
+      window.Polymer = {};
+      window.Polymer.dom = 'shadow';
+    </script>
     <link rel="import" href="ptm-session.html">
     <style media="screen">
       body {
@@ -9,138 +13,138 @@
     </style>
   </head>
   <body>
-    <template id="t" is="auto-binding">
-      <ptm-session entry="{{project}}"></ptm-session>
+    <template id="t" is="dom-bind">
+      <ptm-session win-id="{{session.id}}" sessions="{{session.session.tabs}}">
+        <span class="title">{{session.title}}</span>
+      </ptm-session>
     </template>
     <script>
       var t = document.querySelector('#t');
-      t.addEventListener('template-bound', function() {
-        t.project = {
+      t.session = {
+        "id":"613",
+        "fields":[
+          {
+            "id":"614",
+            "tabId":963,
+            "title":"Project Tab Manager - Chrome ウェブストア",
+            "url":"https://chrome.google.com/webstore/detail/project-tab-manager/iapdnheekciiecjijobcglkcgeckpoia/reviews",
+            "pinned":false,
+            "favIconUrl":"blob:chrome-extension%3A//efepepkbdlmeljodmmikefdbecfopjog/23d9d70d-ad65-43bb-9353-330a426bfa2a",
+            "$$hashKey":"01Z"
+          },
+          {
+            "id":"642",
+            "tabId":965,
+            "title":"デベロッパー ダッシュボード - Chrome ウェブストア",
+            "url":"https://chrome.google.com/webstore/developer/dashboard",
+            "pinned":false,
+            "favIconUrl":"blob:chrome-extension%3A//efepepkbdlmeljodmmikefdbecfopjog/23d9d70d-ad65-43bb-9353-330a426bfa2a",
+            "$$hashKey":"021"
+          },
+          {
+            "id":"615",
+            "tabId":967,
+            "title":"* Tender Surrender: Chrome のセッションを追跡する拡張機能: Project Tab Manager 3.0 公開",
+            "url":"http://blog.agektmr.com/2014/09/chrome-project-tab-manager-30.html",
+            "pinned":false,
+            "favIconUrl":"blob:chrome-extension%3A//efepepkbdlmeljodmmikefdbecfopjog/d0b7daa1-e0bd-4b37-a381-cc7fb22f09d3",
+            "$$hashKey":"023"
+          },
+          {
+            "tabId":969,
+            "title":"* Project Tab Manager setting",
+            "url":"chrome-extension://efepepkbdlmeljodmmikefdbecfopjog/ng-layout.html#/options",
+            "pinned":false,
+            "favIconUrl":"blob:chrome-extension%3A//efepepkbdlmeljodmmikefdbecfopjog/cee7e9c9-b4af-41ac-9c19-1d2c3f56204e",
+            "$$hashKey":"025"
+          },
+          {
+            "id":"617",
+            "title":"agektmr/ProjectTabManager",
+            "url":"https://github.com/agektmr/ProjectTabManager",
+            "pinned":false,
+            "favIconUrl":"blob:chrome-extension%3A//efepepkbdlmeljodmmikefdbecfopjog/1fc29a00-68e1-4824-baf4-de4f4d6f6727",
+            "$$hashKey":"027"
+          }
+        ],
+        "session":{
           "id":"613",
-          "fields":[
-            {
-              "id":"614",
-              "tabId":963,
-              "title":"Project Tab Manager - Chrome ウェブストア",
-              "url":"https://chrome.google.com/webstore/detail/project-tab-manager/iapdnheekciiecjijobcglkcgeckpoia/reviews",
-              "pinned":false,
-              "favIconUrl":"blob:chrome-extension%3A//efepepkbdlmeljodmmikefdbecfopjog/23d9d70d-ad65-43bb-9353-330a426bfa2a",
-              "$$hashKey":"01Z"
-            },
-            {
-              "id":"642",
-              "tabId":965,
-              "title":"デベロッパー ダッシュボード - Chrome ウェブストア",
-              "url":"https://chrome.google.com/webstore/developer/dashboard",
-              "pinned":false,
-              "favIconUrl":"blob:chrome-extension%3A//efepepkbdlmeljodmmikefdbecfopjog/23d9d70d-ad65-43bb-9353-330a426bfa2a",
-              "$$hashKey":"021"
-            },
-            {
-              "id":"615",
-              "tabId":967,
-              "title":"* Tender Surrender: Chrome のセッションを追跡する拡張機能: Project Tab Manager 3.0 公開",
-              "url":"http://blog.agektmr.com/2014/09/chrome-project-tab-manager-30.html",
-              "pinned":false,
-              "favIconUrl":"blob:chrome-extension%3A//efepepkbdlmeljodmmikefdbecfopjog/d0b7daa1-e0bd-4b37-a381-cc7fb22f09d3",
-              "$$hashKey":"023"
-            },
-            {
-              "tabId":969,
-              "title":"* Project Tab Manager setting",
-              "url":"chrome-extension://efepepkbdlmeljodmmikefdbecfopjog/ng-layout.html#/options",
-              "pinned":false,
-              "favIconUrl":"blob:chrome-extension%3A//efepepkbdlmeljodmmikefdbecfopjog/cee7e9c9-b4af-41ac-9c19-1d2c3f56204e",
-              "$$hashKey":"025"
-            },
-            {
-              "id":"617",
-              "title":"agektmr/ProjectTabManager",
-              "url":"https://github.com/agektmr/ProjectTabManager",
-              "pinned":false,
-              "favIconUrl":"blob:chrome-extension%3A//efepepkbdlmeljodmmikefdbecfopjog/1fc29a00-68e1-4824-baf4-de4f4d6f6727",
-              "$$hashKey":"027"
-            }
-          ],
-          "session":{
-            "id":"613",
-            "winId":null,
-            "title":"9/28/2014, 3:26:08 AM",
-            "tabs":[
-            {
-              "id":963,
-              "title":"Project Tab Manager - Chrome ウェブストア",
-              "url":"https://chrome.google.com/webstore/detail/project-tab-manager/iapdnheekciiecjijobcglkcgeckpoia/reviews",
-              "pinned":false,
-              "favIconUrl":"https://www.google.com/images/icons/product/chrome_web_store-32.png"
-            },
-            {
-              "id":965,
-              "title":"デベロッパー ダッシュボード - Chrome ウェブストア",
-              "url":"https://chrome.google.com/webstore/developer/dashboard",
-              "pinned":false,
-              "favIconUrl":"https://www.google.com/images/icons/product/chrome_web_store-32.png"
-            },
-            {
-              "id":967,
-              "title":"* Tender Surrender: Chrome のセッションを追跡する拡張機能: Project Tab Manager 3.0 公開",
-              "url":"http://blog.agektmr.com/2014/09/chrome-project-tab-manager-30.html",
-              "pinned":false,
-              "favIconUrl":"http://blog.agektmr.com/favicon.ico"
-            },
-            {
-              "id":969,
-              "title":"* Project Tab Manager setting",
-              "url":"chrome-extension://efepepkbdlmeljodmmikefdbecfopjog/ng-layout.html#/options",
-              "pinned":false
-            }
-          ]
-        },
-        "bookmark":{
-          "children":[
-            {
-              "dateAdded":1411363145858,
-              "id":"614",
-              "index":0,
-              "parentId":"613",
-              "title":"Project Tab Manager - Chrome ウェブストア",
-              "url":"https://chrome.google.com/webstore/detail/project-tab-manager/iapdnheekciiecjijobcglkcgeckpoia"
-            },
-            {
-              "dateAdded":1411363146448,
-              "id":"615",
-              "index":1,
-              "parentId":"613",
-              "title":"Tender Surrender: Chrome のセッションを追跡する拡張機能: Project Tab Manager 3.0 公開",
-              "url":"http://blog.agektmr.com/2014/09/chrome-project-tab-manager-30.html"
-            },
-            {
-              "dateAdded":1411363148532,
-              "id":"617",
-              "index":2,
-              "parentId":"613",
-              "title":"agektmr/ProjectTabManager",
-              "url":"https://github.com/agektmr/ProjectTabManager"
-            },
-            {
-              "dateAdded":1411529330429,
-              "id":"642",
-              "index":3,
-              "parentId":"613",
-              "title":"デベロッパー ダッシュボード - Chrome ウェブストア",
-              "url":"https://chrome.google.com/webstore/developer/dashboard"
-            }
-          ],
-          "dateAdded":1411363139156,
-          "dateGroupModified":1411529330429,
-          "id":"613",
-          "index":2,
-          "parentId":"23",
-          "title":"Project Tab Manager"
-        },
+          "winId":null,
+          "title":"9/28/2014, 3:26:08 AM",
+          "tabs":[
+          {
+            "id":963,
+            "title":"Project Tab Manager - Chrome ウェブストア",
+            "url":"https://chrome.google.com/webstore/detail/project-tab-manager/iapdnheekciiecjijobcglkcgeckpoia/reviews",
+            "pinned":false,
+            "favIconUrl":"https://www.google.com/images/icons/product/chrome_web_store-32.png"
+          },
+          {
+            "id":965,
+            "title":"デベロッパー ダッシュボード - Chrome ウェブストア",
+            "url":"https://chrome.google.com/webstore/developer/dashboard",
+            "pinned":false,
+            "favIconUrl":"https://www.google.com/images/icons/product/chrome_web_store-32.png"
+          },
+          {
+            "id":967,
+            "title":"* Tender Surrender: Chrome のセッションを追跡する拡張機能: Project Tab Manager 3.0 公開",
+            "url":"http://blog.agektmr.com/2014/09/chrome-project-tab-manager-30.html",
+            "pinned":false,
+            "favIconUrl":"http://blog.agektmr.com/favicon.ico"
+          },
+          {
+            "id":969,
+            "title":"* Project Tab Manager setting",
+            "url":"chrome-extension://efepepkbdlmeljodmmikefdbecfopjog/ng-layout.html#/options",
+            "pinned":false
+          }
+        ]
+      },
+      "bookmark":{
+        "children":[
+          {
+            "dateAdded":1411363145858,
+            "id":"614",
+            "index":0,
+            "parentId":"613",
+            "title":"Project Tab Manager - Chrome ウェブストア",
+            "url":"https://chrome.google.com/webstore/detail/project-tab-manager/iapdnheekciiecjijobcglkcgeckpoia"
+          },
+          {
+            "dateAdded":1411363146448,
+            "id":"615",
+            "index":1,
+            "parentId":"613",
+            "title":"Tender Surrender: Chrome のセッションを追跡する拡張機能: Project Tab Manager 3.0 公開",
+            "url":"http://blog.agektmr.com/2014/09/chrome-project-tab-manager-30.html"
+          },
+          {
+            "dateAdded":1411363148532,
+            "id":"617",
+            "index":2,
+            "parentId":"613",
+            "title":"agektmr/ProjectTabManager",
+            "url":"https://github.com/agektmr/ProjectTabManager"
+          },
+          {
+            "dateAdded":1411529330429,
+            "id":"642",
+            "index":3,
+            "parentId":"613",
+            "title":"デベロッパー ダッシュボード - Chrome ウェブストア",
+            "url":"https://chrome.google.com/webstore/developer/dashboard"
+          }
+        ],
+        "dateAdded":1411363139156,
+        "dateGroupModified":1411529330429,
+        "id":"613",
+        "index":2,
+        "parentId":"23",
         "title":"Project Tab Manager"
-        };
-      })
+      },
+      "title":"Project Tab Manager"
+    };
     </script>
   </body>
 </html>

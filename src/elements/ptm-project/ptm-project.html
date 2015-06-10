@@ -1,132 +1,135 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../bower_components/core-item/core-item.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
-<link rel="import" href="../../bower_components/core-icon-button/core-icon-button.html">
-<link rel="import" href="../../bower_components/core-collapse/core-collapse.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html">
+<link rel="import" href="../../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../ptm-bookmark/ptm-bookmark.html">
 
-<polymer-element name="ptm-project">
+<dom-module id="ptm-project">
+  <style>
+    :host {
+      display: block;
+    }
+    paper-item {
+      background-color: white;
+      min-height: var(--ptm-entry-height, 24px);
+    }
+    paper-item > *:not(:first-child):not(:last-child) {
+      margin-right: 0 !important;
+    }
+    paper-material {
+      will-change: transition;
+      -moz-transition: margin 0.3s linear;
+      -webkit-transition: margin 0.3s linear;
+      transition: margin 0.3s linear;
+    }
+    paper-material[expanded] {
+      margin: 12px 0;
+    }
+    #title {
+      font-size: var(--ptm-entry-font-size, 0.8em);
+      cursor: pointer;
+      color: black;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+  </style>
   <template>
-    <style>
-      :host {
-        display: block;
-        position: relative;
-      }
-      section {
-        margin: 0 1em;
-        -moz-transition: margin 0.3s linear;
-        -webkit-transition: margin 0.3s linear;
-        transition: margin 0.3s linear;
-      }
-      paper-item {
-        background-color: white;
-      }
-      span {
-        font-family: 'Roboto';
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
-        font-size: 1.2em;
-      }
-      .expanded {
-        margin: 2em 1em;
-        box-shadow: 0px 5px 10px rgba(0,0,0,0.5);
-      }
-      /*:host(.compressed) paper-item {
-        box-sizing: border-box;
-        height: 24px;
-        margin: 0px;
-        padding: 0px;
-      }
-      :host(.compressed) paper-item::shadow .button-content {
-        padding: 0;
-      }
-      :host(.compressed) {
-        font-size: 0.8em;
-      }
-      :host(.compressed) core-icon-button {
-        width: 24px;
-        height: 24px;
-        padding: 2px;
-        margin: 0px;
-      }
-      :host(.compressed) core-item {
-        min-height: 0;
-        height: 20px;
-        padding: 2px;
-        margin: 0;
-        cursor: pointer;
-      }
-      :host(.compressed) /deep/ #label {
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
-        font-size: 1.2em;
-      }
-      :host(.compressed) core-icon-button::shadow core-icon {
-        width: 20px;
-        height: 20px;
-      }*/
-    </style>
-    <section class="{{ {expanded: $.collapse.opened} | tokenList}}">
-      <paper-item noink on-click="{{openProject}}" hero-id="1" hero>
-        <core-icon-button icon="{{$.collapse.opened ? 'unfold-more' : 'unfold-less'}}" on-click="{{toggle}}"></core-icon-button>
-        <span flex>{{entry.title}}</span>
-        <template if="{{expanded}}">
-          <core-icon-button icon="create" on-click="{{clickEdit}}"></core-icon-button>
-          <core-icon-button icon="delete" on-click="{{clickRemove}}"></core-icon-button>
+    <paper-material elevation="{{_elevation}}" expanded$="{{expanded}}">
+      <paper-item class="layout">
+        <paper-icon-button icon="{{_unfoldIcon}}" on-click="toggle"></paper-icon-button>
+        <span id="title" class="flex" on-click="openProject">{{title}}</span>
+        <!-- <paper-ripple></paper-ripple> -->
+        <template is="dom-if" if="{{expanded}}">
+          <paper-icon-button icon="create" on-click="clickEdit"></paper-icon-button>
+          <paper-icon-button icon="delete" on-click="clickRemove"></paper-icon-button>
         </template>
       </paper-item>
-      <div id="submenu" hero-id="1" hero>
-        <template repeat="{{field in entry.fields}}">
-          <ptm-bookmark entry="{{field}}" on-toggle-bookmark="{{toggleBookmark}}"></ptm-bookmark>
+      <iron-collapse id="collapse" opened="{{expanded}}">
+        <template is="dom-if" if="{{!projects.length}}">
+          <paper-item class="layout">
+            <paper-icon-button icon="icons:caution"></paper-icon-button>
+            <span on-click="open" class="flex">No bookmarks available</span>
+          </paper-item>
         </template>
-      </div>
-      <core-collapse target="{{$.submenu}}" id="collapse" opened="{{expanded}}"></core-collapse>
-    </section>
+        <template id="bookmarkList" is="dom-repeat" items="{{projects}}">
+          <ptm-bookmark
+            url="{{item.url}}"
+            fav-icon-url="{{item.favIconUrl}}"
+            tab-id="{{item.tabId}}"
+            bookmark-id="{{item.id}}"
+            parent-id="{{bookmarkId}}"
+            title="{{item.title}}"
+            on-toggle-bookmark="toggleBookmark"></ptm-bookmark>
+        </template>
+      </iron-collapse>
+    </paper-material>
   </template>
-  <script>
-    Polymer('ptm-project', {
-      publish: {
-        entry: {
-          value: {},
-          reflect: false
-        },
-        expanded: {
-          value: false,
-          reflect: true
-        }
+</dom-module>
+
+<script>
+  Polymer({
+    is: 'ptm-project',
+    properties: {
+      projects: {
+        type: Array,
+        value: []
       },
-      created: function() {
-        this.entry = {};
+      bookmarkId: {
+        type: String,
+        value: '',
+        reflectToAttribute: true
       },
-      toggle: function(e, detail, sender) {
-        this.expanded = !this.expanded;
+      title: {
+        type: String,
+        value: '',
+        reflectToAttribute: true
       },
-      openProject: function(e, detail, sender) {
-        console.log('Open project', e, sender);
+      expanded: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true
       },
-      clickCreate: function() {
-        // TODO: implement rename function
-        // this.fire('rename-project', {newTitle: this.entry.title});
+      _unfoldIcon: {
+        type: String,
+        value: 'unfold-more'
       },
-      clickDelete: function() {
-        this.fire('remove-project');
-      },
-      toggleBookmark: function(e, detail, sender) {
-        e.stopPropagation();
-        console.log('toggle-bookmark', e, detail, sender);
-        if (sender.entry.id) {
-          this.entry.removeBookmark(sender.entry.id, function() {
-            sender.entry.id = undefined;
-          });
-        } else {
-          this.entry.addBookmark(sender.entry.tabId, function(bookmark) {
-            sender.animate = true;
-            sender.entry.id = bookmark.id;
-          });
-        }
+      _elevation: {
+        type: Number,
+        value: 0
       }
-    });
-  </script>
-</polymer-element>
+    },
+    toggle: function(e, detail, sender) {
+      this.expanded = !this.expanded;
+      this._unfoldIcon = this.expanded ? 'icons:unfold-less' : 'icons:unfold-more';
+      this._elevation = this.expanded ? 5 : 0;
+    },
+    openProject: function() {
+      console.log('Open project', this.title);
+    },
+    clickCreate: function() {
+      // TODO: implement rename function
+      // this.fire('rename-project', {newTitle: this.project.title});
+    },
+    clickDelete: function() {
+      this.fire('remove-project');
+    },
+    toggleBookmark: function(e) {
+      e.stopPropagation();
+      console.log('toggle-bookmark', e);
+      // if (e.detail.bookmarkId) {
+      //   this.project.removeBookmark(e.detail.bookmarkId, function() {
+      //     e.detail.bookmarkId = undefined;
+      //   });
+      // } else {
+      //   this.project.addBookmark(e.detail.tabId, function(bookmark) {
+      //     e.detail.animate = true;
+      //     e.detail.project.bookmarkId = bookmark.id;
+      //   });
+      // }
+    }
+  });
+</script>

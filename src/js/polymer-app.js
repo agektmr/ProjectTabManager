@@ -39,11 +39,11 @@ var Config = (function() {
     }).bind(this));
   };
 
-  var manifest = chrome.runtime.getManifest();
-  if (manifest.key !== undefined) {
-    // If there's key property exists in manifest, this is production
-    debug_ = false;
-  }
+  // var manifest = chrome.runtime.getManifest();
+  // if (manifest.key !== undefined) {
+  //   // If there's key property exists in manifest, this is production
+  //   debug_ = false;
+  // }
 
   Config.prototype = {
     debug: debug_,
@@ -241,25 +241,18 @@ var util = {
 
 var app = {};
 
-var ProjectManager = chrome.extension.getBackgroundPage().projectManager;
+// var ProjectManager = chrome.extension.getBackgroundPage().projectManager;
 
-document.addEventListener('polymer-ready', function() {
-  var t = document.querySelector('#t');
-  t.selectedMenu = 0;
-  t.projects = ProjectManager.projects;
-  t.toggle = function() {
-    this.$.drawerPanel.togglePanel();
-  };
-  t.openSummary = function() {
-    chrome.tabs.create({url:chrome.extension.getURL('/ng-layout.html#summary')});
-  };
-  t.openBookmarks = function() {
-    // var projectId = $scope.activeProjectId === '0' ? null : $scope.activeProjectId;
-    // ProjectManager.openBookmarkEditWindow(projectId);
-  };
-  t.openOptions = function() {
-    chrome.tabs.create({url:chrome.extension.getURL('/ng-layout.html#options')});
-  };
+var t = document.querySelector('#t');
+t.selected = 0;
+// document.querySelector('#sessions').addEventListener('response', function(e, detail) {
+//   t.sessionManager = e.detail.response;
+// });
+// document.querySelector('#bookmarks').addEventListener('response', function(e, detail) {
+//   t.bookmarkManager = e.detail.response;
+// });
+document.querySelector('#projects').addEventListener('response', function(e, detail) {
+  t.projectManager = e.detail.response;
 });
 
 // app.filter('percentage', function() {

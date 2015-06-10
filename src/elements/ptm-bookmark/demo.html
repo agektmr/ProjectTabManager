@@ -1,17 +1,20 @@
 <html>
   <head>
     <title>PTM Bookmark Demo</title>
+    <script>
+      window.Polymer = {};
+      window.Polymer.dom = 'shadow';
+    </script>
     <link rel="import" href="ptm-bookmark.html">
   </head>
   <body>
-    <template id="t" is="auto-binding">
-      <template repeat="{{bookmark in bookmarks}}">
-        <ptm-bookmark entry="{{bookmark}}"></ptm-bookmark>
+    <template id="t" is="dom-bind">
+      <template is="dom-repeat" items="{{bookmarks}}">
+        <ptm-bookmark url="{{item.url}}" fav-icon-url="{{item.favIconUrl}}" tab-id="{{item.tabId}}" bookmark-id="{{item.id}}">{{item.title}}</ptm-bookmark>
       </template>
     </template>
     <script>
       var t = document.querySelector('#t');
-      t.addEventListener('template-bound', function() {
         t.bookmarks = [{
           "id":"614",
           "tabId":963,
@@ -51,7 +54,6 @@
           "favIconUrl":"https://www.google.com/images/icons/product/chrome_web_store-32.png"
         }
       ];
-      })
     </script>
   </body>
 </html>

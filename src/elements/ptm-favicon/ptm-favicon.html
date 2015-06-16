@@ -48,7 +48,7 @@
       var domain = this._extractDomain(this.url);
 
       // If favicon is not specified
-      if (this.favIconUrl == '') {
+      if (!this.favIconUrl) {
         // But favicon url is already cached
         if (cache[domain]) {
           // Use the cache
@@ -66,6 +66,10 @@
                 url: that.favIconUrl
               }
             }
+            if (result && result.url != that.favIconUrl) {
+              console.log('overwritten favicon');
+              that._saveFavIconUrl(domain, that.favIconUrl);
+            }
           });
         }
       // If favicon is specified
@@ -77,6 +81,7 @@
             // If there's no entry or exists but differ
             if (!result || result.url != that.favIconUrl) {
               // Save the favicon
+              console.log('overwritten favicon');
               that._saveFavIconUrl(domain, that.favIconUrl);
             }
             // Cache it regardless of database entry exists or not

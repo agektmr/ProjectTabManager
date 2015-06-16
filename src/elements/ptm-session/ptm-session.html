@@ -5,6 +5,7 @@
 <link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html">
 <link rel="import" href="../../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="../../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../ptm-project-behavior/ptm-project-behavior.html">
 <link rel="import" href="../ptm-bookmark/ptm-bookmark.html">
 
 <dom-module id="ptm-session">
@@ -12,65 +13,57 @@
     :host {
       display: block;
     }
-    paper-item {
-      background-color: white;
-      min-height: var(--ptm-entry-height, 24px);
+    :host:focus paper-item {
+      background-color: var(--light-primary-color);
+    }
+    paper-material[expanded] {
+      margin: 0 0 1em 0;
     }
     paper-item > *:not(:first-child):not(:last-child) {
       margin-right: 0 !important;
     }
-    paper-material {
-      will-change: transition;
-      -moz-transition: margin 0.3s linear;
-      -webkit-transition: margin 0.3s linear;
-      transition: margin 0.3s linear;
-/*      min-height: 24px;
-      height: var(--ptm-entry-height, 24px);
-*/    }
-    paper-material[expanded] {
-      margin: 12px 0;
-    }
-    #title {
-      font-size: var(--ptm-entry-font-size, 0.8em);
+    .title {
       cursor: pointer;
-      color: #aaa;
+      color: var(--secondary-text-color);
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
     }
-    #title.bookmarked {
-      color: black;
+    .title[active] {
+      color: var(--primary-text-color);
     }
   </style>
   <template>
-    <paper-material elevation="{{_elevation}}" expanded$="{{expanded}}">
+    <paper-material elevation="[[_elevation]]" expanded$="[[expanded]]">
       <paper-item class="layout">
-        <paper-icon-button icon="{{_unfoldIcon}}" on-click="toggle"></paper-icon-button>
-        <span id="title" class="flex">{{title}}</span>
-        <!-- <paper-ripple></paper-ripple> -->
-        <template is="dom-if" if="{{expanded}}" restamp>
-          <template is="dom-if" if="{{winId}}">
-            <paper-icon-button icon="icons:link" on-click="clickLink"></paper-icon-button>
-            <paper-icon-button icon="icons:create" on-click="clickEdit"></paper-icon-button>
-            <paper-icon-button icon="icons:delete" on-click="clickRemove"></paper-icon-button>
+        <paper-icon-button tabindex="-1" icon="[[_unfoldIcon]]" on-tap="toggle"></paper-icon-button>
+        <div class="title flex" on-tap="openProject" active$="[[_isActive(winId)]]">
+          <!-- <paper-ripple></paper-ripple> -->
+          <span>[[projectTitle]]</span>
+        </div>
+        <template is="dom-if" if="[[expanded]]" restamp>
+          <paper-icon-button icon="icons:link" on-tap="_onTapLink"></paper-icon-button>
+          <template is="dom-if" if="[[!_isActive(winId)]]">
+            <paper-icon-button icon="icons:delete" on-tap="_onTapRemove"></paper-icon-button>
           </template>
         </template>
       </paper-item>
-      <iron-collapse id="collapse" opened="{{expanded}}" tabindex="-1">
-        <template is="dom-if" if="{{!sessions.length}}">
+      <iron-collapse id="collapse" opened="[[expanded]]" tabindex="-1">
+        <template is="dom-if" if="[[!fields.length]]">
           <paper-item class="layout">
-            <paper-icon-button icon="icons:caution"></paper-icon-button>
-            <span on-click="open" class="flex">No open tabs available</span>
+            <paper-icon-button icon="icons:warning"></paper-icon-button>
+            <span on-tap="open" class="flex title">No open tabs or bookmarks</span>
           </paper-item>
         </template>
-        <template id="bookmarkList" is="dom-repeat" items="{{sessions}}">
+        <template id="repeat" is="dom-repeat" items="[[fields]]" filter="filter">
           <ptm-bookmark
-            url="{{item.url}}"
-            fav-icon-url="{{item.favIconUrl}}"
-            tab-id="{{item.id}}"
-            title="{{item.title}}"
-            parentId="{{bookmarkId}}"
-            on-toggle-bookmark="toggleBookmark"></ptm-bookmark>
+            url="[[item.url]]"
+            fav-icon-url="[[item.favIconUrl]]"
+            bookmark-id="[[item.id]]"
+            tab-id="[[item.tabId]]"
+            title="[[item.title]]"
+            project-linked="[[_computeProjectLinked(projectId)]]"
+            on-toggle-bookmark="_onToggleBookmark"></ptm-bookmark>
         </template>
       </iron-collapse>
     </paper-material>
@@ -80,79 +73,19 @@
 <script>
   Polymer({
     is: 'ptm-session',
-    properties: {
-      sessions: {
-        type: Array,
-        value: []
-      },
-      sessionId: {
-        type: String,
-        value: '',
-        reflectToAttribute: true
-      },
-      bookmarkId: {
-        type: String,
-        value: '',
-        reflectToAttribute: true
-      },
-      winId: {
-        type: Number,
-        value: -1,
-        reflectToAttribute: true
-      },
-      title: {
-        type: String,
-        value: '',
-        reflectToAttribute: true
-      },
-      expanded: {
-        type: Boolean,
-        value: false,
-        reflectToAttribute: true
-      },
-      _unfoldIcon: {
-        type: String,
-        value: 'unfold-more'
-      },
-      _elevation: {
-        type: Number,
-        value: 0
-      }
+    behaviors: [
+      PtmProjectBehavior
+    ],
+    _isActive: function(winId) {
+      return winId !== null;
     },
-    toggle: function(e, detail, sender) {
-      this.expanded = !this.expanded;
-      this._unfoldIcon = this.expanded ? 'icons:unfold-less' : 'icons:unfold-more';
-      this._elevation = this.expanded ? 5 : 0;
-    },
-    clickLink: function() {
-      this.fire('ptm-session-link', {
-        sessionId: this.sessionId,
-        winId: this.winId
-      });
-    },
-    clickCreate: function() {
-      // TODO: implement rename function
-      // this.fire('rename-session', {newTitle: this.session.title});
-    },
-    clickDelete: function() {
-      this.fire('remove-session', {
-        sessionId: this.sessionId,
-        winId: this.winId
-      });
-    },
-    toggleBookmark: function(e) {
+    _onTapLink: function(e) {
       e.stopPropagation();
-      console.log('toggle-bookmark', e);
-      // if (e.detail.bookmarkId) {
-      //   this.session.removeBookmark(e.detail.bookmarkId, function() {
-      //     e.detail.bookmarkId = undefined;
-      //   });
-      // } else {
-      //   this.session.addBookmark(e.detail.tabId, function(bookmark) {
-      //     e.detail.animate = true;
-      //     e.detail.session.bookmarkId = bookmark.id;
-      //   });
-      // }
+      this.fire('link-project');
+    },
+    _onTapRemove: function(e) {
+      e.stopPropagation();
+      this.fire('remove-session');
     }
   });
 </script>

@@ -1,0 +1,48 @@
+<script>
+var PtmListBehavior = {
+  properties: {
+    projectManager: {
+      type: Object,
+      value: {}
+    },
+    query: {
+      type: String,
+      value: '',
+      observer: 'search'
+    }
+  },
+  listeners: {
+    'add-bookmark': '_onAddBookmark',
+    'remove-bookmark': '_onRemoveBookmark'
+  },
+  search: function(e) {
+    this.$.repeat.render();
+  },
+  open: function(e) {
+    var project = this.projectManager.getProjectFromId(e.detail.projectId);
+    project.open();
+  },
+  _onAddBookmark: function(e) {
+    var that = this;
+    e.stopPropagation();
+    var project = this.projectManager.getProjectFromId(e.detail.projectId);
+    project.addBookmark(e.detail.tabId, function(bookmark) {
+      that.fire('show-toast', {
+        text: 'Bookmark added'
+      });
+      that.$.repeat.render();
+    });
+  },
+  _onRemoveBookmark: function(e) {
+    var that = this;
+    e.stopPropagation();
+    var project = this.projectManager.getProjectFromId(e.detail.projectId);
+    project.removeBookmark(e.detail.bookmarkId, function(bookmark) {
+      that.fire('show-toast', {
+        text: 'Bookmark removed'
+      });
+      that.$.repeat.render();
+    });
+  }
+};
+</script>

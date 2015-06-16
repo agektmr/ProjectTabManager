@@ -239,22 +239,6 @@ var util = {
   })()
 };
 
-var app = {};
-
-// var ProjectManager = chrome.extension.getBackgroundPage().projectManager;
-
-var t = document.querySelector('#t');
-t.selected = 0;
-// document.querySelector('#sessions').addEventListener('response', function(e, detail) {
-//   t.sessionManager = e.detail.response;
-// });
-// document.querySelector('#bookmarks').addEventListener('response', function(e, detail) {
-//   t.bookmarkManager = e.detail.response;
-// });
-document.querySelector('#projects').addEventListener('response', function(e, detail) {
-  t.projectManager = e.detail.response;
-});
-
 // app.filter('percentage', function() {
 //   return function(max) {
 //     return (this.project.duration/max*100)|0;

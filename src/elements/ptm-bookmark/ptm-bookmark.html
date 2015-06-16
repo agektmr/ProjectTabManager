@@ -3,6 +3,7 @@
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html">
 <link rel="import" href="../ptm-favicon/ptm-favicon.html">
 
 <!--
@@ -17,37 +18,35 @@ entry {
 -->
 <dom-module id="ptm-bookmark">
   <style>
-  paper-item {
-    background-color: white;
-    min-height: var(--ptm-entry-height, 24px);
-  }
   paper-item > *:not(:first-child):not(:last-child) {
     margin-right: 0 !important;
   }
-  #title {
-    font-size: var(--ptm-entry-font-size, 0.8em);
+  .title {
     cursor: pointer;
     color: #aaa;
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
   }
-  #title.active {
+  .title[active] {
     color: black;
   }
   #star {
     color: #D3D3D3;
   }
-  #star.bookmarked {
+  #star[bookmarked] {
     color: #FAC12F;
   }
   </style>
   <template>
     <paper-item class="layout">
-      <ptm-favicon id="favicon" url="[[url]]" fav-icon-url="[[favIconUrl]]"></ptm-favicon>
-      <span id="title" on-click="open" class="flex">{{title}}</span>
-      <template is="dom-if" if="{{parentId}}">
-        <paper-icon-button id="star" icon="icons:star" on-click="_onStarClicked"></paper-icon-button>
+      <ptm-favicon id="favicon" url="[[url]]" fav-icon-url="{{favIconUrl}}"></ptm-favicon>
+      <div class="title flex" on-tap="open" active$="[[_isActive(tabId)]]">
+        <!-- <paper-ripple recenters></paper-ripple> -->
+        <span>[[title]]</span>
+      </div>
+      <template is="dom-if" if="[[projectLinked]]">
+        <paper-icon-button id="star" icon="icons:star" on-tap="_onTapStar" bookmarked$="[[_isBookmarked(bookmarkId)]]"></paper-icon-button>
       </template>
     </paper-item>
   </template>
@@ -67,30 +66,29 @@ entry {
         value: '',
         reflectToAttribute: true
       },
-      parentId: {
-        type: String,
-        value: '',
+      projectLinked: {
+        type: Boolean,
+        value: false,
         reflectToAttribute: true
-      },
-      tabId: {
-        type: String,
-        value: '',
-        reflectToAttribute: true,
-        observer: '_computeActive'
-      },
-      bookmarkId: {
-        type: String,
-        value: '',
-        reflectToAttribute: true,
-        observer: '_computeBookmark'
       },
       title: {
         type: String,
         value: '',
         reflectToAttribute: true
+      },
+      tabId: {
+        type: Number,
+        value: undefined,
+        reflectToAttribute: true
+      },
+      bookmarkId: {
+        type: String,
+        value: '',
+        reflectToAttribute: true
       }
     },
-    open: function() {
+    open: function(e) {
+      e.stopPropagation();
       var that = this;
       // If tab id is not assigned
       if (!this.tabId) {
@@ -116,17 +114,15 @@ entry {
         });
       }
     },
-    _computeActive: function() {
-      this.toggleClass('active', !!this.tabId, this.$.title);
+    _isActive: function(tabId) {
+      return tabId !== undefined;
     },
-    _computeBookmark: function() {
-      this.toggleClass('bookmarked', !!this.bookmarkId, this.$.star);
+    _isBookmarked: function(bookmarkId) {
+      return bookmarkId !== '';
     },
-    _onStarClicked: function(e) {
-      this.fire('toggle-bookmark', {
-        bookmarkId: this.bookmarkId,
-        tabId: this.tabId
-      });
+    _onTapStar: function(e) {
+      e.stopPropagation();
+      this.fire('toggle-bookmark');
     }
   })
 </script>

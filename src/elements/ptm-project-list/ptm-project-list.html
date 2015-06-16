@@ -1,66 +1,55 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../ptm-list-behavior/ptm-list-behavior.html">
 <link rel="import" href="../ptm-project/ptm-project.html">
 
 <dom-module id="ptm-project-list">
   <style>
   </style>
   <template>
-    <paper-material>
-      <template is="dom-repeat" items="{{projects}}" filter="isProject">
-        <ptm-project bookmark-id="{{item.id}}" projects="{{item.fields}}" title="{{item.title}}" on-rename-project="renameProject" on-remove-project="removeProject"></ptm-project>
-      </template>
-    </paper-material>
+    <template id="repeat" is="dom-repeat" items="{{projectManager.projects}}" filter="filter">
+      <ptm-project
+        project-id="{{item.id}}"
+        project-title="{{item.title}}"
+        fields="{{item.fields}}"
+        query="{{query}}"
+        expanded="{{_isSearching(query)}}"
+        on-open-project="open"
+        on-rename-project="rename"
+        on-remove-project="remove">
+      </ptm-project>
+    </template>
   </template>
 </dom-module>
 
 <script>
   Polymer({
     is: 'ptm-project-list',
-    properties: {
-      projects: {
-        type: Array,
-        value: []
+    behaviors: [
+      PtmListBehavior
+    ],
+    filter: function(item) {
+      if (this.query.length < 2) {
+        return !!item.bookmark;
+      } else {
+        return item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
       }
     },
-    isProject: function(item) {
-      return !!item.bookmark;
+    _isSearching: function(query) {
+      return query == '' ? false : true;
     },
-    renameProject: function(e, detail, sender) {
+    rename: function(e) {
       // TODO: implement
       // chrome.runtime.sendMessage({
       //   command: 'renameProject',
-      //   projectId: sender.entry.id,
+      //   projectId: e.detail.projectId,
       //   title: detail.newTitle
       // });
     },
-    removeProject: function(e, detail, sender) {
+    remove: function(e) {
       chrome.runtime.sendMessage({
         command: 'removeProject',
-        projectId: sender.entry.id
+        projectId: e.detail.projectId
       });
-    },
-    reload: function() {
-      chrome.runtime.sendMessage({
-        command: 'update',
-        // forceReload: force_reload
-        forceReload: true
-      }, function() {
-console.log('reloaded');
-        // this.sessions = ProjectManager.projects;
-      });
-    },
-    set_dialog_title: function(title) {
-      // $scope.dialog_title = title;
-    },
-    ready: function() {
-      var that = this;
-      // chrome.runtime.onMessage.addListener(function(msg, sender) {
-      //   console.log('ptm-project-list event received:', msg);
-      //   if (msg.command == 'app-ready') {
-      //     that.projects = ProjectManager.projects;
-      //   }
-      // });
     }
   });
 </script>

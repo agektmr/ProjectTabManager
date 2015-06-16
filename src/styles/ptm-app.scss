@@ -2,10 +2,8 @@
   font-family: 'Roboto';
 }
 
-paper-tabs {
-  color: white;
-  background-color: #3f51b5;
-  --paper-tabs-selection-bar-color: white;
+body {
+  width: 300px;
 }
 
 paper-item > *:not(:first-child):not(:last-child) {

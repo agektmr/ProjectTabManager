@@ -53,6 +53,12 @@ module.exports = function(grunt) {
         ],
         dest: 'app/js/polymer-app.js'
       },
+      shadowdom: {
+        src: [
+          'src/js/shadowdom.js'
+        ],
+        dest: 'app/js/shadowdom.js'
+      },
       popup: {
         src: [
           'src/js/config.js',
@@ -166,4 +172,5 @@ module.exports = function(grunt) {
 
   // Default task.
   grunt.registerTask('default', ['clean', 'sass', 'vulcanize', 'concat', 'copy', 'replace', 'markdown', 'version', 'compress']);
+  grunt.registerTask('vulcanizeless', ['clean', 'sass', 'concat', 'copy', 'replace', 'markdown', 'version', 'compress']);
 };

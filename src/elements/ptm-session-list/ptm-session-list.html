@@ -1,60 +1,87 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../ptm-list-behavior/ptm-list-behavior.html">
 <link rel="import" href="../ptm-session/ptm-session.html">
 
 <dom-module id="ptm-session-list">
   <style>
   </style>
   <template>
-    <paper-material>
-      <template is="dom-repeat" items="{{sessions}}" filter="isSession">
-        <ptm-session session-id="{{item.id}}" window-id="{{winId}}" sessions="{{item.fields}}" title="{{item.title}}"></ptm-session>
-      </template>
-    </paper-material>
+    <template id="repeat" is="dom-repeat" items="{{projectManager.projects}}" filter="filter">
+      <ptm-session
+        project-id="{{item.id}}"
+        session-id="{{item.session.id}}"
+        win-id="{{item.session.winId}}"
+        session-title="{{item.session.title}}"
+        project-title="{{item.title}}"
+        fields="{{item.fields}}"
+        query="{{query}}"
+        expanded="{{_isSearching(query, item.session.winId)}}"
+        on-link-project="_chooseProject"
+        on-open-project="open"
+        on-remove-session="remove">
+      </ptm-session>
+    </template>
+    <ptm-project-linker
+      id="linker"
+      on-link-project="link"
+      on-associate-bookmark="associate"
+      projects="{{projectManager.projects}}">
+    </ptm-project-linker>
   </template>
 </dom-module>
 
 <script>
   Polymer({
     is: 'ptm-session-list',
+    behaviors: [
+      PtmListBehavior
+    ],
     properties: {
-      sessions: {
-        type: Array,
-        value: []
+      activeWinId: {
+        type: Number,
+        value: 0
       }
     },
-    isSession: function(item) {
-      return !!item.session;
+    filter: function(item) {
+      if (this.query.length < 2) {
+        return !!item.session;
+      } else {
+        return item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
+      }
     },
-    renameProject: function(e, detail, sender) {
-      // TODO: implement
+    _isSearching: function(query, winId) {
+      if (this.projectManager) {
+        var activeWinId = this.projectManager.getActiveWindowId();
+        console.log('activeWinId', activeWinId);
+        if (activeWinId == winId) {
+          return true;
+        }
+      }
+      return query == '' ? false : true;
+    },
+    _chooseProject: function(e) {
+      this.$.linker.projects = this.projectManager.projects;
+      this.$.linker.openDialog(e.model.item);
+    },
+    remove: function(e) {
       // chrome.runtime.sendMessage({
-      //   command: 'renameProject',
-      //   projectId: sender.entry.id,
-      //   title: detail.newTitle
+      //   command: 'removeProject',
+      //   projectId: sender.entry.id
       // });
     },
-    removeProject: function(e, detail, sender) {
-      chrome.runtime.sendMessage({
-        command: 'removeProject',
-        projectId: sender.entry.id
-      });
-    },
-    reload: function() {
-      chrome.runtime.sendMessage({
-        command: 'update',
-        // forceReload: force_reload
-        forceReload: true
-      }, function() {
-console.log('reloaded');
-        // this.sessions = ProjectManager.projects;
-      });
-    },
-    set_dialog_title: function(title) {
-      // $scope.dialog_title = title;
-    },
+//     reload: function() {
+//       chrome.runtime.sendMessage({
+//         command: 'update',
+//         // forceReload: force_reload
+//         forceReload: true
+//       }, function() {
+// console.log('reloaded');
+//         // this.sessions = ProjectManager.projects;
+//       });
+//     },
     ready: function() {
       var that = this;
+      // this.projectManager.update();
       // chrome.runtime.onMessage.addListener(function(msg, sender) {
       //   console.log('ptm-session-list event received:', msg);
       //   if (msg.command == 'app-ready') {

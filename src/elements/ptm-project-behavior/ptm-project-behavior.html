@@ -1,0 +1,96 @@
+<script>
+var PtmProjectBehavior = {
+  properties: {
+    fields: {
+      type: Array,
+      value: []
+    },
+    sessionId: {
+      type: String,
+      value: '',
+      reflectToAttribute: true
+    },
+    projectId: {
+      type: String,
+      value: '',
+      reflectToAttribute: true
+    },
+    winId: {
+      type: Number,
+      value: undefined,
+      reflectToAttribute: true
+    },
+    sessionTitle: {
+      type: String,
+      value: '',
+      reflectToAttribute: true
+    },
+    projectTitle: {
+      type: String,
+      value: '',
+      reflectToAttribute: true
+    },
+    expanded: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true
+    },
+    query: {
+      type: String,
+      value: '',
+      observer: 'search'
+    },
+    _unfoldIcon: {
+      type: String,
+      value: 'unfold-more'
+    },
+    _elevation: {
+      type: Number,
+      value: 0
+    }
+  },
+  hostAttributes: {
+    tabindex: 0
+  },
+  toggle: function(e) {
+    e.stopPropagation();
+    this.expanded = !this.expanded;
+    this._unfoldIcon = this.expanded ? 'unfold-less' : 'unfold-more';
+    this._elevation = this.expanded ? 2 : 0;
+  },
+  search: function() {
+    this.$.repeat.render();
+  },
+  filter: function(item) {
+    if (this.query.length < 2) {
+      return true
+    } else {
+      return item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
+    }
+  },
+  openProject: function(e) {
+    e.stopPropagation();
+    this.fire('open-project', {
+      projectId: this.projectId
+    });
+  },
+  _computeProjectLinked: function(projectId) {
+    return projectId * 1 > -1 ? true : false;
+  },
+  _onToggleBookmark: function(e) {
+    e.stopPropagation();
+    var field = e.model.item;
+    if (field.id !== undefined) {
+      this.fire('remove-bookmark', {
+        projectId: this.projectId,
+        bookmarkId: field.id
+      });
+    } else {
+      this.fire('add-bookmark', {
+        projectId: this.projectId,
+        tabId: field.tabId
+      });
+    }
+  }
+};
+</script>

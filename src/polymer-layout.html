@@ -19,33 +19,14 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 <html>
   <head>
     <title>Project Tab Manager</title>
-    <script>
-      window.Polymer = {};
-      window.Polymer.dom = 'shadow';
-    </script>
+    <script src="js/shadowdom.js"></script>
     <!-- build:vulcanized elements/vulcanized.elements.html-->
     <link rel="import" href="elements/elements.html">
     <!-- endbuild -->
     <link rel="stylesheet" href="/styles/ptm-app.css">
   </head>
   <body class="fullbleed">
-<!--     <iron-ajax id="sessions" url="stab_session.json" handle-as="json" auto></iron-ajax>
-    <iron-ajax id="bookmarks" url="stab_bookmark.json" handle-as="json" auto></iron-ajax>
- -->    <iron-ajax id="projects" url="stab_projects.json" handle-as="json" auto></iron-ajax>
-    <template id="t" is="dom-bind">
-      <paper-toolbar>
-        <paper-icon-button icon="icons:menu"></paper-icon-button>
-        <div>Project Tab Manager</div>
-      </paper-toolbar>
-      <paper-tabs selected="{{selected}}">
-        <paper-tab>Sessions</paper-tab>
-        <paper-tab>Projects</paper-tab>
-      </paper-tabs>
-      <iron-pages selected="{{selected}}">
-        <ptm-session-list sessions="{{projectManager}}"></ptm-session-list>
-        <ptm-project-list projects="{{projectManager}}"></ptm-project-list>
-      </iron-pages>
-    </template>
+    <ptm-app></ptm-app>
     <script src="js/polymer-app.js"></script>
   </body>
 </html>

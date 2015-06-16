@@ -1,0 +1,139 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
+<link rel="import" href="../ptm-session-list/ptm-session-list.html">
+<link rel="import" href="../ptm-project-list/ptm-project-list.html">
+<link rel="import" href="../ptm-project-linker/ptm-project-linker.html">
+
+<dom-module id="ptm-app">
+  <style>
+    #toolbar {
+      height: 32px;
+      background-color: var(--default-primary-color);
+      padding: 2px 8px 2px 12px;
+    }
+    #toolbar paper-icon-button {
+      color: var(--text-primary-color);
+    }
+    .bottom {
+      @apply(--layout-horizontal);
+      @apply(--layout-center);
+    }
+    .loading {
+      height: 300px;
+      @apply(--layout-horizontal);
+      @apply(--layout-center);
+      @apply(--layout-center-justified);
+    }
+    #dialog {
+      @apply(--layout-horizontal);
+      @apply(--layout-center);
+    }
+    #spinner {
+      @apply(--layout-center-center);
+    }
+  </style>
+<!-- <iron-ajax id="projects" url="stab_projects.json" handle-as="json" auto></iron-ajax> -->
+  <template>
+    <paper-material id="toolbar" elevation="0">
+      <div class="bottom flex">
+        <paper-input label="Project Tab Manager" class="flex" value="{{query}}"></paper-input>
+        <paper-icon-button icon="icons:search"></paper-icon-button>
+        <paper-icon-button icon="icons:more-vert"></paper-icon-button>
+      </div>
+      <iron-selector id="menu" hidden>
+        <template is="dom-repeat" items="{{menuItems}}">
+          <paper-item>
+            <div class="flex">{{item.text}}</div>
+          </paper-item>
+        </template>
+      </iron-selector>
+    </paper-material>
+    <paper-tabs class="bottom" selected="{{selected}}">
+      <paper-tab>Sessions</paper-tab>
+      <paper-tab>Projects</paper-tab>
+    </paper-tabs>
+    <iron-pages id="pages" selected="[[selected]]">
+      <ptm-session-list
+        query="[[query]]"
+        project-manager="[[projectManager]]">
+      </ptm-session-list>
+      <ptm-project-list
+        query="[[query]]"
+        project-manager="[[projectManager]]">
+      </ptm-project-list>
+      <div class="loading">
+        <paper-spinner active></paper-spinner>
+      </div>
+    </iron-pages>
+    <paper-toast id="toast" duration="3000" text="{{toastText}}"></paper-toast>
+  </template>
+</dom-module>
+
+<script>
+  Polymer({
+    is: 'ptm-app',
+    properties: {
+      projectManager: {
+        type: Object,
+        value: {}
+      },
+      selected: {
+        type: Number,
+        value: 0
+      },
+      toastText: {
+        type: String,
+        value: ''
+      },
+      query: {
+        type: String,
+        value: ''
+      },
+      menuItems: {
+        type: Array,
+        value: [
+          {
+            text: 'Reload'
+          },
+          {
+            text: 'History'
+          },
+          {
+            text: 'Options'
+          }
+        ]
+      }
+    },
+    listeners: {
+      'show-toast': '_showToast',
+      'reload': 'reload'
+    },
+    _showToast: function(e) {
+      this.toastText = e.detail.text;
+      this.$.toast.show();
+    },
+    reload: function(e) {
+      var that = this;
+      this.$.pages.selected = 2;
+      chrome.runtime.sendMessage({
+        command: 'update',
+        forceReload: e.detail.forceReload || true
+      }, function() {
+        that.projectManager = chrome.extension.getBackgroundPage().projectManager;
+        that.$.pages.selected = that.selected;
+      });
+    },
+    ready: function() {
+      this.fire('reload', {
+        forceReload: false
+      });
+    }
+  });
+</script>

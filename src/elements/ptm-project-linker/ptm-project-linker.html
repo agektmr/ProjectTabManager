@@ -1,0 +1,109 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+
+<dom-module id="ptm-project-linker">
+  <style>
+    .accent {
+      color: var(--text-primary-color);
+      background: var(--accent-color);
+    }
+    paper-item {
+      cursor: pointer;
+    }
+    paper-ripple {
+      color: var(--default-primary-color);
+    }
+    paper-icon-button[icon="check"] ~ span {
+      color: var(--disabled-text-color);
+    }
+    paper-dialog-scrollable {
+      max-height: 300px;
+    }
+  </style>
+  <template>
+    <paper-dialog id="dialog" modal>
+      <h2>Link with a project</h2>
+      <paper-dialog-scrollable>
+        <paper-item on-tap="createNew">
+          <!-- <paper-ripple></paper-ripple> -->
+          <paper-icon-button icon="icons:add"></paper-icon-button>
+          <span class="flex title">Create a new project</span>
+        </paper-item>
+        <template is="dom-repeat" items="{{projects}}" filter="_isProjectNotUsed">
+          <paper-item on-tap="_link">
+            <!-- <paper-ripple></paper-ripple> -->
+            <paper-icon-button icon$="{{_isLinkedProject(item)}}"></paper-icon-button>
+            <span class="flex title">{{item.title}}</span>
+          </paper-item>
+        </template>
+      </paper-dialog-scrollable>
+      <div class="buttons">
+<!--         <template is="dom-if" if="{{_isAlreadyLinked(linkingProject)}}">
+          <paper-button class="accent" raised on-tap="unlink">Unlink</paper-button>
+        </template>
+ -->        <paper-button dialog-dismiss raised>Cancel</paper-button>
+      </div>
+    </paper-dialog>
+    <paper-dialog id="create" modal>
+      <h2>Create a new project</h2>
+      <div>
+        <paper-input label="New Project Name" value$="{{projectName}}"></paper-input>
+      </div>
+      <div class="buttons">
+        <paper-button dialog-dismiss raised>Cancel</paper-button>
+        <paper-button class="accent" dialog-confirm raised>Save</paper-button>
+      </div>
+    </paper-dialog>
+  </template>
+</dom-module>
+
+<script>
+  Polymer({
+    is: 'ptm-project-linker',
+    properties: {
+      projects: {
+        type: Array,
+        value: []
+      },
+      linkingProject: {
+        type: Object,
+        value: {}
+      }
+    },
+    openDialog: function(linkingProject) {
+      this.linkingProject = linkingProject;
+      this.$.dialog.open();
+    },
+    createNew: function() {
+      this.$.dialog.close();
+      this.$.create.open();
+    },
+    _link: function(e) {
+      e.stopPropagation();
+      this.linkingProject.associateBookmark(e.model.item.bookmark);
+      this.$.dialog.close();
+      this.fire('show-toast', {
+        text: 'Project linked'
+      });
+      this.fire('reload');
+    },
+    unlink: function(e) {
+      e.stopPropagation();
+    },
+    _isProjectNotUsed: function(item) {
+      return !!item.bookmark;
+    },
+    _isAlreadyLinked: function(project) {
+      return !!project.bookmark ? true : false;
+    },
+    _isLinkedProject: function(project) {
+      return !project.session ? '' : 'check';
+    }
+  })
+</script>

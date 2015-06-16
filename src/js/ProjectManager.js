@@ -35,9 +35,10 @@ var ProjectManager = (function() {
     this.title      = tab && tab.title || bookmark.title;
     this.url        = url;
     this.pinned     = tab && tab.pinned || false;
-    util.getFavicon(url, tab && tab.favIconUrl).then((function(entry) {
-      this.favIconUrl = entry.blobUrl;
-    }).bind(this));
+    this.favIconUrl = tab && tab.favIconUrl;
+    // util.getFavicon(url, tab && tab.favIconUrl).then((function(entry) {
+      // this.favIconUrl = entry.blobUrl;
+    // }).bind(this));
   };
 
   /**
@@ -402,7 +403,7 @@ var ProjectManager = (function() {
           if (config_.debug) console.log('[ProjectManager] Project %s: %o created from session: %o and bookmark: %o', project.id, project, session, bookmark);
         }
 
-        if (typeof callback === 'function') callback(this.projects);
+        if (typeof callback === 'function') callback(this);
       }).bind(this));
     },
 

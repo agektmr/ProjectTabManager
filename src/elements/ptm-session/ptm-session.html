@@ -56,7 +56,7 @@
             <span on-tap="open" class="title">No open tabs or bookmarks</span>
           </paper-item>
         </template>
-        <template is="dom-if" if="[[expanded]]">
+        <!-- <template is="dom-if" if="[[expanded]]"> -->
           <template id="repeat" is="dom-repeat" items="[[fields]]" filter="filter">
             <ptm-bookmark
               url="[[item.url]]"
@@ -67,7 +67,7 @@
               project-linked="[[_computeProjectLinked(projectId)]]"
               on-toggle-bookmark="_onToggleBookmark"></ptm-bookmark>
           </template>
-        </template>
+        <!-- </template> -->
       </iron-collapse>
     </paper-material>
   </template>

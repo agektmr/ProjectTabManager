@@ -53,7 +53,8 @@
     },
     _isSearching: function(query, winId) {
       if (this.projectManager) {
-        var activeWinId = this.projectManager.getActiveWindowId();
+        // var activeWinId = this.projectManager.getActiveWindowId();
+        var activeWinId = 0;
         console.log('activeWinId', activeWinId);
         if (activeWinId == winId) {
           return true;

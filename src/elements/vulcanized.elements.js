@@ -13267,7 +13267,8 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     },
     _isSearching: function(query, winId) {
       if (this.projectManager) {
-        var activeWinId = this.projectManager.getActiveWindowId();
+        // var activeWinId = this.projectManager.getActiveWindowId();
+        var activeWinId = 0;
         console.log('activeWinId', activeWinId);
         if (activeWinId == winId) {
           return true;
@@ -13985,7 +13986,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       },
       selected: {
         type: Number,
-        value: 0
+        value: 2
       },
       toastText: {
         type: String,
@@ -14018,20 +14019,23 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       this.toastText = e.detail.text;
       this.$.toast.show();
     },
+    onResponse: function(e) {
+      this.projectManager = {projects: e.detail.response};
+      this.$.pages.selected = 0;
+    },
     reload: function(e) {
-      var that = this;
-      this.$.pages.selected = 2;
-      chrome.runtime.sendMessage({
-        command: 'update',
-        forceReload: e.detail.forceReload || true
-      }, function() {
-        that.projectManager = chrome.extension.getBackgroundPage().projectManager;
-        that.$.pages.selected = that.selected;
-      });
+      // this.$.pages.selected = 2;
+      // debugger;
+      this.$.ajax.generateRequest();
+      // chrome.runtime.sendMessage({
+      //   command: 'update',
+      //   forceReload: e.detail.forceReload || true
+      // }, function() {
+      //   that.projectManager = chrome.extension.getBackgroundPage().projectManager;
+      //   that.$.pages.selected = that.selected;
+      // });
     },
     ready: function() {
-      this.fire('reload', {
-        forceReload: false
-      });
+      this.reload();
     }
   });

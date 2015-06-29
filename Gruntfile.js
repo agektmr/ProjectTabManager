@@ -116,6 +116,7 @@ module.exports = function(grunt) {
           cwd: 'src',
           dest: 'app',
           src: [
+            'stab_projects.json',
             '_locales/**',
             'img/**',
             'partials/**',

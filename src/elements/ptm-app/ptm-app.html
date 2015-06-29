@@ -43,6 +43,7 @@
     }
   </style>
   <template>
+    <iron-ajax id="ajax" url="/stab_projects.json" handle-as="json" on-response="onResponse"></iron-ajax>
     <paper-header-panel>
       <paper-toolbar id="toolbar">
         <div class="top flex layout horizontal">
@@ -89,7 +90,7 @@
       },
       selected: {
         type: Number,
-        value: 0
+        value: 2
       },
       toastText: {
         type: String,
@@ -122,21 +123,24 @@
       this.toastText = e.detail.text;
       this.$.toast.show();
     },
+    onResponse: function(e) {
+      this.projectManager = {projects: e.detail.response};
+      this.$.pages.selected = 0;
+    },
     reload: function(e) {
-      var that = this;
-      this.$.pages.selected = 2;
-      chrome.runtime.sendMessage({
-        command: 'update',
-        forceReload: e.detail.forceReload || true
-      }, function() {
-        that.projectManager = chrome.extension.getBackgroundPage().projectManager;
-        that.$.pages.selected = that.selected;
-      });
+      // this.$.pages.selected = 2;
+      // debugger;
+      this.$.ajax.generateRequest();
+      // chrome.runtime.sendMessage({
+      //   command: 'update',
+      //   forceReload: e.detail.forceReload || true
+      // }, function() {
+      //   that.projectManager = chrome.extension.getBackgroundPage().projectManager;
+      //   that.$.pages.selected = that.selected;
+      // });
     },
     ready: function() {
-      this.fire('reload', {
-        forceReload: false
-      });
+      this.reload();
     }
   });
 </script>

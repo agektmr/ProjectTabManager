@@ -8,6 +8,7 @@
   <template>
     <template id="repeat" is="dom-repeat" items="{{projectManager.projects}}" filter="filter">
       <ptm-project
+        project="{{item}}"
         project-id="{{item.id}}"
         project-title="{{item.title}}"
         fields="{{item.fields}}"
@@ -31,7 +32,8 @@
       if (this.query.length < 2) {
         return !!item.bookmark;
       } else {
-        return item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
+        var matched = item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
+        return matched || this.matchedBookmarks > 0;
       }
     },
     _isSearching: function(query) {

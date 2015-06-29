@@ -3,6 +3,7 @@
 <link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-header-panel/paper-header-panel.html">
 <link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
@@ -13,10 +14,12 @@
 
 <dom-module id="ptm-app">
   <style>
+    paper-header-panel {
+      min-height: 400px;
+    }
     #toolbar {
-      height: 32px;
       background-color: var(--default-primary-color);
-      padding: 2px 8px 2px 12px;
+      /*padding: 0;*/
     }
     #toolbar paper-icon-button {
       color: var(--text-primary-color);
@@ -26,7 +29,7 @@
       @apply(--layout-center);
     }
     .loading {
-      height: 300px;
+      height: 100%;
       @apply(--layout-horizontal);
       @apply(--layout-center);
       @apply(--layout-center-justified);
@@ -39,40 +42,40 @@
       @apply(--layout-center-center);
     }
   </style>
-<!-- <iron-ajax id="projects" url="stab_projects.json" handle-as="json" auto></iron-ajax> -->
   <template>
-    <paper-material id="toolbar" elevation="0">
-      <div class="bottom flex">
-        <paper-input label="Project Tab Manager" class="flex" value="{{query}}"></paper-input>
-        <paper-icon-button icon="icons:search"></paper-icon-button>
-        <paper-icon-button icon="icons:more-vert"></paper-icon-button>
-      </div>
-      <iron-selector id="menu" hidden>
-        <template is="dom-repeat" items="{{menuItems}}">
-          <paper-item>
-            <div class="flex">{{item.text}}</div>
-          </paper-item>
-        </template>
-      </iron-selector>
-    </paper-material>
-    <paper-tabs class="bottom" selected="{{selected}}">
-      <paper-tab>Sessions</paper-tab>
-      <paper-tab>Projects</paper-tab>
-    </paper-tabs>
-    <iron-pages id="pages" selected="[[selected]]">
-      <ptm-session-list
-        query="[[query]]"
-        project-manager="[[projectManager]]">
-      </ptm-session-list>
-      <ptm-project-list
-        query="[[query]]"
-        project-manager="[[projectManager]]">
-      </ptm-project-list>
-      <div class="loading">
-        <paper-spinner active></paper-spinner>
-      </div>
-    </iron-pages>
-    <paper-toast id="toast" duration="3000" text="{{toastText}}"></paper-toast>
+    <paper-header-panel>
+      <paper-toolbar id="toolbar">
+        <div class="top flex layout horizontal">
+          <paper-input placeholder="Project Tab Manager" class="flex" value="{{query}}"></paper-input>
+          <paper-icon-button icon="icons:more-vert"></paper-icon-button>
+          <iron-selector id="menu" hidden>
+            <template is="dom-repeat" items="{{menuItems}}">
+              <paper-item>
+                <div class="flex">{{item.text}}</div>
+              </paper-item>
+            </template>
+          </iron-selector>
+        </div>
+        <paper-tabs class="bottom flex self-end" selected="{{selected}}">
+          <paper-tab>Sessions</paper-tab>
+          <paper-tab>Projects</paper-tab>
+        </paper-tabs>
+      </paper-toolbar>
+      <iron-pages id="pages" selected="[[selected]]">
+        <ptm-session-list
+          query="[[query]]"
+          project-manager="[[projectManager]]">
+        </ptm-session-list>
+        <ptm-project-list
+          query="[[query]]"
+          project-manager="[[projectManager]]">
+        </ptm-project-list>
+        <div class="loading">
+          <paper-spinner active></paper-spinner>
+        </div>
+      </iron-pages>
+      <paper-toast id="toast" duration="3000" text="{{toastText}}"></paper-toast>
+    </paper-header-panel>
   </template>
 </dom-module>
 

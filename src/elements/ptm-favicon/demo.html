@@ -1,9 +1,15 @@
 <html>
 <head>
   <title>PTM Favicon Demo</title>
+  <script>
+    Polymer = {};
+    Polymer.dom = 'shadow';
+  </script>
   <link rel="import" href="ptm-favicon.html">
+  <link rel="import" href="../../bower_components/idb-node/idb-node.html">
 </head>
 <body>
+  <idb-node id="db" database-name="ProjectTabManager" version="4" object-store="favicons" key-path="domain" on-idb-ready="readFavicon"></idb-node>
   <template id="t" is="dom-bind">
     <ptm-favicon url="https://twitter.com/agektmr/" fav-icon-url="https://twitter.com/favicon.ico"></ptm-favicon>
     <ptm-favicon url="https://docs.google.com/presentation/d/12SlNQ4sOWdW-OS9SatodSiABlNxoprubWSfMXmQl55I/edit" fav-icon-url="https://ssl.gstatic.com/docs/presentations/images/favicon4.ico"></ptm-favicon>

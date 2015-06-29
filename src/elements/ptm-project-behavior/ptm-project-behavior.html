@@ -1,6 +1,10 @@
 <script>
 var PtmProjectBehavior = {
   properties: {
+    project: {
+      type: Object,
+      value: {}
+    },
     fields: {
       type: Array,
       value: []
@@ -40,6 +44,10 @@ var PtmProjectBehavior = {
       value: '',
       observer: 'search'
     },
+    matchedBookmarks: {
+      type: Number,
+      value: -1
+    },
     _unfoldIcon: {
       type: String,
       value: 'unfold-more'
@@ -59,13 +67,19 @@ var PtmProjectBehavior = {
     this._elevation = this.expanded ? 2 : 0;
   },
   search: function() {
-    this.$.repeat.render();
+    if (this.query.length < 2) {
+      this.matchedBookmarks = 0;
+    }
   },
   filter: function(item) {
+    // TODO: This won't be executed unless project.title matches the query.
+    // Needs to fix this
     if (this.query.length < 2) {
       return true
     } else {
-      return item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
+      var matched = item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
+      this.matchedBookmarks += matched ? 1 : 0;
+      return matched;
     }
   },
   openProject: function(e) {
@@ -74,23 +88,39 @@ var PtmProjectBehavior = {
       projectId: this.projectId
     });
   },
+  _computeElevation: function(expanded) {
+    return expanded ? 2 : 0;
+  },
+  _computeFoldIcon: function(expanded) {
+    return expanded ? 'unfold-less' : 'unfold-more';
+  },
   _computeProjectLinked: function(projectId) {
     return projectId * 1 > -1 ? true : false;
   },
   _onToggleBookmark: function(e) {
+    var that = this;
     e.stopPropagation();
     var field = e.model.item;
-    if (field.id !== undefined) {
-      this.fire('remove-bookmark', {
-        projectId: this.projectId,
-        bookmarkId: field.id
+    var index = e.model.index;
+    if (field.id === undefined || field.id === '') {
+      this.project.addBookmark(field.tabId, function(bookmark) {
+        that.set('fields.'+index+'.id', bookmark.id);
+        that.fire('show-toast', {
+          text: 'Bookmark added'
+        });
       });
     } else {
-      this.fire('add-bookmark', {
-        projectId: this.projectId,
-        tabId: field.tabId
+      this.project.removeBookmark(field.id, function() {
+        that.set('fields.'+index+'.id', '');
+        that.fire('show-toast', {
+          text: 'Bookmark removed'
+        });
       });
     }
+  },
+  _onFieldUpdated: function() {
+    console.log('field updated');
+    this.$.repeat.render();
   }
 };
 </script>

@@ -1,6 +1,6 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
-<link rel="import" href="../../bower_components/idb-node/idb-node.html">
+<link rel="import" href="../../bower_components/iron-meta/iron-meta.html">
 
 <dom-module id="ptm-favicon">
   <style>
@@ -18,8 +18,8 @@
     }
   </style>
   <template>
-    <idb-node id="db" database="ProjectTabManager" version="4" object-store="favicons" key-path="domain" on-idb-ready="readFavicon"></idb-node>
-    <iron-icon src="{{validateFavIcon(favIconUrl)}}"></iron-icon>
+    <iron-meta id="meta" type="idb"></iron-meta>
+    <iron-icon src="[[_validateFavIcon(favIconUrl)]]"></iron-icon>
   </template>
 </dom-module>
 
@@ -40,8 +40,21 @@
         reflectToAttribute: true
       }
     },
-    validateFavIcon: function(src) {
-      return !src ? DEFAULT_FAVICON_URL : src;
+    _validateFavIcon: function(src) {
+      // Avoid blob url from older version
+      if (!src || src.indexOf('blob') === 0) {
+        return DEFAULT_FAVICON_URL;
+      } else {
+        return src;
+      }
+    },
+    ready: function() {
+      this.db = this.$.meta.byKey('ProjectTabManager-favicons');
+      if (this.db.dbReady) {
+        this.readFavicon();
+      } else {
+        this.db.addEventListener('idb-ready', this.readFavicon.bind(this));
+      }
     },
     readFavicon: function() {
       var that = this;
@@ -56,7 +69,7 @@
         // favicon url is not yet cached
         } else {
           // Look up on database
-          this.$.db.get(domain).then(function(result) {
+          this.db.get(domain).then(function(result) {
             // If there's an entry, use it and cache
             // Otherwise, fallback to default icon
             if (result) {
@@ -66,10 +79,6 @@
                 url: that.favIconUrl
               }
             }
-            if (result && result.url != that.favIconUrl) {
-              console.log('overwritten favicon');
-              that._saveFavIconUrl(domain, that.favIconUrl);
-            }
           });
         }
       // If favicon is specified
@@ -77,11 +86,10 @@
         // Check if cache exists
         if (!cache[domain]) {
           // Look up on database
-          this.$.db.get(domain).then(function(result) {
+          this.db.get(domain).then(function(result) {
             // If there's no entry or exists but differ
             if (!result || result.url != that.favIconUrl) {
               // Save the favicon
-              console.log('overwritten favicon');
               that._saveFavIconUrl(domain, that.favIconUrl);
             }
             // Cache it regardless of database entry exists or not
@@ -102,7 +110,7 @@
       return domain;
     },
     _saveFavIconUrl: function(domain, favIconUrl) {
-      this.$.db.put({
+      this.db.put({
         domain: domain,
         url: favIconUrl
       });

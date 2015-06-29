@@ -1,4 +1,5 @@
-<html><head><meta charset="UTF-8"><style is="custom-style">
+<html><head><meta charset="UTF-8"><script src="../bower_components/promise-polyfill/Promise.js"></script>
+<style is="custom-style">
 
   :root {
 
@@ -295,6 +296,35 @@
       bottom: 0;
       left: 0;
     };
+
+  }
+
+</style>
+
+
+<style is="custom-style">
+
+  :root {
+
+    --dark-primary-color: #303f9f;
+
+    --default-primary-color: #3f51b5;
+
+    --light-primary-color: #c5cae9;
+
+    --text-primary-color: #ffffff;
+
+    --accent-color: #ff4081;
+
+    --primary-background-color: #ffffff;
+
+    --primary-text-color: #212121;
+
+    --secondary-text-color: #757575;
+
+    --disabled-text-color: #bdbdbd;
+
+    --divider-color: #e0e0e0;
 
   }
 
@@ -1212,35 +1242,12 @@
 
   :root {
 
-    --dark-primary-color: #303f9f;
-
-    --default-primary-color: #3f51b5;
-
-    --light-primary-color: #c5cae9;
-
-    --text-primary-color: #ffffff;
-
-    --accent-color: #ff4081;
-
-    --primary-background-color: #ffffff;
-
-    --primary-text-color: #212121;
-
-    --secondary-text-color: #757575;
-
-    --disabled-text-color: #bdbdbd;
-
-    --divider-color: #e0e0e0;
-
-  }
-
-</style>
-<style is="custom-style">
-
-  :root {
-
     --shadow-transition: {
       transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    };
+
+    --shadow-none: {
+      box-shadow: none;
     };
 
     /* from http://codepen.io/shyndman/pen/c5394ddf2e8b2a5c9185904b57421cdb */
@@ -1285,7 +1292,6 @@
 
 </style>
 <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic">
-
 <style is="custom-style">
 
   :root {
@@ -1293,9 +1299,9 @@
     /* Shared Styles */
 
     /*
-    Unfortunately, we can't make use of these yet - sibling properties aren't
-    evaluated. See https://github.com/Polymer/polymer/issues/1399
-
+    Unfortunately, we can't use nested rules
+    See https://github.com/Polymer/polymer/issues/1399
+    */
     --paper-font-common-base: {
       font-family: 'Roboto', 'Noto', sans-serif;
       -webkit-font-smoothing: antialiased;
@@ -1315,7 +1321,6 @@
       overflow: hidden;
       text-overflow: ellipsis;
     };
-    */
 
     /* Material Font Styles */
 
@@ -1513,23 +1518,6 @@
 
 </style>
 
-<script src="../bower_components/promise-polyfill/Promise.js"></script>
-<style is="custom-style">
-  :root {
-    --iron-icon-width: 24px;
-    --iron-icon-height: 24px;
-  }
-</style>
-
-<style is="custom-style">
-  :root {
-    --paper-icon-button-disabled-text: var(--disabled-text-color);
-  }
-</style>
-
-
-
-
 
 <script src="../bower_components/web-animations-js/web-animations-next-lite.min.js"></script>
 
@@ -1648,278 +1636,13 @@
       height: 42px;
     };
   }
-</style></head><body><div hidden="" by-vulcanize=""><dom-module id="paper-input-container" assetpath="../bower_components/paper-input/">
-
+</style></head><body><div hidden="" by-vulcanize=""><dom-module id="idb-node" assetpath="../bower_components/idb-node/">
   <style>
-
     :host {
-      display: block;
-      padding: 8px 0;
-
-      @apply(--paper-input-container);
-    }
-
-    :host[inline] {
-      display: inline-block;
-    }
-
-    :host([disabled]) {
-      pointer-events: none;
-      opacity: 0.33;
-    }
-
-    .floated-label-placeholder {
-      @apply(--paper-font-caption);
-    }
-
-    .underline {
-      position: relative;
-    }
-
-    .focused-line {
-      height: 2px;
-
-      -webkit-transform-origin: center center;
-      transform-origin: center center;
-      -webkit-transform: scale3d(0,1,1);
-      transform: scale3d(0,1,1);
-
-      background: var(--paper-input-container-focus-color, --default-primary-color);
-    }
-
-    .is-highlighted .focused-line {
-      -webkit-transform: none;
-      transform: none;
-      -webkit-transition: -webkit-transform 0.25s;
-      transition: transform 0.25s;
-
-      @apply(--paper-transition-easing);
-    }
-
-    .is-invalid .focused-line {
-      background: var(--paper-input-container-invalid-color, --google-red-500);
-
-      -webkit-transform: none;
-      transform: none;
-      -webkit-transition: -webkit-transform 0.25s;
-      transition: transform 0.25s;
-
-      @apply(--paper-transition-easing);
-    }
-
-    .unfocused-line {
-      height: 1px;
-      background: var(--paper-input-container-color, --secondary-text-color);
-    }
-
-    :host([disabled]) .unfocused-line {
-      border-bottom: 1px dashed;
-      border-color: var(--paper-input-container-color, --secondary-text-color);
-      background: transparent;
-    }
-
-    .input-content {
-      position: relative;
-    }
-
-    .input-content ::content label,
-    .input-content ::content .paper-input-label {
-      position: absolute;
-      top: 0;
-      right: 0;
-      left: 0;
-      font: inherit;
-      color: var(--paper-input-container-color, --secondary-text-color);
-
-      @apply(--paper-font-subhead);
-      @apply(--paper-input-container-label);
-    }
-
-    .input-content.label-is-floating ::content label,
-    .input-content.label-is-floating ::content .paper-input-label {
-      -webkit-transform: translate3d(0, -75%, 0) scale(0.75);
-      transform: translate3d(0, -75%, 0) scale(0.75);
-      -webkit-transform-origin: left top;
-      transform-origin: left top;
-      -webkit-transition: -webkit-transform 0.25s;
-      transition: transform 0.25s;
-
-      @apply(--paper-transition-easing);
-    }
-
-    .input-content.label-is-highlighted ::content label,
-    .input-content.label-is-highlighted ::content .paper-input-label {
-      color: var(--paper-input-container-focus-color, --default-primary-color);
-    }
-
-    .input-content.is-invalid ::content label,
-    .input-content.is-invalid ::content .paper-input-label {
-      color: var(--paper-input-container-invalid-color, --google-red-500);
-    }
-
-    .input-content.label-is-hidden ::content label,
-    .input-content.label-is-hidden ::content .paper-input-label {
-      visibility: hidden;
-    }
-
-    .input-content ::content input,
-    .input-content ::content textarea,
-    .input-content ::content iron-autogrow-textarea,
-    .input-content ::content .paper-input-input {
-      position: relative; /* to make a stacking context */
-      outline: none;
-      box-shadow: none;
-      padding: 0;
-      width: 100%;
-      background: transparent;
-      border: none;
-      color: var(--paper-input-container-input-color, --primary-text-color);
-
-      @apply(--paper-font-subhead);
-      @apply(--paper-input-container-input);
-    }
-
-    /* Firefox sets a min-width on the input, which can cause layout issues */
-    .input-content ::content input {
-      min-width: 0;
-    }
-
-    .input-content ::content textarea {
-      resize: none;
-    }
-
-    .add-on-content.is-invalid ::content * {
-      color: var(--paper-input-container-invalid-color, --google-red-500);
-    }
-
-    .add-on-content.is-highlighted ::content * {
-      color: var(--paper-input-container-focus-color, --default-primary-color);
-    }
-
-  </style>
-
-  <template>
-
-    <template is="dom-if" if="[[!noLabelFloat]]">
-      <div class="floated-label-placeholder">&nbsp;</div>
-    </template>
-
-    <div class$="[[_computeInputContentClass(noLabelFloat,alwaysFloatLabel,focused,invalid,_inputHasContent)]]">
-      <content select=":not([add-on])"></content>
-    </div>
-
-    <div class$="[[_computeUnderlineClass(focused,invalid)]]">
-      <div class="unfocused-line fit"></div>
-      <div class="focused-line fit"></div>
-    </div>
-
-    <div class$="[[_computeAddOnContentClass(focused,invalid)]]">
-      <content id="addOnContent" select="[add-on]"></content>
-    </div>
-
-  </template>
-
-</dom-module>
-
-<dom-module id="paper-input-error" assetpath="../bower_components/paper-input/">
-
-  <style>
-
-    :host {
-      /* need to use display: none for role="alert" */
       display: none;
-      float: left;
-
-      color: var(--paper-input-container-invalid-color, --google-red-500);
-
-      @apply(--paper-font-caption);
-      @apply(--paper-input-error);
     }
-
-    :host([invalid]) {
-      display: inline-block;
-    };
-
   </style>
-
-  <template>
-
-    <content></content>
-
-  </template>
-
 </dom-module>
-
-<dom-module id="paper-input-char-counter" assetpath="../bower_components/paper-input/">
-
-  <style>
-
-    :host {
-      display: inline-block;
-      float: right;
-
-      @apply(--paper-font-caption);
-      @apply(--paper-input-char-counter);
-    }
-
-  </style>
-
-  <template>
-
-    <span>[[_charCounterStr]]</span>
-
-  </template>
-
-</dom-module>
-
-<dom-module id="paper-input" assetpath="../bower_components/paper-input/">
-
-  <style>
-
-    :host {
-      display: block;
-    }
-
-    input::-webkit-input-placeholder {
-      color: var(--paper-input-container-color, --secondary-text-color);
-    }
-
-    input:-moz-placeholder {
-      color: var(--paper-input-container-color, --secondary-text-color);
-    }
-
-    input::-moz-placeholder {
-      color: var(--paper-input-container-color, --secondary-text-color);
-    }
-
-    input:-ms-input-placeholder {
-      color: var(--paper-input-container-color, --secondary-text-color);
-    }
-
-  </style>
-
-  <template>
-
-    <paper-input-container no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
-
-      <label hidden$="[[!label]]">[[label]]</label>
-
-      <input is="iron-input" id="input" aria-labelledby$="[[_ariaLabelledBy]]" aria-describedby$="[[_ariaDescribedBy]]" disabled$="[[disabled]]" bind-value="{{value}}" invalid="{{invalid}}" prevent-invalid-input="[[preventInvalidInput]]" allowedpattern="[[allowedPattern]]" validator="[[validator]]" type$="[[type]]" pattern$="[[pattern]]" maxlength$="[[maxlength]]" required$="[[required]]" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" minlength$="[[minlength]]" name$="[[name]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" size$="[[size]]">
-
-      <template is="dom-if" if="[[errorMessage]]">
-        <paper-input-error>[[errorMessage]]</paper-input-error>
-      </template>
-
-      <template is="dom-if" if="[[charCounter]]">
-        <paper-input-char-counter></paper-input-char-counter>
-      </template>
-
-    </paper-input-container>
-
-  </template>
-
-</dom-module>
-
 <dom-module id="iron-pages" assetpath="../bower_components/iron-pages/">
 
   <style>
@@ -1954,8 +1677,8 @@
 
       fill: currentcolor;
 
-      width: var(--iron-icon-width);
-      height: var(--iron-icon-height);
+      width: var(--iron-icon-width, 24px);
+      height: var(--iron-icon-height, 24px);
     }
   </style>
 
@@ -1964,7 +1687,6 @@
   </template>
 
   </dom-module>
-
 <dom-module id="paper-ripple" assetpath="../bower_components/paper-ripple/">
 
   
@@ -2063,7 +1785,7 @@
     }
 
     :host([disabled]) {
-      color: var(--paper-icon-button-disabled-text, #fff);
+      color: var(--paper-icon-button-disabled-text, --disabled-text-color);
       pointer-events: none;
       cursor: auto;
       @apply(--paper-icon-button-disabled);
@@ -2071,9 +1793,138 @@
   </style>
   <template>
     <paper-ripple id="ink" class="circle" center=""></paper-ripple>
-    <iron-icon id="icon" src="[[src]]" icon="[[icon]]"></iron-icon>
+    <iron-icon id="icon" src="[[src]]" icon="[[icon]]" alt$="[[alt]]"></iron-icon>
   </template>
 </dom-module>
+<dom-module id="paper-header-panel" assetpath="../bower_components/paper-header-panel/">
+
+  <style>
+    :host {
+      @apply(--layout);
+      @apply(--layout-vertical);
+
+      display: block;
+      position: relative;
+      height: 100%;
+
+      /* Create a stack context, we will need it for the shadow*/
+      z-index: 0;
+    }
+
+    :root {
+      /**
+       * Default paper header panel shadow
+       */
+      --paper-header-panel-shadow: {
+        height: 6px;
+        bottom: -6px;
+        box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.4);
+      };
+    }
+
+    #mainContainer {
+      @apply(--layout-flex);
+
+      position: relative;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      flex-basis: 0.0001px;
+    }
+
+    /*
+     * mode: scroll
+     */
+    :host([mode=scroll]) #mainContainer {
+      @apply(--paper-header-panel-scroll-container);
+      overflow: visible;
+    }
+
+    :host([mode=scroll]) {
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /*
+     * mode: cover
+     */
+    :host([mode=cover]) #mainContainer {
+      @apply(--paper-header-panel-cover-container);
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+    }
+
+    /*
+     * mode: standard
+     */
+    :host([mode=standard]) #mainContainer {
+      @apply(--paper-header-panel-standard-container);
+    }
+
+    /*
+     * mode: waterfall
+     */
+    :host([mode=waterfall]) #mainContainer {
+      @apply(--paper-header-panel-waterfall-container);
+    }
+
+    /*
+     * mode: waterfall-tall
+     */
+    :host([mode=waterfall-tall]) #mainContainer {
+      @apply(--paper-header-panel-waterfall-tall-container);
+    }
+
+    :host ::content paper-toolbar,
+    :host ::content .paper-header {
+      position: relative;
+      overflow: visible !important;
+    }
+
+    :host ::content paper-toolbar:after,
+    :host ::content .paper-header:after {
+      @apply(--paper-header-panel-shadow);
+
+      -webkit-transition: opacity 0.5s, -webkit-transform 0.5s;
+      transition: opacity 0.5s, transform 0.5s;
+
+      opacity: 0;
+      content: "";
+
+      width: 100%;
+      position: absolute;
+      left: 0px;
+      right: 0px;
+      z-index: 1;
+
+      -webkit-transform: scale3d(1, 0, 1);
+      -webkit-transform-origin: 0% 0%;
+
+      transform: scale3d(1, 0, 1);
+      transform-origin: 0% 0%;
+    }
+
+    :host ::content paper-toolbar.has-shadow:after,
+    :host ::content .paper-header.has-shadow:after {
+      opacity: 1;
+      -webkit-transform: scale3d(1, 1, 1);
+      transform: scale3d(1, 1, 1);
+    }
+  </style>
+
+  <template>
+    <content id="headerContent" select="paper-toolbar, .paper-header"></content>
+    <div id="mainContainer" class$="[[_computeMainContainerClass(mode)]]">
+      <content id="mainContent" select="*"></content>
+    </div>
+  </template>
+
+</dom-module>
+
 <dom-module id="paper-toolbar" assetpath="../bower_components/paper-toolbar/">
 
   <style>
@@ -2137,7 +1988,6 @@
 
     #topBar {
       position: relative;
-      z-index: 1;
     }
 
     /* middle bar */
@@ -2146,7 +1996,6 @@
       top: 0;
       right: 0;
       left: 0;
-      z-index: 2;
     }
 
     :host(.tall) #middleBar,
@@ -2161,7 +2010,6 @@
       right: 0;
       bottom: 0;
       left: 0;
-      z-index: 1;
     }
 
     /*
@@ -2179,6 +2027,7 @@
       @apply(--paper-font-title);
       @apply(--layout-flex);
 
+      pointer-events: none;
       text-overflow: ellipsis;
       white-space: nowrap;
       overflow: hidden;
@@ -2198,12 +2047,7 @@
      * Work in progress.
      */
     .toolbar-tools > ::content paper-icon-button[icon=menu] {
-      margin-left: -8px;
       margin-right: 24px;
-    }
-
-    .toolbar-tools > ::content paper-icon-button + paper-icon-button {
-      margin-right: -8px;
     }
 
     .toolbar-tools > ::content > .title,
@@ -2894,38 +2738,22 @@
 <g id="zoom-out"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM7 9h5v1H7z"></path></g>
 </defs></svg>
 </iron-iconset-svg>
-<dom-module id="idb-node" assetpath="../bower_components/idb-node/">
-  <style>
-    :host {
-      display: none;
-    }
-  </style>
-</dom-module>
-<dom-module id="ptm-favicon" assetpath="ptm-favicon/">
-  <style>
-    :host {
-      display: block;
-      padding: 8px;
-      width: 24px;
-      height: 24px;
-      -webkit-user-select: none;
-      @apply (--paper-icon-button)
-    }
-    iron-icon {
-      width: 100%;
-      height: 100%;
-    }
-  </style>
-  <template>
-    <idb-node id="db" database="ProjectTabManager" version="4" object-store="favicons" key-path="domain" on-idb-ready="readFavicon"></idb-node>
-    <iron-icon src="{{validateFavIcon(favIconUrl)}}"></iron-icon>
-  </template>
-</dom-module>
-
 <dom-module id="ptm-bookmark" assetpath="ptm-bookmark/">
   <style>
   paper-item > *:not(:first-child):not(:last-child) {
     margin-right: 0 !important;
+  }
+  .favicon {
+    display: block;
+    padding: 8px;
+    width: 24px;
+    height: 24px;
+    -webkit-user-select: none;
+    @apply (--paper-icon-button)
+  }
+  iron-icon {
+    width: 100%;
+    height: 100%;
   }
   .title {
     cursor: pointer;
@@ -2933,6 +2761,7 @@
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
+    @apply(--layout-flex);
   }
   .title[active] {
     color: black;
@@ -2945,9 +2774,12 @@
   }
   </style>
   <template>
-    <paper-item class="layout">
-      <ptm-favicon id="favicon" url="[[url]]" fav-icon-url="{{favIconUrl}}"></ptm-favicon>
-      <div class="title flex" on-tap="open" active$="[[_isActive(tabId)]]">
+    <iron-meta id="meta" type="idb"></iron-meta>
+    <paper-item>
+      <div class="favicon">
+        <iron-icon src="[[_validateFavIcon(favIconUrl)]]"></iron-icon>
+      </div>
+      <div class="title" on-tap="open" active$="[[_isActive(tabId)]]">
         
         <span>[[title]]</span>
       </div>
@@ -2978,16 +2810,17 @@
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
+      @apply(--layout-flex);
     }
     .title[active] {
       color: var(--primary-text-color);
     }
   </style>
   <template>
-    <paper-material elevation="[[_elevation]]" expanded$="[[expanded]]">
-      <paper-item class="layout">
-        <paper-icon-button tabindex="-1" icon="[[_unfoldIcon]]" on-tap="toggle"></paper-icon-button>
-        <div class="title flex" on-tap="openProject" active$="[[_isActive(winId)]]">
+    <paper-material elevation="[[_computeElevation(expanded)]]" expanded$="[[expanded]]">
+      <paper-item>
+        <paper-icon-button tabindex="-1" icon="[[_computeFoldIcon(expanded)]]" on-tap="toggle"></paper-icon-button>
+        <div class="title" on-tap="openProject" active$="[[_isActive(winId)]]">
           
           <span>[[projectTitle]]</span>
         </div>
@@ -3002,11 +2835,13 @@
         <template is="dom-if" if="[[!fields.length]]">
           <paper-item class="layout">
             <paper-icon-button icon="icons:warning"></paper-icon-button>
-            <span on-tap="open" class="flex title">No open tabs or bookmarks</span>
+            <span on-tap="open" class="title">No open tabs or bookmarks</span>
           </paper-item>
         </template>
-        <template id="repeat" is="dom-repeat" items="[[fields]]" filter="filter">
-          <ptm-bookmark url="[[item.url]]" fav-icon-url="[[item.favIconUrl]]" bookmark-id="[[item.id]]" tab-id="[[item.tabId]]" title="[[item.title]]" project-linked="[[_computeProjectLinked(projectId)]]" on-toggle-bookmark="_onToggleBookmark"></ptm-bookmark>
+        <template is="dom-if" if="[[expanded]]">
+          <template id="repeat" is="dom-repeat" items="[[fields]]" filter="filter">
+            <ptm-bookmark url="[[item.url]]" fav-icon-url="{{item.favIconUrl}}" bookmark-id="[[item.id]]" tab-id="[[item.tabId]]" title="[[item.title]]" project-linked="[[_computeProjectLinked(projectId)]]" on-toggle-bookmark="_onToggleBookmark"></ptm-bookmark>
+          </template>
         </template>
       </iron-collapse>
     </paper-material>
@@ -3018,7 +2853,7 @@
   </style>
   <template>
     <template id="repeat" is="dom-repeat" items="{{projectManager.projects}}" filter="filter">
-      <ptm-session project-id="{{item.id}}" session-id="{{item.session.id}}" win-id="{{item.session.winId}}" session-title="{{item.session.title}}" project-title="{{item.title}}" fields="{{item.fields}}" query="{{query}}" expanded="{{_isSearching(query, item.session.winId)}}" on-link-project="_chooseProject" on-open-project="open" on-remove-session="remove">
+      <ptm-session project="{{item}}" project-id="{{item.id}}" session-id="{{item.session.id}}" win-id="{{item.session.winId}}" session-title="{{item.session.title}}" project-title="{{item.title}}" fields="{{item.fields}}" query="{{query}}" expanded="{{_isSearching(query, item.session.winId)}}" on-link-project="_chooseProject" on-open-project="open" on-remove-session="remove">
       </ptm-session>
     </template>
     <ptm-project-linker id="linker" on-link-project="link" on-associate-bookmark="associate" projects="{{projectManager.projects}}">
@@ -3046,13 +2881,14 @@
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
+      @apply(--layout-flex);
     }
   </style>
   <template>
-    <paper-material elevation="[[_elevation]]" expanded$="{{expanded}}">
-      <paper-item class="layout">
-        <paper-icon-button tabindex="-1" icon="[[_unfoldIcon]]" on-tap="toggle"></paper-icon-button>
-        <div class="title flex" on-tap="openProject">
+    <paper-material elevation="[[_computeElevation(expanded)]]" expanded$="[[expanded]]">
+      <paper-item>
+        <paper-icon-button tabindex="-1" icon="[[_computeFoldIcon(expanded)]]" on-tap="toggle"></paper-icon-button>
+        <div class="title" on-tap="openProject">
           
           <span>{{projectTitle}}</span>
         </div>
@@ -3065,11 +2901,13 @@
         <template is="dom-if" if="[[!fields.length]]">
           <paper-item class="layout">
             <paper-icon-button icon="icons:warning"></paper-icon-button>
-            <span on-tap="open" class="flex title">No bookmarks</span>
+            <span on-tap="open" class="title">No bookmarks</span>
           </paper-item>
         </template>
-        <template id="repeat" is="dom-repeat" items="[[fields]]" filter="filter">
-          <ptm-bookmark url="[[item.url]]" fav-icon-url="[[item.favIconUrl]]" bookmark-id="[[item.id]]" tab-id="[[item.tabId]]" title="[[item.title]]" project-linked="[[_computeProjectLinked(projectId)]]" on-toggle-bookmark="_onToggleBookmark"></ptm-bookmark>
+        <template is="dom-if" if="[[expanded]]">
+          <template id="repeat" is="dom-repeat" items="[[fields]]" filter="filter">
+            <ptm-bookmark url="[[item.url]]" fav-icon-url="{{item.favIconUrl}}" bookmark-id="[[item.id]]" tab-id="[[item.tabId]]" title="[[item.title]]" project-linked="[[_computeProjectLinked(projectId)]]" on-toggle-bookmark="_onToggleBookmark"></ptm-bookmark>
+          </template>
         </template>
       </iron-collapse>
     </paper-material>
@@ -3081,7 +2919,7 @@
   </style>
   <template>
     <template id="repeat" is="dom-repeat" items="{{projectManager.projects}}" filter="filter">
-      <ptm-project project-id="{{item.id}}" project-title="{{item.title}}" fields="{{item.fields}}" query="{{query}}" expanded="{{_isSearching(query)}}" on-open-project="open" on-rename-project="rename" on-remove-project="remove">
+      <ptm-project project="{{item}}" project-id="{{item.id}}" project-title="{{item.title}}" fields="{{item.fields}}" query="{{query}}" expanded="{{_isSearching(query)}}" on-open-project="open" on-rename-project="rename" on-remove-project="remove">
       </ptm-project>
     </template>
   </template>
@@ -3242,6 +3080,278 @@
 
 </dom-module>
 
+<dom-module id="paper-input-container" assetpath="../bower_components/paper-input/">
+
+  <style>
+
+    :host {
+      display: block;
+      padding: 8px 0;
+
+      @apply(--paper-input-container);
+    }
+
+    :host[inline] {
+      display: inline-block;
+    }
+
+    :host([disabled]) {
+      pointer-events: none;
+      opacity: 0.33;
+    }
+
+    .floated-label-placeholder {
+      @apply(--paper-font-caption);
+    }
+
+    .underline {
+      position: relative;
+    }
+
+    .focused-line {
+      height: 2px;
+
+      -webkit-transform-origin: center center;
+      transform-origin: center center;
+      -webkit-transform: scale3d(0,1,1);
+      transform: scale3d(0,1,1);
+
+      background: var(--paper-input-container-focus-color, --default-primary-color);
+    }
+
+    .underline.is-highlighted .focused-line {
+      -webkit-transform: none;
+      transform: none;
+      -webkit-transition: -webkit-transform 0.25s;
+      transition: transform 0.25s;
+
+      @apply(--paper-transition-easing);
+    }
+
+    .underline.is-invalid .focused-line {
+      background: var(--paper-input-container-invalid-color, --google-red-500);
+
+      -webkit-transform: none;
+      transform: none;
+      -webkit-transition: -webkit-transform 0.25s;
+      transition: transform 0.25s;
+
+      @apply(--paper-transition-easing);
+    }
+
+    .unfocused-line {
+      height: 1px;
+      background: var(--paper-input-container-color, --secondary-text-color);
+    }
+
+    :host([disabled]) .unfocused-line {
+      border-bottom: 1px dashed;
+      border-color: var(--paper-input-container-color, --secondary-text-color);
+      background: transparent;
+    }
+
+    .input-content {
+      position: relative;
+    }
+
+    .input-content ::content label,
+    .input-content ::content .paper-input-label {
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      font: inherit;
+      color: var(--paper-input-container-color, --secondary-text-color);
+
+      @apply(--paper-font-subhead);
+      @apply(--paper-input-container-label);
+    }
+
+    .input-content.label-is-floating ::content label,
+    .input-content.label-is-floating ::content .paper-input-label {
+      -webkit-transform: translate3d(0, -75%, 0) scale(0.75);
+      transform: translate3d(0, -75%, 0) scale(0.75);
+      -webkit-transform-origin: left top;
+      transform-origin: left top;
+      -webkit-transition: -webkit-transform 0.25s;
+      transition: transform 0.25s;
+
+      @apply(--paper-transition-easing);
+    }
+
+    .input-content.label-is-highlighted ::content label,
+    .input-content.label-is-highlighted ::content .paper-input-label {
+      color: var(--paper-input-container-focus-color, --default-primary-color);
+    }
+
+    .input-content.is-invalid ::content label,
+    .input-content.is-invalid ::content .paper-input-label {
+      color: var(--paper-input-container-invalid-color, --google-red-500);
+    }
+
+    .input-content.label-is-hidden ::content label,
+    .input-content.label-is-hidden ::content .paper-input-label {
+      visibility: hidden;
+    }
+
+    .input-content ::content input,
+    .input-content ::content textarea,
+    .input-content ::content iron-autogrow-textarea,
+    .input-content ::content .paper-input-input {
+      position: relative; /* to make a stacking context */
+      outline: none;
+      box-shadow: none;
+      padding: 0;
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--paper-input-container-input-color, --primary-text-color);
+
+      @apply(--paper-font-subhead);
+      @apply(--paper-input-container-input);
+    }
+
+    /* Firefox sets a min-width on the input, which can cause layout issues */
+    .input-content ::content input {
+      min-width: 0;
+    }
+
+    .input-content ::content textarea {
+      resize: none;
+    }
+
+    .add-on-content.is-invalid ::content * {
+      color: var(--paper-input-container-invalid-color, --google-red-500);
+    }
+
+    .add-on-content.is-highlighted ::content * {
+      color: var(--paper-input-container-focus-color, --default-primary-color);
+    }
+
+  </style>
+
+  <template>
+
+    <template is="dom-if" if="[[!noLabelFloat]]">
+      <div class="floated-label-placeholder">&nbsp;</div>
+    </template>
+
+    <div class$="[[_computeInputContentClass(noLabelFloat,alwaysFloatLabel,focused,invalid,_inputHasContent)]]">
+      <content select=":not([add-on])"></content>
+    </div>
+
+    <div class$="[[_computeUnderlineClass(focused,invalid)]]">
+      <div class="unfocused-line fit"></div>
+      <div class="focused-line fit"></div>
+    </div>
+
+    <div class$="[[_computeAddOnContentClass(focused,invalid)]]">
+      <content id="addOnContent" select="[add-on]"></content>
+    </div>
+
+  </template>
+
+</dom-module>
+
+<dom-module id="paper-input-error" assetpath="../bower_components/paper-input/">
+
+  <style>
+
+    :host {
+      /* need to use display: none for role="alert" */
+      display: none;
+      float: left;
+
+      color: var(--paper-input-container-invalid-color, --google-red-500);
+
+      @apply(--paper-font-caption);
+      @apply(--paper-input-error);
+    }
+
+    :host([invalid]) {
+      display: inline-block;
+    };
+
+  </style>
+
+  <template>
+
+    <content></content>
+
+  </template>
+
+</dom-module>
+
+<dom-module id="paper-input-char-counter" assetpath="../bower_components/paper-input/">
+
+  <style>
+
+    :host {
+      display: inline-block;
+      float: right;
+
+      @apply(--paper-font-caption);
+      @apply(--paper-input-char-counter);
+    }
+
+  </style>
+
+  <template>
+
+    <span>[[_charCounterStr]]</span>
+
+  </template>
+
+</dom-module>
+
+<dom-module id="paper-input" assetpath="../bower_components/paper-input/">
+
+  <style>
+
+    :host {
+      display: block;
+    }
+
+    input::-webkit-input-placeholder {
+      color: var(--paper-input-container-color, --secondary-text-color);
+    }
+
+    input:-moz-placeholder {
+      color: var(--paper-input-container-color, --secondary-text-color);
+    }
+
+    input::-moz-placeholder {
+      color: var(--paper-input-container-color, --secondary-text-color);
+    }
+
+    input:-ms-input-placeholder {
+      color: var(--paper-input-container-color, --secondary-text-color);
+    }
+
+  </style>
+
+  <template>
+
+    <paper-input-container no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
+
+      <label hidden$="[[!label]]">[[label]]</label>
+
+      <input is="iron-input" id="input" aria-labelledby$="[[_ariaLabelledBy]]" aria-describedby$="[[_ariaDescribedBy]]" disabled$="[[disabled]]" bind-value="{{value}}" invalid="{{invalid}}" prevent-invalid-input="[[preventInvalidInput]]" allowed-pattern="[[allowedPattern]]" validator="[[validator]]" type$="[[type]]" pattern$="[[pattern]]" maxlength$="[[maxlength]]" required$="[[required]]" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" minlength$="[[minlength]]" name$="[[name]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" list$="[[list]]" size$="[[size]]">
+
+      <template is="dom-if" if="[[errorMessage]]">
+        <paper-input-error>[[errorMessage]]</paper-input-error>
+      </template>
+
+      <template is="dom-if" if="[[charCounter]]">
+        <paper-input-char-counter></paper-input-char-counter>
+      </template>
+
+    </paper-input-container>
+
+  </template>
+
+</dom-module>
+
 <dom-module id="ptm-project-linker" assetpath="ptm-project-linker/">
   <style>
     .accent {
@@ -3297,10 +3407,12 @@
 
 <dom-module id="ptm-app" assetpath="ptm-app/">
   <style>
+    paper-header-panel {
+      min-height: 400px;
+    }
     #toolbar {
-      height: 32px;
       background-color: var(--default-primary-color);
-      padding: 2px 8px 2px 12px;
+      /*padding: 0;*/
     }
     #toolbar paper-icon-button {
       color: var(--text-primary-color);
@@ -3310,7 +3422,7 @@
       @apply(--layout-center);
     }
     .loading {
-      height: 300px;
+      height: 100%;
       @apply(--layout-horizontal);
       @apply(--layout-center);
       @apply(--layout-center-justified);
@@ -3323,36 +3435,36 @@
       @apply(--layout-center-center);
     }
   </style>
-
   <template>
-    <paper-material id="toolbar" elevation="0">
-      <div class="bottom flex">
-        <paper-input label="Project Tab Manager" class="flex" value="{{query}}"></paper-input>
-        <paper-icon-button icon="icons:search"></paper-icon-button>
-        <paper-icon-button icon="icons:more-vert"></paper-icon-button>
-      </div>
-      <iron-selector id="menu" hidden="">
-        <template is="dom-repeat" items="{{menuItems}}">
-          <paper-item>
-            <div class="flex">{{item.text}}</div>
-          </paper-item>
-        </template>
-      </iron-selector>
-    </paper-material>
-    <paper-tabs class="bottom" selected="{{selected}}">
-      <paper-tab>Sessions</paper-tab>
-      <paper-tab>Projects</paper-tab>
-    </paper-tabs>
-    <iron-pages id="pages" selected="[[selected]]">
-      <ptm-session-list query="[[query]]" project-manager="[[projectManager]]">
-      </ptm-session-list>
-      <ptm-project-list query="[[query]]" project-manager="[[projectManager]]">
-      </ptm-project-list>
-      <div class="loading">
-        <paper-spinner active=""></paper-spinner>
-      </div>
-    </iron-pages>
-    <paper-toast id="toast" duration="3000" text="{{toastText}}"></paper-toast>
+    <paper-header-panel>
+      <paper-toolbar id="toolbar">
+        <div class="top flex layout horizontal">
+          <paper-input placeholder="Project Tab Manager" class="flex" value="{{query}}"></paper-input>
+          <paper-icon-button icon="icons:more-vert"></paper-icon-button>
+          <iron-selector id="menu" hidden="">
+            <template is="dom-repeat" items="{{menuItems}}">
+              <paper-item>
+                <div class="flex">{{item.text}}</div>
+              </paper-item>
+            </template>
+          </iron-selector>
+        </div>
+        <paper-tabs class="bottom flex self-end" selected="{{selected}}">
+          <paper-tab>Sessions</paper-tab>
+          <paper-tab>Projects</paper-tab>
+        </paper-tabs>
+      </paper-toolbar>
+      <iron-pages id="pages" selected="[[selected]]">
+        <ptm-session-list query="[[query]]" project-manager="[[projectManager]]">
+        </ptm-session-list>
+        <ptm-project-list query="[[query]]" project-manager="[[projectManager]]">
+        </ptm-project-list>
+        <div class="loading">
+          <paper-spinner active=""></paper-spinner>
+        </div>
+      </iron-pages>
+      <paper-toast id="toast" duration="3000" text="{{toastText}}"></paper-toast>
+    </paper-header-panel>
   </template>
 </dom-module>
 

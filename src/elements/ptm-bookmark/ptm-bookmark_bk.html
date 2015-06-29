@@ -4,7 +4,7 @@
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html">
-<link rel="import" href="../../bower_components/iron-meta/iron-meta.html">
+<link rel="import" href="../ptm-favicon/ptm-favicon.html">
 
 <!--
 entry {
@@ -20,18 +20,6 @@ entry {
   <style>
   paper-item > *:not(:first-child):not(:last-child) {
     margin-right: 0 !important;
-  }
-  .favicon {
-    display: block;
-    padding: 8px;
-    width: 24px;
-    height: 24px;
-    -webkit-user-select: none;
-    @apply (--paper-icon-button)
-  }
-  iron-icon {
-    width: 100%;
-    height: 100%;
   }
   .title {
     cursor: pointer;
@@ -52,11 +40,8 @@ entry {
   }
   </style>
   <template>
-    <iron-meta id="meta" type="idb"></iron-meta>
     <paper-item>
-      <div class="favicon">
-        <iron-icon src="[[_validateFavIcon(favIconUrl)]]"></iron-icon>
-      </div>
+      <ptm-favicon id="favicon" url="[[url]]" fav-icon-url="{{favIconUrl}}"></ptm-favicon>
       <div class="title" on-tap="open" active$="[[_isActive(tabId)]]">
         <!-- <paper-ripple recenters></paper-ripple> -->
         <span>[[title]]</span>
@@ -69,9 +54,6 @@ entry {
 </dom-module>
 
 <script>
-  var DEFAULT_FAVICON_URL = '/img/favicon.png';
-  var cache = {};
-
   Polymer({
     is: 'ptm-bookmark',
     properties: {
@@ -133,14 +115,6 @@ entry {
         });
       }
     },
-    ready: function() {
-      this.db = this.$.meta.byKey('ProjectTabManager-favicons');
-      if (this.db.dbReady) {
-        this._readFavicon();
-      } else {
-        this.db.addEventListener('idb-ready', this._readFavicon.bind(this));
-      }
-    },
     _isActive: function(tabId) {
       return tabId !== undefined;
     },
@@ -150,73 +124,6 @@ entry {
     _onTapStar: function(e) {
       e.stopPropagation();
       this.fire('toggle-bookmark');
-    },
-    _validateFavIcon: function(src) {
-      // Avoid blob url from older version
-      if (!src || src.indexOf('blob') === 0) {
-        return DEFAULT_FAVICON_URL;
-      } else {
-        return src;
-      }
-    },
-    _readFavicon: function() {
-      var that = this;
-      var domain = this._extractDomain(this.url);
-
-      // If favicon is not specified
-      if (!this.favIconUrl) {
-        // But favicon url is already cached
-        if (cache[domain]) {
-          // Use the cache
-          this.favIconUrl = cache[domain].url || '';
-        // favicon url is not yet cached
-        } else {
-          // Look up on database
-          this.db.get(domain).then(function(result) {
-            // If there's an entry, use it and cache
-            // Otherwise, fallback to default icon
-            if (result) {
-              that.favIconUrl = result.url || '';
-              cache[domain] = {
-                domain: domain,
-                url: that.favIconUrl
-              }
-            }
-          });
-        }
-      // If favicon is specified
-      } else {
-        // Check if cache exists
-        if (!cache[domain]) {
-          // Look up on database
-          this.db.get(domain).then(function(result) {
-            // If there's no entry or exists but differ
-            if (!result || result.url != that.favIconUrl) {
-              // Save the favicon
-              that._saveFavIconUrl(domain, that.favIconUrl);
-            }
-            // Cache it regardless of database entry exists or not
-            cache[domain] = {
-              domain: domain,
-              url: that.favIconUrl
-            }
-          })
-        }
-      }
-    },
-    _extractDomain: function(url) {
-      var domain = url.replace(/^.*?:\/\/(.*?)\/.*$/, "$1");
-      // Special case, if Google Docs, it could be /spreadsheet, /document or /presentation
-      if (/docs.google.com/.test(domain)) {
-        domain = url.replace(/^.*?:\/\/(.*?\/.*?)\/.*$/, "$1");
-      }
-      return domain;
-    },
-    _saveFavIconUrl: function(domain, favIconUrl) {
-      this.db.put({
-        domain: domain,
-        url: favIconUrl
-      });
     }
   })
 </script>

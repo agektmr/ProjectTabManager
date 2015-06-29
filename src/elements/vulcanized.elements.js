@@ -117,6 +117,12 @@ this.copyOwnProperty(n, api, prototype);
 }
 return prototype || api;
 },
+mixin: function (target, source) {
+for (var i in source) {
+target[i] = source[i];
+}
+return target;
+},
 copyOwnProperty: function (name, source, target) {
 var pd = Object.getOwnPropertyDescriptor(source, name);
 if (pd) {
@@ -492,7 +498,7 @@ debouncer.stop();
 }
 }
 });
-Polymer.version = '1.0.3';
+Polymer.version = '1.0.5';
 Polymer.Base._addFeature({
 _registerFeatures: function () {
 this._prepIs();
@@ -515,13 +521,6 @@ this._marshalBehaviors();
 ;Polymer.Base._addFeature({
 _prepTemplate: function () {
 this._template = this._template || Polymer.DomModule.import(this.is, 'template');
-if (!this._template) {
-var script = document._currentScript || document.currentScript;
-var prev = script && script.previousElementSibling;
-if (prev && prev.localName === 'template') {
-this._template = prev;
-}
-}
 if (this._template && this._template.hasAttribute('is')) {
 this._warn(this._logf('_prepTemplate', 'top-level Polymer template ' + 'must not be a type-extension, found', this._template, 'Move inside simple <template>.'));
 }
@@ -960,20 +959,17 @@ dirtyRoots.push(host);
 }
 },
 appendChild: function (node) {
-var distributed;
-this._removeNodeFromHost(node);
+var handled;
+this._removeNodeFromHost(node, true);
 if (this._nodeIsInLogicalTree(this.node)) {
-var host = this._hostForNode(this.node);
-this._addLogicalInfo(node, this.node, host && host.shadyRoot);
+this._addLogicalInfo(node, this.node);
 this._addNodeToHost(node);
-if (host) {
-distributed = this._maybeDistribute(node, this.node, host);
+handled = this._maybeDistribute(node, this.node);
 }
-}
-if (!distributed && !this._tryRemoveUndistributedNode(node)) {
+if (!handled && !this._tryRemoveUndistributedNode(node)) {
 var container = this.node._isShadyRoot ? this.node.host : this.node;
-nativeAppendChild.call(container, node);
 addToComposedParent(container, node);
+nativeAppendChild.call(container, node);
 }
 return node;
 },
@@ -981,8 +977,8 @@ insertBefore: function (node, ref_node) {
 if (!ref_node) {
 return this.appendChild(node);
 }
-var distributed;
-this._removeNodeFromHost(node);
+var handled;
+this._removeNodeFromHost(node, true);
 if (this._nodeIsInLogicalTree(this.node)) {
 saveLightChildrenIfNeeded(this.node);
 var children = this.childNodes;
@@ -990,18 +986,15 @@ var index = children.indexOf(ref_node);
 if (index < 0) {
 throw Error('The ref_node to be inserted before is not a child ' + 'of this node');
 }
-var host = this._hostForNode(this.node);
-this._addLogicalInfo(node, this.node, host && host.shadyRoot, index);
+this._addLogicalInfo(node, this.node, index);
 this._addNodeToHost(node);
-if (host) {
-distributed = this._maybeDistribute(node, this.node, host);
+handled = this._maybeDistribute(node, this.node);
 }
-}
-if (!distributed && !this._tryRemoveUndistributedNode(node)) {
+if (!handled && !this._tryRemoveUndistributedNode(node)) {
 ref_node = ref_node.localName === CONTENT ? this._firstComposedNode(ref_node) : ref_node;
 var container = this.node._isShadyRoot ? this.node.host : this.node;
-nativeInsertBefore.call(container, node, ref_node);
 addToComposedParent(container, node, ref_node);
+nativeInsertBefore.call(container, node, ref_node);
 }
 return node;
 },
@@ -1009,17 +1002,16 @@ removeChild: function (node) {
 if (factory(node).parentNode !== this.node) {
 console.warn('The node to be removed is not a child of this node', node);
 }
-var distributed;
+var handled;
 if (this._nodeIsInLogicalTree(this.node)) {
-var host = this._hostForNode(this.node);
-distributed = this._maybeDistribute(node, this.node, host);
 this._removeNodeFromHost(node);
+handled = this._maybeDistribute(node, this.node);
 }
-if (!distributed) {
+if (!handled) {
 var container = this.node._isShadyRoot ? this.node.host : this.node;
 if (container === node.parentNode) {
-nativeRemoveChild.call(container, node);
 removeFromComposedParent(container, node);
+nativeRemoveChild.call(container, node);
 }
 }
 return node;
@@ -1052,16 +1044,23 @@ node._ownerShadyRoot = root;
 }
 return node._ownerShadyRoot;
 },
-_maybeDistribute: function (node, parent, host) {
-var nodeNeedsDistribute = this._nodeNeedsDistribution(node);
-var distribute = this._parentNeedsDistribution(parent) || nodeNeedsDistribute;
-if (nodeNeedsDistribute) {
+_maybeDistribute: function (node, parent) {
+var fragContent = node.nodeType === Node.DOCUMENT_FRAGMENT_NODE && !node.__noContent && Polymer.dom(node).querySelector(CONTENT);
+var wrappedContent = fragContent && Polymer.dom(fragContent).parentNode.nodeType !== Node.DOCUMENT_FRAGMENT_NODE;
+var hasContent = fragContent || node.localName === CONTENT;
+if (hasContent) {
+var root = this._ownerShadyRootForNode(parent);
+if (root) {
+var host = root.host;
 this._updateInsertionPoints(host);
-}
-if (distribute) {
 this._lazyDistribute(host);
 }
-return distribute;
+}
+var parentNeedsDist = this._parentNeedsDistribution(parent);
+if (parentNeedsDist) {
+this._lazyDistribute(parent);
+}
+return parentNeedsDist || hasContent && !wrappedContent;
 },
 _tryRemoveUndistributedNode: function (node) {
 if (this.node.shadyRoot) {
@@ -1077,25 +1076,56 @@ host.shadyRoot._insertionPoints = factory(host.shadyRoot).querySelectorAll(CONTE
 _nodeIsInLogicalTree: function (node) {
 return Boolean(node._lightParent || node._isShadyRoot || this._ownerShadyRootForNode(node) || node.shadyRoot);
 },
-_hostForNode: function (node) {
-var root = node.shadyRoot || (node._isShadyRoot ? node : this._ownerShadyRootForNode(node));
-return root && root.host;
-},
 _parentNeedsDistribution: function (parent) {
 return parent && parent.shadyRoot && hasInsertionPoint(parent.shadyRoot);
 },
-_nodeNeedsDistribution: function (node) {
-return node.localName === CONTENT || node.nodeType === Node.DOCUMENT_FRAGMENT_NODE && node.querySelector(CONTENT);
-},
-_removeNodeFromHost: function (node) {
-if (node._lightParent) {
-var root = this._ownerShadyRootForNode(node);
+_removeNodeFromHost: function (node, ensureComposedRemoval) {
+var hostNeedsDist;
+var root;
+var parent = node._lightParent;
+if (parent) {
+root = this._ownerShadyRootForNode(node);
 if (root) {
 root.host._elementRemove(node);
+hostNeedsDist = this._removeDistributedChildren(root, node);
 }
 this._removeLogicalInfo(node, node._lightParent);
 }
 this._removeOwnerShadyRoot(node);
+if (root && hostNeedsDist) {
+this._updateInsertionPoints(root.host);
+this._lazyDistribute(root.host);
+} else if (ensureComposedRemoval) {
+removeFromComposedParent(parent || node.parentNode, node);
+}
+},
+_removeDistributedChildren: function (root, container) {
+var hostNeedsDist;
+var ip$ = root._insertionPoints;
+for (var i = 0; i < ip$.length; i++) {
+var content = ip$[i];
+if (this._contains(container, content)) {
+var dc$ = factory(content).getDistributedNodes();
+for (var j = 0; j < dc$.length; j++) {
+hostNeedsDist = true;
+var node = dc$[j];
+var parent = node.parentNode;
+if (parent) {
+removeFromComposedParent(parent, node);
+nativeRemoveChild.call(parent, node);
+}
+}
+}
+}
+return hostNeedsDist;
+},
+_contains: function (container, node) {
+while (node) {
+if (node == container) {
+return true;
+}
+node = factory(node).parentNode;
+}
 },
 _addNodeToHost: function (node) {
 var checkNode = node.nodeType === Node.DOCUMENT_FRAGMENT_NODE ? node.firstChild : node;
@@ -1104,7 +1134,7 @@ if (root) {
 root.host._elementAdd(node);
 }
 },
-_addLogicalInfo: function (node, container, root, index) {
+_addLogicalInfo: function (node, container, index) {
 saveLightChildrenIfNeeded(container);
 var children = factory(container).childNodes;
 index = index === undefined ? children.length : index;
@@ -1244,6 +1274,9 @@ this.domApi._distributeParent();
 toggle: function () {
 this.node.classList.toggle.apply(this.node.classList, arguments);
 this.domApi._distributeParent();
+},
+contains: function () {
+return this.node.classList.contains.apply(this.node.classList, arguments);
 }
 };
 if (!Settings.useShadow) {
@@ -1479,20 +1512,17 @@ var children = getComposedChildren(parent);
 var i = ref_node ? children.indexOf(ref_node) : -1;
 if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
 var fragChildren = getComposedChildren(node);
-fragChildren.forEach(function (c) {
-addNodeToComposedChildren(c, parent, children, i);
-});
+for (var j = 0; j < fragChildren.length; j++) {
+addNodeToComposedChildren(fragChildren[j], parent, children, i + j);
+}
+node._composedChildren = null;
 } else {
 addNodeToComposedChildren(node, parent, children, i);
 }
 }
 function addNodeToComposedChildren(node, parent, children, i) {
 node._composedParent = parent;
-if (i >= 0) {
-children.splice(i, 0, node);
-} else {
-children.push(node);
-}
+children.splice(i >= 0 ? i : children.length, 0, node);
 }
 function removeFromComposedParent(parent, node) {
 node._composedParent = null;
@@ -1533,9 +1563,6 @@ factory: factory
 Polymer.Base._addFeature({
 _prepShady: function () {
 this._useContent = this._useContent || Boolean(this._template);
-if (this._useContent) {
-this._template._hasInsertionPoint = this._template.content.querySelector('content');
-}
 },
 _poolContent: function () {
 if (this._useContent) {
@@ -1555,7 +1582,7 @@ this.shadyRoot = this.root;
 this.shadyRoot._distributionClean = false;
 this.shadyRoot._isShadyRoot = true;
 this.shadyRoot._dirtyRoots = [];
-this.shadyRoot._insertionPoints = this._template._hasInsertionPoint ? this.shadyRoot.querySelectorAll('content') : [];
+this.shadyRoot._insertionPoints = !this._notes || this._notes._hasContent ? this.shadyRoot.querySelectorAll('content') : [];
 saveLightChildrenIfNeeded(this.shadyRoot);
 this.shadyRoot.host = this;
 },
@@ -1563,10 +1590,14 @@ get domHost() {
 var root = Polymer.dom(this).getOwnerRoot();
 return root && root.host;
 },
-distributeContent: function () {
+distributeContent: function (updateInsertionPoints) {
 if (this.shadyRoot) {
+var dom = Polymer.dom(this);
+if (updateInsertionPoints) {
+dom._updateInsertionPoints(this);
+}
 var host = getTopDistributingHost(this);
-Polymer.dom(this)._lazyDistribute(host);
+dom._lazyDistribute(host);
 }
 },
 _distributeContent: function () {
@@ -1596,6 +1627,7 @@ this._composeTree();
 } else {
 if (!this.shadyRoot._hasDistributed) {
 this.textContent = '';
+this._composedChildren = null;
 this.appendChild(this.shadyRoot);
 } else {
 var children = this._composeNode(this);
@@ -1755,10 +1787,12 @@ points.push(insertionPoint);
 }
 function clearDistributedDestinationInsertionPoints(content) {
 var e$ = content._distributedNodes;
+if (e$) {
 for (var i = 0; i < e$.length; i++) {
 var d = e$[i]._destinationInsertionPoints;
 if (d) {
 d.splice(d.indexOf(content) + 1, d.length);
+}
 }
 }
 }
@@ -1907,6 +1941,9 @@ var annote = {
 bindings: [],
 events: []
 };
+if (element.localName === 'content') {
+list._hasContent = true;
+}
 this._parseChildNodesAnnotations(element, annote, list);
 if (element.attributes) {
 this._parseNodeAttributeAnnotations(element, annote, list);
@@ -2034,6 +2071,9 @@ at.value = a === 'style' ? resolveCss(v, ownerDocument) : resolve(v, ownerDocume
 }
 }
 function resolve(url, ownerDocument) {
+if (url && url[0] === '#') {
+return url;
+}
 var resolver = getUrlResolver(ownerDocument);
 resolver.href = url;
 return resolver.href || url;
@@ -2194,18 +2234,57 @@ this.listen(node, name, listeners[key]);
 listen: function (node, eventName, methodName) {
 this._listen(node, eventName, this._createEventHandler(node, eventName, methodName));
 },
+_boundListenerKey: function (eventName, methodName) {
+return eventName + ':' + methodName;
+},
+_recordEventHandler: function (host, eventName, target, methodName, handler) {
+var hbl = host.__boundListeners;
+if (!hbl) {
+hbl = host.__boundListeners = new WeakMap();
+}
+var bl = hbl.get(target);
+if (!bl) {
+bl = {};
+hbl.set(target, bl);
+}
+var key = this._boundListenerKey(eventName, methodName);
+bl[key] = handler;
+},
+_recallEventHandler: function (host, eventName, target, methodName) {
+var hbl = host.__boundListeners;
+if (!hbl) {
+return;
+}
+var bl = hbl.get(target);
+if (!bl) {
+return;
+}
+var key = this._boundListenerKey(eventName, methodName);
+return bl[key];
+},
 _createEventHandler: function (node, eventName, methodName) {
 var host = this;
-return function (e) {
+var handler = function (e) {
 if (host[methodName]) {
 host[methodName](e, e.detail);
 } else {
 host._warn(host._logf('_createEventHandler', 'listener method `' + methodName + '` not defined'));
 }
 };
+this._recordEventHandler(host, eventName, node, methodName, handler);
+return handler;
+},
+unlisten: function (node, eventName, methodName) {
+var handler = this._recallEventHandler(this, eventName, node, methodName);
+if (handler) {
+this._unlisten(node, eventName, handler);
+}
 },
 _listen: function (node, eventName, handler) {
 node.addEventListener(eventName, handler);
+},
+_unlisten: function (node, eventName, handler) {
+node.removeEventListener(eventName, handler);
 }
 });
 (function () {
@@ -2259,7 +2338,6 @@ POINTERSTATE.mouse.mouseIgnoreJob = null;
 POINTERSTATE.mouse.mouseIgnoreJob = Polymer.Debounce(POINTERSTATE.mouse.mouseIgnoreJob, unset, MOUSE_TIMEOUT);
 }
 var POINTERSTATE = {
-tapPrevented: false,
 mouse: {
 target: null,
 mouseIgnoreJob: null
@@ -2393,11 +2471,42 @@ if (recognizer.touchAction) {
 this.setTouchAction(node, recognizer.touchAction);
 }
 },
+remove: function (node, evType, handler) {
+var recognizer = this.gestures[evType];
+var deps = recognizer.deps;
+var name = recognizer.name;
+var gobj = node[GESTURE_KEY];
+if (gobj) {
+for (var i = 0, dep, gd; i < deps.length; i++) {
+dep = deps[i];
+gd = gobj[dep];
+if (gd && gd[name]) {
+gd[name] = (gd[name] || 1) - 1;
+if (gd[name] === 0) {
+node.removeEventListener(dep, this.handleNative);
+}
+}
+}
+}
+node.removeEventListener(evType, handler);
+},
 register: function (recog) {
 this.recognizers.push(recog);
 for (var i = 0; i < recog.emits.length; i++) {
 this.gestures[recog.emits[i]] = recog;
 }
+},
+findRecognizerByEvent: function (evName) {
+for (var i = 0, r; i < this.recognizers.length; i++) {
+r = this.recognizers[i];
+for (var j = 0, n; j < r.emits.length; j++) {
+n = r.emits[j];
+if (n === evName) {
+return r;
+}
+}
+}
+return null;
 },
 setTouchAction: function (node, value) {
 if (HAS_NATIVE_TA) {
@@ -2406,12 +2515,23 @@ node.style.touchAction = value;
 node[TOUCH_ACTION] = value;
 },
 fire: function (target, type, detail) {
-var ev = new CustomEvent(type, {
-detail: detail,
+var ev = Polymer.Base.fire(type, detail, {
+node: target,
 bubbles: true,
 cancelable: true
 });
-target.dispatchEvent(ev);
+if (ev.defaultPrevented) {
+var se = detail.sourceEvent;
+if (se && se.preventDefault) {
+se.preventDefault();
+}
+}
+},
+prevent: function (evName) {
+var recognizer = this.findRecognizerByEvent(evName);
+if (recognizer.info) {
+recognizer.info.prevent = true;
+}
 }
 };
 Gestures.register({
@@ -2442,10 +2562,12 @@ touchend: function (e) {
 this.fire('up', e.currentTarget, e.changedTouches[0]);
 },
 fire: function (type, target, event) {
+var self = this;
 Gestures.fire(target, type, {
 x: event.clientX,
 y: event.clientY,
-sourceEvent: event
+sourceEvent: event,
+prevent: Gestures.prevent.bind(Gestures)
 });
 }
 });
@@ -2470,7 +2592,8 @@ if (this.moves.length > TRACK_LENGTH) {
 this.moves.shift();
 }
 this.moves.push(move);
-}
+},
+prevent: false
 },
 clearInfo: function () {
 this.info.state = 'start';
@@ -2478,8 +2601,12 @@ this.info.started = false;
 this.info.moves = [];
 this.info.x = 0;
 this.info.y = 0;
+this.info.prevent = false;
 },
 hasMovedEnough: function (x, y) {
+if (this.info.prevent) {
+return false;
+}
 if (this.info.started) {
 return true;
 }
@@ -2499,13 +2626,12 @@ x: x,
 y: y
 });
 self.fire(t, e);
-e.preventDefault();
 self.info.started = true;
 }
 };
 var upfn = function upfn(e) {
 if (self.info.started) {
-POINTERSTATE.tapPrevented = true;
+Gestures.prevent('tap');
 movefn(e);
 }
 self.clearInfo();
@@ -2540,7 +2666,7 @@ touchend: function (e) {
 var t = e.currentTarget;
 var ct = e.changedTouches[0];
 if (this.info.started) {
-POINTERSTATE.tapPrevented = true;
+Gestures.prevent('tap');
 this.info.state = 'end';
 this.info.addMove({
 x: ct.clientX,
@@ -2584,37 +2710,37 @@ deps: [
 'touchend'
 ],
 emits: ['tap'],
-start: {
+info: {
 x: NaN,
-y: NaN
+y: NaN,
+prevent: false
 },
 reset: function () {
-this.start.x = NaN;
-this.start.y = NaN;
+this.info.x = NaN;
+this.info.y = NaN;
+this.info.prevent = false;
 },
 save: function (e) {
-this.start.x = e.clientX;
-this.start.y = e.clientY;
+this.info.x = e.clientX;
+this.info.y = e.clientY;
 },
 mousedown: function (e) {
-POINTERSTATE.tapPrevented = false;
 this.save(e);
 },
 click: function (e) {
 this.forward(e);
 },
 touchstart: function (e) {
-POINTERSTATE.tapPrevented = false;
 this.save(e.changedTouches[0]);
 },
 touchend: function (e) {
 this.forward(e.changedTouches[0]);
 },
 forward: function (e) {
-var dx = Math.abs(e.clientX - this.start.x);
-var dy = Math.abs(e.clientY - this.start.y);
+var dx = Math.abs(e.clientX - this.info.x);
+var dy = Math.abs(e.clientY - this.info.y);
 if (isNaN(dx) || isNaN(dy) || dx <= TAP_DISTANCE && dy <= TAP_DISTANCE) {
-if (!POINTERSTATE.tapPrevented) {
+if (!this.info.prevent) {
 Gestures.fire(e.target, 'tap', {
 x: e.clientX,
 y: e.clientY,
@@ -2639,6 +2765,13 @@ Gestures.add(node, eventName, handler);
 node.addEventListener(eventName, handler);
 }
 },
+_unlisten: function (node, eventName, handler) {
+if (Gestures.gestures[eventName]) {
+Gestures.remove(node, eventName, handler);
+} else {
+node.removeEventListener(eventName, handler);
+}
+},
 setScrollDirection: function (direction, node) {
 node = node || this;
 Gestures.setTouchAction(node, DIRECTION_MAP[direction] || 'auto');
@@ -2646,50 +2779,55 @@ Gestures.setTouchAction(node, DIRECTION_MAP[direction] || 'auto');
 });
 Polymer.Gestures = Gestures;
 }());
-Polymer.Async = function () {
-var currVal = 0;
-var lastVal = 0;
-var callbacks = [];
-var twiddle = document.createTextNode('');
-function runAsync(callback, waitTime) {
+Polymer.Async = {
+_currVal: 0,
+_lastVal: 0,
+_callbacks: [],
+_twiddleContent: 0,
+_twiddle: document.createTextNode(''),
+run: function (callback, waitTime) {
 if (waitTime > 0) {
 return ~setTimeout(callback, waitTime);
 } else {
-twiddle.textContent = currVal++;
-callbacks.push(callback);
-return currVal - 1;
+this._twiddle.textContent = this._twiddleContent++;
+this._callbacks.push(callback);
+return this._currVal++;
 }
-}
-function cancelAsync(handle) {
+},
+cancel: function (handle) {
 if (handle < 0) {
 clearTimeout(~handle);
 } else {
-var idx = handle - lastVal;
+var idx = handle - this._lastVal;
 if (idx >= 0) {
-if (!callbacks[idx]) {
+if (!this._callbacks[idx]) {
 throw 'invalid async handle: ' + handle;
 }
-callbacks[idx] = null;
+this._callbacks[idx] = null;
 }
 }
-}
-function atEndOfMicrotask() {
-var len = callbacks.length;
+},
+_atEndOfMicrotask: function () {
+var len = this._callbacks.length;
 for (var i = 0; i < len; i++) {
-var cb = callbacks[i];
+var cb = this._callbacks[i];
 if (cb) {
+try {
 cb();
+} catch (e) {
+i++;
+this._callbacks.splice(0, i);
+this._lastVal += i;
+this._twiddle.textContent = this._twiddleContent++;
+throw e;
 }
 }
-callbacks.splice(0, len);
-lastVal += len;
 }
-new (window.MutationObserver || JsMutationObserver)(atEndOfMicrotask).observe(twiddle, { characterData: true });
-return {
-run: runAsync,
-cancel: cancelAsync
+this._callbacks.splice(0, len);
+this._lastVal += len;
+}
 };
-}();
+new (window.MutationObserver || JsMutationObserver)(Polymer.Async._atEndOfMicrotask.bind(Polymer.Async)).observe(Polymer.Async._twiddle, { characterData: true });
 Polymer.Debounce = function () {
 var Async = Polymer.Async;
 var Debouncer = function (context) {
@@ -2784,9 +2922,10 @@ options = options || Polymer.nob;
 var node = options.node || this;
 var detail = detail === null || detail === undefined ? Polymer.nob : detail;
 var bubbles = options.bubbles === undefined ? true : options.bubbles;
+var cancelable = Boolean(options.cancelable);
 var event = new CustomEvent(type, {
 bubbles: Boolean(bubbles),
-cancelable: Boolean(options.cancelable),
+cancelable: cancelable,
 detail: detail
 });
 node.dispatchEvent(event);
@@ -2843,11 +2982,6 @@ elt[n] = props[n];
 }
 }
 return elt;
-},
-mixin: function (target, source) {
-for (var i in source) {
-target[i] = source[i];
-}
 }
 });
 Polymer.Bind = {
@@ -2864,9 +2998,9 @@ _notifyChange: function (property) {
 var eventName = Polymer.CaseMap.camelToDashCase(property) + '-changed';
 this.fire(eventName, { value: this[property] }, { bubbles: false });
 },
-_propertySet: function (property, value, effects) {
+_propertySetter: function (property, value, effects, fromAbove) {
 var old = this.__data__[property];
-if (old !== value) {
+if (old !== value && (old === old || value === value)) {
 this.__data__[property] = value;
 if (typeof value == 'object') {
 this._clearPath(property);
@@ -2875,16 +3009,25 @@ if (this._propertyChanged) {
 this._propertyChanged(property, value, old);
 }
 if (effects) {
-this._effectEffects(property, value, effects, old);
+this._effectEffects(property, value, effects, old, fromAbove);
 }
 }
 return old;
 },
-_effectEffects: function (property, value, effects, old) {
+__setProperty: function (property, value, quiet, node) {
+node = node || this;
+var effects = node._propertyEffects && node._propertyEffects[property];
+if (effects) {
+node._propertySetter(property, value, effects, quiet);
+} else {
+node[property] = value;
+}
+},
+_effectEffects: function (property, value, effects, old, fromAbove) {
 effects.forEach(function (fx) {
 var fn = Polymer.Bind['_' + fx.kind + 'Effect'];
 if (fn) {
-fn.call(this, property, value, fx.effect, old);
+fn.call(this, property, value, fx.effect, old, fromAbove);
 }
 }, this);
 },
@@ -2942,7 +3085,7 @@ return this.__data__[property];
 }
 };
 var setter = function (value) {
-this._propertySet(property, value, effects);
+this._propertySetter(property, value, effects);
 };
 if (model.getPropertyInfo && model.getPropertyInfo(property).readOnly) {
 model['_set' + this.upper(property)] = setter;
@@ -3016,11 +3159,13 @@ return this._applyEffectValue(calc, effect);
 _reflectEffect: function (source) {
 this.reflectPropertyToAttribute(source);
 },
-_notifyEffect: function (source) {
+_notifyEffect: function (source, value, effect, old, fromAbove) {
+if (!fromAbove) {
 this._notifyChange(source);
+}
 },
-_functionEffect: function (source, value, fn, old) {
-fn.call(this, source, value, old);
+_functionEffect: function (source, value, fn, old, fromAbove) {
+fn.call(this, source, value, old, fromAbove);
 },
 _observerEffect: function (source, value, effect, old) {
 var fn = this[effect.method];
@@ -3046,7 +3191,7 @@ var args = Polymer.Bind._marshalArgs(this.__data__, effect, source, value);
 if (args) {
 var fn = this[effect.method];
 if (fn) {
-this[effect.property] = fn.apply(this, args);
+this.__setProperty(effect.property, fn.apply(this, args));
 } else {
 this._warn(this._logf('_computeEffect', 'compute method `' + effect.method + '` not defined'));
 }
@@ -3119,6 +3264,7 @@ if (prop.observer) {
 this._addObserverEffect(p, prop.observer);
 }
 if (prop.computed) {
+prop.readOnly = true;
 this._addComputedEffect(p, prop.computed);
 }
 if (prop.notify) {
@@ -3309,12 +3455,13 @@ this._configure();
 },
 _configure: function () {
 this._configureAnnotationReferences();
+this._aboveConfig = this.mixin({}, this._config);
 var config = {};
 this.behaviors.forEach(function (b) {
 this._configureProperties(b.properties, config);
 }, this);
 this._configureProperties(this.properties, config);
-this._mixinConfigure(config, this._config);
+this._mixinConfigure(config, this._aboveConfig);
 this._config = config;
 this._distributeConfig(this._config);
 },
@@ -3358,18 +3505,13 @@ node._configValue(x.effect.name, value);
 },
 _afterClientsReady: function () {
 this._executeStaticEffects();
-this._applyConfig(this._config);
+this._applyConfig(this._config, this._aboveConfig);
 this._flushHandlers();
 },
-_applyConfig: function (config) {
+_applyConfig: function (config, aboveConfig) {
 for (var n in config) {
 if (this[n] === undefined) {
-var effects = this._propertyEffects[n];
-if (effects) {
-this._propertySet(n, config[n], effects);
-} else {
-this[n] = config[n];
-}
+this.__setProperty(n, config[n], n in aboveConfig);
 }
 }
 },
@@ -3398,8 +3540,8 @@ h[0].call(this, h[1], h[2]);
 'use strict';
 Polymer.Base._addFeature({
 notifyPath: function (path, value, fromAbove) {
-var old = this._propertySet(path, value);
-if (old !== value) {
+var old = this._propertySetter(path, value);
+if (old !== value && (old === old || value === value)) {
 this._pathEffector(path, value);
 if (!fromAbove) {
 this._notifyPath(path, value);
@@ -3435,6 +3577,15 @@ if (!prop) {
 return;
 }
 array = Array.isArray(prop) ? prop : null;
+}
+if (array) {
+var coll = Polymer.Collection.get(array);
+var old = prop[last];
+var key = coll.getKey(old);
+if (key) {
+parts[i] = key;
+coll.setItem(key, value);
+}
 }
 prop[last] = value;
 if (!root) {
@@ -3560,7 +3711,7 @@ object: array,
 type: 'splice'
 }];
 var change = {
-keySplices: Polymer.Collection.get(array).applySplices(splices),
+keySplices: Polymer.Collection.applySplices(array, splices),
 indexSplices: splices
 };
 this.set(path + '.splices', change);
@@ -3589,9 +3740,8 @@ return ret;
 splice: function (path, start, deleteCount) {
 var array = this.get(path);
 var args = Array.prototype.slice.call(arguments, 1);
-var rem = array.slice(start, start + deleteCount);
 var ret = array.splice.apply(array, args);
-this._notifySplice(array, path, start, args.length - 2, rem);
+this._notifySplice(array, path, start, args.length - 2, ret);
 return ret;
 },
 shift: function (path) {
@@ -3737,12 +3887,12 @@ var VAR_START = '--';
 var MEDIA_START = '@media';
 var AT_START = '@';
 var rx = {
-comments: /\/\*[^*]*\*+([^\/*][^*]*\*+)*\//gim,
+comments: /\/\*[^*]*\*+([^/*][^*]*\*+)*\//gim,
 port: /@import[^;]*;/gim,
-customProp: /(?:^|[\s;])--[^;{]*?:[^{};]*?;/gim,
-mixinProp: /(?:^|[\s;])--[^;{]*?:[^{;]*?{[^}]*?};?/gim,
-mixinApply: /@apply[\s]*\([^)]*?\)[\s]*;/gim,
-varApply: /[^;:]*?:[^;]*var[^;]*;/gim,
+customProp: /(?:^|[\s;])--[^;{]*?:[^{};]*?(?:[;\n]|$)/gim,
+mixinProp: /(?:^|[\s;])--[^;{]*?:[^{;]*?{[^}]*?}(?:[;\n]|$)?/gim,
+mixinApply: /@apply[\s]*\([^)]*?\)[\s]*(?:[;\n]|$)?/gim,
+varApply: /[^;:]*?:[^;]*var[^;]*(?:[;\n]|$)?/gim,
 keyframesRule: /^@[^\s]*keyframes/
 };
 return api;
@@ -3765,7 +3915,7 @@ this.forEachStyleRule(this.rulesForStyle(s), callback);
 }
 },
 rulesForStyle: function (style) {
-if (!style.__cssRules) {
+if (!style.__cssRules && style.textContent) {
 style.__cssRules = this.parser.parse(style.textContent);
 }
 return style.__cssRules;
@@ -3918,23 +4068,33 @@ rule.selector = p$.join(COMPLEX_SELECTOR_SEP);
 },
 _transformComplexSelector: function (selector, scope, hostScope) {
 var stop = false;
+var hostContext = false;
 var self = this;
 selector = selector.replace(SIMPLE_SELECTOR_SEP, function (m, c, s) {
 if (!stop) {
-var o = self._transformCompoundSelector(s, c, scope, hostScope);
-if (o.stop) {
-stop = true;
-}
-c = o.combinator;
-s = o.value;
+var info = self._transformCompoundSelector(s, c, scope, hostScope);
+stop = stop || info.stop;
+hostContext = hostContext || info.hostContext;
+c = info.combinator;
+s = info.value;
+} else {
+s = s.replace(SCOPE_JUMP, ' ');
 }
 return c + s;
 });
+if (hostContext) {
+selector = selector.replace(HOST_CONTEXT_PAREN, function (m, pre, paren, post) {
+return pre + paren + ' ' + hostScope + post + COMPLEX_SELECTOR_SEP + ' ' + pre + hostScope + paren + post;
+});
+}
 return selector;
 },
 _transformCompoundSelector: function (selector, combinator, scope, hostScope) {
 var jumpIndex = selector.search(SCOPE_JUMP);
-if (selector.indexOf(HOST) >= 0) {
+var hostContext = false;
+if (selector.indexOf(HOST_CONTEXT) >= 0) {
+hostContext = true;
+} else if (selector.indexOf(HOST) >= 0) {
 selector = selector.replace(HOST_PAREN, function (m, host, paren) {
 return hostScope + paren;
 });
@@ -3953,7 +4113,8 @@ stop = true;
 return {
 value: selector,
 combinator: combinator,
-stop: stop
+stop: stop,
+hostContext: hostContext
 };
 },
 _transformSimpleSelector: function (selector, scope) {
@@ -3961,20 +4122,32 @@ var p$ = selector.split(PSEUDO_PREFIX);
 p$[0] += scope;
 return p$.join(PSEUDO_PREFIX);
 },
-rootRule: function (rule) {
-this._transformRule(rule, this._transformRootSelector);
+documentRule: function (rule) {
+rule.selector = rule.parsedSelector;
+this.normalizeRootSelector(rule);
+if (!nativeShadow) {
+this._transformRule(rule, this._transformDocumentSelector);
+}
 },
-_transformRootSelector: function (selector) {
-return selector.match(SCOPE_JUMP) ? this._transformComplexSelector(selector) : selector.trim() + SCOPE_ROOT_SELECTOR;
+normalizeRootSelector: function (rule) {
+if (rule.selector === ROOT) {
+rule.selector = 'body';
+}
+},
+_transformDocumentSelector: function (selector) {
+return selector.match(SCOPE_JUMP) ? this._transformComplexSelector(selector, SCOPE_DOC_SELECTOR) : this._transformSimpleSelector(selector.trim(), SCOPE_DOC_SELECTOR);
 },
 SCOPE_NAME: 'style-scope'
 };
 var SCOPE_NAME = api.SCOPE_NAME;
-var SCOPE_ROOT_SELECTOR = ':not([' + SCOPE_NAME + '])' + ':not(.' + SCOPE_NAME + ')';
+var SCOPE_DOC_SELECTOR = ':not([' + SCOPE_NAME + '])' + ':not(.' + SCOPE_NAME + ')';
 var COMPLEX_SELECTOR_SEP = ',';
 var SIMPLE_SELECTOR_SEP = /(^|[\s>+~]+)([^\s>+~]+)/g;
 var HOST = ':host';
+var ROOT = ':root';
 var HOST_PAREN = /(\:host)(?:\(((?:\([^)(]*\)|[^)(]*)+?)\))/g;
+var HOST_CONTEXT = ':host-context';
+var HOST_CONTEXT_PAREN = /(.*)(?:\:host-context)(?:\(((?:\([^)(]*\)|[^)(]*)+?)\))(.*)/;
 var CONTENT = '::content';
 var SCOPE_JUMP = /\:\:content|\:\:shadow|\/deep\//;
 var CSS_CLASS_PREFIX = '.';
@@ -4149,6 +4322,7 @@ return mo;
 });
 }());
 Polymer.StyleProperties = function () {
+'use strict';
 var nativeShadow = Polymer.Settings.useNativeShadow;
 var matchesSelector = Polymer.DomApi.matchesSelector;
 var styleUtil = Polymer.StyleUtil;
@@ -4215,6 +4389,10 @@ collectPropertiesInCssText: function (cssText, props) {
 var m;
 while (m = this.rx.VAR_CAPTURE.exec(cssText)) {
 props[m[1]] = true;
+var def = m[2];
+if (def && def.match(this.rx.IS_VAR)) {
+props[def] = true;
+}
 }
 },
 reify: function (props) {
@@ -4314,27 +4492,29 @@ return props;
 },
 transformStyles: function (element, properties, scopeSelector) {
 var self = this;
-var hostRx = new RegExp(this.rx.HOST_PREFIX + element.is + this.rx.HOST_SUFFIX);
+var hostSelector = styleTransformer._calcHostScope(element.is, element.extends);
+var rxHostSelector = element.extends ? '\\' + hostSelector.slice(0, -1) + '\\]' : hostSelector;
+var hostRx = new RegExp(this.rx.HOST_PREFIX + rxHostSelector + this.rx.HOST_SUFFIX);
 return styleTransformer.elementStyles(element, function (rule) {
 self.applyProperties(rule, properties);
 if (rule.cssText && !nativeShadow) {
-self._scopeSelector(rule, hostRx, element.is, element._scopeCssViaAttr, scopeSelector);
+self._scopeSelector(rule, hostRx, hostSelector, element._scopeCssViaAttr, scopeSelector);
 }
 });
 },
-_scopeSelector: function (rule, hostRx, is, viaAttr, scopeId) {
+_scopeSelector: function (rule, hostRx, hostSelector, viaAttr, scopeId) {
 rule.transformedSelector = rule.transformedSelector || rule.selector;
 var selector = rule.transformedSelector;
 var scope = viaAttr ? '[' + styleTransformer.SCOPE_NAME + '~=' + scopeId + ']' : '.' + scopeId;
 var parts = selector.split(',');
 for (var i = 0, l = parts.length, p; i < l && (p = parts[i]); i++) {
-parts[i] = p.match(hostRx) ? p.replace(is, is + scope) : scope + ' ' + p;
+parts[i] = p.match(hostRx) ? p.replace(hostSelector, hostSelector + scope) : scope + ' ' + p;
 }
 rule.selector = parts.join(',');
 },
 applyElementScopeSelector: function (element, selector, old, viaAttr) {
 var c = viaAttr ? element.getAttribute(styleTransformer.SCOPE_NAME) : element.className;
-v = old ? c.replace(old, selector) : (c ? c + ' ' : '') + this.XSCOPE_NAME + ' ' + selector;
+var v = old ? c.replace(old, selector) : (c ? c + ' ' : '') + this.XSCOPE_NAME + ' ' + selector;
 if (c !== v) {
 if (viaAttr) {
 element.setAttribute(styleTransformer.SCOPE_NAME, v);
@@ -4348,7 +4528,7 @@ var cssText = style ? style.textContent || '' : this.transformStyles(element, pr
 var s = element._customStyle;
 if (s && !nativeShadow && s !== style) {
 s._useCount--;
-if (s._useCount <= 0) {
+if (s._useCount <= 0 && s.parentNode) {
 s.parentNode.removeChild(s);
 }
 }
@@ -4369,13 +4549,23 @@ element._customStyle = style;
 }
 return style;
 },
+mixinCustomStyle: function (props, customStyle) {
+var v;
+for (var i in customStyle) {
+v = customStyle[i];
+if (v || v === 0) {
+props[i] = v;
+}
+}
+},
 rx: {
-VAR_ASSIGN: /(?:^|;\s*)(--[^\:;]*?):\s*?(?:([^;{]*?)|{([^}]*)})(?=;)/gim,
-MIXIN_MATCH: /(?:^|\W+)@apply[\s]*\(([^)]*)\);?/im,
+VAR_ASSIGN: /(?:^|[;\n]\s*)(--[\w-]*?):\s*?(?:([^;{]*?)|{([^}]*)})(?:(?=[;\n])|$)/gim,
+MIXIN_MATCH: /(?:^|\W+)@apply[\s]*\(([^)]*)\)/im,
 VAR_MATCH: /(^|\W+)var\([\s]*([^,)]*)[\s]*,?[\s]*((?:[^,)]*)|(?:[^;]*\([^;)]*\)))[\s]*?\)/gim,
 VAR_CAPTURE: /\([\s]*(--[^,\s)]*)(?:,[\s]*(--[^,\s)]*))?(?:\)|,)/gim,
+IS_VAR: /^--/,
 BRACKETED: /\{[^}]*\}/g,
-HOST_PREFIX: '(?:^|[^.])',
+HOST_PREFIX: '(?:^|[^.#[:])',
 HOST_SUFFIX: '($|[.:[\\s>+~])'
 },
 HOST_SELECTORS: [':host'],
@@ -4387,35 +4577,6 @@ var o = parseInt(n / 32);
 var v = 1 << n % 32;
 bits[o] = (bits[o] || 0) | v;
 }
-}();
-Polymer.StyleDefaults = function () {
-var styleProperties = Polymer.StyleProperties;
-var styleUtil = Polymer.StyleUtil;
-var style = document.createElement('style');
-var api = {
-style: style,
-_styles: [style],
-_properties: null,
-applyCss: function (cssText) {
-this.style.textContent += cssText;
-styleUtil.clearStyleRules(this.style);
-this._properties = null;
-},
-get _styleProperties() {
-if (!this._properties) {
-styleProperties.decorateStyles(this._styles);
-this._styles._scopeStyleProperties = null;
-this._properties = styleProperties.scopePropertiesFromStyles(this._styles);
-}
-return this._properties;
-},
-_needsStyleProperties: function () {
-},
-_computeStyleProperties: function () {
-return this._styleProperties;
-}
-};
-return api;
 }();
 (function () {
 Polymer.StyleCache = function () {
@@ -4447,8 +4608,10 @@ clear: function () {
 this.cache = {};
 },
 _objectsEqual: function (target, source) {
+var t, s;
 for (var i in target) {
-if (target[i] !== source[i]) {
+t = target[i], s = source[i];
+if (!(typeof t === 'object' && t ? this._objectsStrictlyEqual(t, s) : t === s)) {
 return false;
 }
 }
@@ -4456,10 +4619,57 @@ if (Array.isArray(target)) {
 return target.length === source.length;
 }
 return true;
+},
+_objectsStrictlyEqual: function (target, source) {
+return this._objectsEqual(target, source) && this._objectsEqual(source, target);
 }
 };
 }());
+Polymer.StyleDefaults = function () {
+var styleProperties = Polymer.StyleProperties;
+var styleUtil = Polymer.StyleUtil;
+var StyleCache = Polymer.StyleCache;
+var api = {
+_styles: [],
+_properties: null,
+customStyle: {},
+_styleCache: new StyleCache(),
+addStyle: function (style) {
+this._styles.push(style);
+this._properties = null;
+},
+get _styleProperties() {
+if (!this._properties) {
+styleProperties.decorateStyles(this._styles);
+this._styles._scopeStyleProperties = null;
+this._properties = styleProperties.scopePropertiesFromStyles(this._styles);
+styleProperties.mixinCustomStyle(this._properties, this.customStyle);
+styleProperties.reify(this._properties);
+}
+return this._properties;
+},
+_needsStyleProperties: function () {
+},
+_computeStyleProperties: function () {
+return this._styleProperties;
+},
+updateStyles: function (properties) {
+this._properties = null;
+if (properties) {
+Polymer.Base.mixin(this.customStyle, properties);
+}
+this._styleCache.clear();
+for (var i = 0, s; i < this._styles.length; i++) {
+s = this._styles[i];
+s = s.__importElement || s;
+s._apply();
+}
+}
+};
+return api;
+}();
 (function () {
+'use strict';
 var serializeValueToAttribute = Polymer.Base.serializeValueToAttribute;
 var propertyUtils = Polymer.StyleProperties;
 var styleTransformer = Polymer.StyleTransformer;
@@ -4487,6 +4697,7 @@ if (!scope._styleCache) {
 scope._styleCache = new Polymer.StyleCache();
 }
 var scopeData = propertyUtils.propertyDataFromStyles(scope._styles, this);
+scopeData.key.customStyle = this.customStyle;
 info = scope._styleCache.retrieve(this.is, scopeData.key, this._styles);
 var scopeCached = Boolean(info);
 if (scopeCached) {
@@ -4499,17 +4710,16 @@ if (!scopeCached) {
 info = styleCache.retrieve(this.is, this._ownStyleProperties, this._styles);
 }
 var globalCached = Boolean(info) && !scopeCached;
-style = this._applyStyleProperties(info);
+var style = this._applyStyleProperties(info);
 if (!scopeCached) {
-var cacheableStyle = style;
-if (nativeShadow) {
-cacheableStyle = style.cloneNode ? style.cloneNode(true) : Object.create(style || null);
-}
+style = style && nativeShadow ? style.cloneNode(true) : style;
 info = {
-style: cacheableStyle,
+style: style,
 _scopeSelector: this._scopeSelector,
 _styleProperties: this._styleProperties
 };
+scopeData.key.customStyle = {};
+this.mixin(scopeData.key.customStyle, this.customStyle);
 scope._styleCache.store(this.is, info, scopeData.key, this._styles);
 if (!globalCached) {
 styleCache.store(this.is, Object.create(info), this._ownStyleProperties, this._styles);
@@ -4526,7 +4736,7 @@ this.mixin(props, propertyUtils.hostPropertiesFromStyles(this._styles));
 scopeProps = scopeProps || propertyUtils.propertyDataFromStyles(scope._styles, this).properties;
 this.mixin(props, scopeProps);
 this.mixin(props, propertyUtils.scopePropertiesFromStyles(this._styles));
-this.mixin(props, this.customStyle);
+propertyUtils.mixinCustomStyle(props, this.customStyle);
 propertyUtils.reify(props);
 this._styleProperties = props;
 },
@@ -4542,11 +4752,11 @@ _scopeCount: 0,
 _applyStyleProperties: function (info) {
 var oldScopeSelector = this._scopeSelector;
 this._scopeSelector = info ? info._scopeSelector : this.is + '-' + this.__proto__._scopeCount++;
-style = propertyUtils.applyElementStyle(this, this._styleProperties, this._scopeSelector, info && info.style);
-if ((style || oldScopeSelector) && !nativeShadow) {
+var style = propertyUtils.applyElementStyle(this, this._styleProperties, this._scopeSelector, info && info.style);
+if (!nativeShadow) {
 propertyUtils.applyElementScopeSelector(this, this._scopeSelector, oldScopeSelector, this._scopeCssViaAttr);
 }
-return style || {};
+return style;
 },
 serializeValueToAttribute: function (value, attribute, node) {
 node = node || this;
@@ -4565,8 +4775,11 @@ selector += (selector ? ' ' : '') + SCOPE_NAME + ' ' + this.is + (element._scope
 }
 return selector;
 },
-updateStyles: function () {
+updateStyles: function (properties) {
 if (this.isAttached) {
+if (properties) {
+this.mixin(this.customStyle, properties);
+}
 if (this._needsStyleProperties()) {
 this._updateStyleProperties();
 } else {
@@ -4590,8 +4803,8 @@ c.updateStyles();
 }
 }
 });
-Polymer.updateStyles = function () {
-styleDefaults._styleCache.clear();
+Polymer.updateStyles = function (properties) {
+styleDefaults.updateStyles(properties);
 Polymer.Base._updateRootStyles(document);
 };
 var styleCache = new Polymer.StyleCache();
@@ -4643,48 +4856,47 @@ var nativeShadow = Polymer.Settings.useNativeShadow;
 var propertyUtils = Polymer.StyleProperties;
 var styleUtil = Polymer.StyleUtil;
 var styleDefaults = Polymer.StyleDefaults;
+var styleTransformer = Polymer.StyleTransformer;
 Polymer({
 is: 'custom-style',
 extends: 'style',
 created: function () {
-this._appliesToDocument = this.parentNode.localName !== 'dom-module';
-if (this._appliesToDocument) {
+this._tryApply();
+},
+attached: function () {
+this._tryApply();
+},
+_tryApply: function () {
+if (!this._appliesToDocument) {
+if (this.parentNode && this.parentNode.localName !== 'dom-module') {
+this._appliesToDocument = true;
 var e = this.__appliedElement || this;
-var rules = styleUtil.rulesForStyle(e);
-propertyUtils.decorateStyles([e]);
-this._rulesToDefaultProperties(rules);
-this.async(this._applyStyle);
+styleDefaults.addStyle(e);
+if (e.textContent) {
+this._apply();
+} else {
+var observer = new MutationObserver(function () {
+observer.disconnect();
+this._apply();
+}.bind(this));
+observer.observe(e, { childList: true });
+}
+}
 }
 },
-_applyStyle: function () {
+_apply: function () {
 var e = this.__appliedElement || this;
 this._computeStyleProperties();
 var props = this._styleProperties;
 var self = this;
 e.textContent = styleUtil.toCssText(styleUtil.rulesForStyle(e), function (rule) {
-if (rule.selector === ':root') {
-rule.selector = 'body';
-}
 var css = rule.cssText = rule.parsedCssText;
 if (rule.propertyInfo && rule.propertyInfo.cssText) {
 css = css.replace(propertyUtils.rx.VAR_ASSIGN, '');
 rule.cssText = propertyUtils.valueForProperties(css, props);
 }
-if (!nativeShadow) {
-Polymer.StyleTransformer.rootRule(rule);
-}
+styleTransformer.documentRule(rule);
 });
-},
-_rulesToDefaultProperties: function (rules) {
-styleUtil.forEachStyleRule(rules, function (rule) {
-if (!rule.propertyInfo.properties) {
-rule.cssText = '';
-}
-});
-var cssText = styleUtil.parser.stringify(rules, true);
-if (cssText) {
-styleDefaults.applyCss(cssText);
-}
 }
 });
 }());
@@ -4753,6 +4965,9 @@ var parentProps = archetype._parentProps;
 for (var prop in parentProps) {
 archetype._addPropertyEffect(prop, 'function', this._createHostPropEffector(prop));
 }
+for (var prop in this._instanceProps) {
+archetype._addPropertyEffect(prop, 'function', this._createInstancePropEffector(prop));
+}
 },
 _customPrepAnnotations: function (archetype, template) {
 archetype._template = template;
@@ -4811,17 +5026,26 @@ return function (source, value) {
 this.dataHost['_parent_' + prop] = value;
 };
 },
+_createInstancePropEffector: function (prop) {
+return function (source, value, old, fromAbove) {
+if (!fromAbove) {
+this.dataHost._forwardInstanceProp(this, prop, value);
+}
+};
+},
 _extendTemplate: function (template, proto) {
 Object.getOwnPropertyNames(proto).forEach(function (n) {
 var val = template[n];
 var pd = Object.getOwnPropertyDescriptor(proto, n);
 Object.defineProperty(template, n, pd);
 if (val !== undefined) {
-template._propertySet(n, val);
+template._propertySetter(n, val);
 }
 });
 },
 _forwardInstancePath: function (inst, path, value) {
+},
+_forwardInstanceProp: function (inst, prop, value) {
 },
 _notifyPathImpl: function (path, value) {
 var dataHost = this.dataHost;
@@ -4845,6 +5069,7 @@ this._rootDataHost = host._getRootDataHost();
 this._setupConfigure(model);
 this._pushHost(host);
 this.root = this.instanceTemplate(this._template);
+this.root.__noContent = !this._notes._hasContent;
 this.root.__styleScoped = true;
 this._popHost();
 this._marshalAnnotatedNodes();
@@ -4949,8 +5174,17 @@ return this.pmap[item];
 getKeys: function () {
 return Object.keys(this.store);
 },
-setItem: function (key, value) {
-this.store[key] = value;
+setItem: function (key, item) {
+var old = this.store[key];
+if (old) {
+this._removeFromMap(old);
+}
+if (item && typeof item == 'object') {
+this.omap.set(item, key);
+} else {
+this.pmap[item] = key;
+}
+this.store[key] = item;
 },
 getItem: function (key) {
 return this.store[key];
@@ -4962,7 +5196,7 @@ items.push(store[key]);
 }
 return items;
 },
-applySplices: function (splices) {
+_applySplices: function (splices) {
 var keySplices = [];
 for (var i = 0; i < splices.length; i++) {
 var j, o, key, s = splices[i];
@@ -4990,6 +5224,10 @@ return keySplices;
 };
 Polymer.Collection.get = function (userArray) {
 return Polymer._collections.get(userArray) || new Polymer.Collection(userArray);
+};
+Polymer.Collection.applySplices = function (userArray, splices) {
+var coll = Polymer._collections.get(userArray);
+return coll ? coll._applySplices(splices) : null;
 };
 Polymer({
 is: 'dom-repeat',
@@ -5108,7 +5346,7 @@ return;
 },
 render: function () {
 this._fullRefresh = true;
-this.debounce('render', this._render);
+this._debounceTemplate(this._render);
 this._flushTemplates();
 },
 _render: function () {
@@ -5140,9 +5378,9 @@ rowForKey[key] = i;
 if (!row) {
 this.rows.push(row = this._insertRow(i, null, item));
 }
-row[this.as] = item;
-row.__key__ = key;
-row[this.indexAs] = i;
+row.__setProperty(this.as, item, true);
+row.__setProperty('__key__', key, true);
+row.__setProperty(this.indexAs, i, true);
 }
 for (; i < this.rows.length; i++) {
 this._detachRow(i);
@@ -5307,16 +5545,26 @@ c._hideTemplateChildren = hidden;
 }
 }
 },
+_forwardInstanceProp: function (row, prop, value) {
+if (prop == this.as) {
+var idx;
+if (this._sortFn || this._filterFn) {
+idx = this.items.indexOf(this.collection.getItem(row.__key__));
+} else {
+idx = row[this.indexAs];
+}
+this.set('items.' + idx, value);
+}
+},
 _forwardInstancePath: function (row, path, value) {
 if (path.indexOf(this.as + '.') === 0) {
 this.notifyPath('items.' + row.__key__ + '.' + path.slice(this.as.length + 1), value);
-return true;
 }
 },
 _forwardParentProp: function (prop, value) {
 if (this.rows) {
 this.rows.forEach(function (row) {
-row[prop] = value;
+row.__setProperty(prop, value, true);
 }, this);
 }
 },
@@ -5338,7 +5586,7 @@ if (dot >= 0) {
 path = this.as + '.' + path.substring(dot + 1);
 row.notifyPath(path, value, true);
 } else {
-row[this.as] = value;
+row.__setProperty(this.as, value, true);
 }
 }
 }
@@ -5420,8 +5668,10 @@ if (this.multi) {
 var scol = Polymer.Collection.get(this.selected);
 var skey = scol.getKey(item);
 if (skey >= 0) {
+if (this.toggle) {
 this.deselect(item);
-} else if (this.toggle) {
+}
+} else {
 this.push('selected', item);
 this.async(function () {
 skey = scol.getKey(item);
@@ -5444,15 +5694,16 @@ extends: 'template',
 properties: {
 'if': {
 type: Boolean,
-value: false
+value: false,
+observer: '_queueRender'
 },
 restamp: {
 type: Boolean,
-value: false
+value: false,
+observer: '_queueRender'
 }
 },
 behaviors: [Polymer.Templatizer],
-observers: ['_queueRender(if, restamp)'],
 _queueRender: function () {
 this._debounceTemplate(this._render);
 },
@@ -5636,10 +5887,6 @@ this._removeChildren();
         /**
          * The type of meta-data.  All meta-data of the same type is stored
          * together.
-         *
-         * @attribute type
-         * @type String
-         * @default 'default'
          */
         type: {
           type: String,
@@ -5649,10 +5896,6 @@ this._removeChildren();
 
         /**
          * The key used to store `value` under the `type` namespace.
-         *
-         * @attribute key
-         * @type String
-         * @default ''
          */
         key: {
           type: String,
@@ -5661,10 +5904,6 @@ this._removeChildren();
 
         /**
          * The meta-data to store or retrieve.
-         *
-         * @attribute value
-         * @type *
-         * @default this
          */
         value: {
           type: Object,
@@ -5674,10 +5913,6 @@ this._removeChildren();
 
         /**
          * If true, `value` is set to the iron-meta instance itself.
-         *
-         * @attribute self
-         * @type Boolean
-         * @default false
          */
          self: {
           type: Boolean,
@@ -5686,9 +5921,6 @@ this._removeChildren();
 
         /**
          * Array of all meta-data values for the given type.
-         *
-         * @property list
-         * @type Array
          */
         list: {
           type: Array,
@@ -5752,8 +5984,8 @@ this._removeChildren();
        * Retrieves meta data value by key.
        *
        * @method byKey
-       * @param {String} key The key of the meta-data to be returned.
-       * @returns *
+       * @param {string} key The key of the meta-data to be returned.
+       * @return {*}
        */
       byKey: function(key) {
         return this._metaData && this._metaData[key];
@@ -5800,7 +6032,7 @@ this._removeChildren();
 
         <iron-meta key="info" value="foo/bar"></iron-meta>
 
-    Note that keyUrl="foo/bar" is the metadata I've defined. I could define more
+    Note that value="foo/bar" is the metadata I've defined. I could define more
     attributes or use child nodes to define additional metadata.
 
     Now I can access that element (and it's metadata) from any `iron-meta-query` instance:
@@ -5819,10 +6051,6 @@ this._removeChildren();
         /**
          * The type of meta-data.  All meta-data of the same type is stored
          * together.
-         *
-         * @attribute type
-         * @type String
-         * @default 'default'
          */
         type: {
           type: String,
@@ -5833,9 +6061,6 @@ this._removeChildren();
         /**
          * Specifies a key to use for retrieving `value` from the `type`
          * namespace.
-         *
-         * @attribute key
-         * @type String
          */
         key: {
           type: String,
@@ -5844,10 +6069,6 @@ this._removeChildren();
 
         /**
          * The meta-data to store or retrieve.
-         *
-         * @attribute value
-         * @type *
-         * @default this
          */
         value: {
           type: Object,
@@ -5857,9 +6078,6 @@ this._removeChildren();
 
         /**
          * Array of all meta-data values for the given type.
-         *
-         * @property list
-         * @type Array
          */
         list: {
           type: Array,
@@ -5872,7 +6090,7 @@ this._removeChildren();
        * Actually a factory method, not a true constructor. Only runs if
        * someone invokes it directly (via `new Polymer.IronMeta()`);
        */
-      constructor: function(config) {
+      factoryImpl: function(config) {
         if (config) {
           for (var n in config) {
             switch(n) {
@@ -5905,10 +6123,8 @@ this._removeChildren();
 
       /**
        * Retrieves meta data value by key.
-       *
-       * @method byKey
-       * @param {String} key The key of the meta-data to be returned.
-       * @returns *
+       * @param {string} key The key of the meta-data to be returned.
+       * @return {*}
        */
       byKey: function(key) {
         return this._metaData && this._metaData[key];
@@ -5917,663 +6133,6 @@ this._removeChildren();
     });
 
   })();
-
-;
-
-  /**
-   * Use `Polymer.IronValidatableBehavior` to implement an element that validates user input.
-   *
-   * ### Accessiblity
-   *
-   * Changing the `invalid` property, either manually or by calling `validate()` will update the
-   * `aria-invalid` attribute.
-   *
-   * @demo demo/index.html
-   * @polymerBehavior
-   */
-  Polymer.IronValidatableBehavior = {
-
-    properties: {
-
-      /**
-       * Namespace for this validator.
-       */
-      validatorType: {
-        type: String,
-        value: 'validator'
-      },
-
-      /**
-       * Name of the validator to use.
-       */
-      validator: {
-        type: String
-      },
-
-      /**
-       * True if the last call to `validate` is invalid.
-       */
-      invalid: {
-        reflectToAttribute: true,
-        type: Boolean,
-        value: false
-      },
-
-      _validatorMeta: {
-        type: Object
-      }
-
-    },
-
-    observers: [
-      '_invalidChanged(invalid)'
-    ],
-
-    get _validator() {
-      return this._validatorMeta && this._validatorMeta.byKey(this.validator);
-    },
-
-    ready: function() {
-      this._validatorMeta = new Polymer.IronMeta({type: this.validatorType});
-    },
-
-    _invalidChanged: function() {
-      if (this.invalid) {
-        this.setAttribute('aria-invalid', 'true');
-      } else {
-        this.removeAttribute('aria-invalid');
-      }
-    },
-
-    /**
-     * @return {Boolean} True if the validator `validator` exists.
-     */
-    hasValidator: function() {
-      return this._validator != null;
-    },
-
-    /**
-     * @param {Object} values Passed to the validator's `validate()` function.
-     * @return {Boolean} True if `values` is valid.
-     */
-    validate: function(values) {
-      var valid = this._validator && this._validator.validate(values);
-      this.invalid = !valid;
-      return valid;
-    }
-
-  };
-
-
-;
-
-/*
-`<iron-input>` adds two-way binding and custom validators using `Polymer.IronValidatorBehavior`
-to `<input>`.
-
-### Two-way binding
-
-By default you can only get notified of changes to an `input`'s `value` due to user input:
-
-    <input value="{{myValue::input}}">
-
-`iron-input` adds the `bind-value` property that mirrors the `value` property, and can be used
-for two-way data binding. `bind-value` will notify if it is changed either by user input or by script.
-
-    <input is="iron-input" bind-value="{{myValue}}">
-
-### Custom validators
-
-You can use custom validators that implement `Polymer.IronValidatorBehavior` with `<iron-input>`.
-
-    <input is="iron-input" validator="my-custom-validator">
-
-### Stopping invalid input
-
-It may be desirable to only allow users to enter certain characters. You can use the
-`prevent-invalid-input` and `allowed-pattern` attributes together to accomplish this. This feature
-is separate from validation, and `allowed-pattern` does not affect how the input is validated.
-
-    <!-- only allow characters that match [0-9] -->
-    <input is="iron-input" prevent-invaild-input allowed-pattern="[0-9]">
-
-@hero hero.svg
-@demo demo/index.html
-*/
-
-  Polymer({
-
-    is: 'iron-input',
-
-    extends: 'input',
-
-    behaviors: [
-      Polymer.IronValidatableBehavior
-    ],
-
-    properties: {
-
-      /**
-       * Use this property instead of `value` for two-way data binding.
-       */
-      bindValue: {
-        observer: '_bindValueChanged',
-        type: String
-      },
-
-      /**
-       * Set to true to prevent the user from entering invalid input. The new input characters are
-       * matched with `allowedPattern` if it is set, otherwise it will use the `pattern` attribute if
-       * set, or the `type` attribute (only supported for `type=number`).
-       */
-      preventInvalidInput: {
-        type: Boolean
-      },
-
-      /**
-       * Regular expression to match valid input characters.
-       */
-      allowedPattern: {
-        type: String
-      },
-
-      _previousValidInput: {
-        type: String,
-        value: ''
-      },
-
-      _patternAlreadyChecked: {
-        type: Boolean,
-        value: false
-      }
-
-    },
-
-    listeners: {
-      'input': '_onInput',
-      'keypress': '_onKeypress'
-    },
-
-    get _patternRegExp() {
-      var pattern;
-      if (this.allowedPattern) {
-        pattern = new RegExp(this.allowedPattern);
-      } else if (this.pattern) {
-        pattern = new RegExp(this.pattern);
-      } else {
-        switch (this.type) {
-          case 'number':
-            pattern = /[0-9.,e-]/;
-            break;
-        }
-      }
-      return pattern;
-    },
-
-    ready: function() {
-      this.bindValue = this.value;
-    },
-
-    _bindValueChanged: function() {
-      if (this.value !== this.bindValue) {
-        this.value = !this.bindValue ? '' : this.bindValue;
-      }
-      // manually notify because we don't want to notify until after setting value
-      this.fire('bind-value-changed', {value: this.bindValue});
-    },
-
-    _onInput: function() {
-      // Need to validate each of the characters pasted if they haven't
-      // been validated inside `_onKeypress` already.
-      if (this.preventInvalidInput && !this._patternAlreadyChecked) {
-        var valid = this._checkPatternValidity();
-        if (!valid) {
-          this.value = this._previousValidInput;
-        }
-      }
-
-      this.bindValue = this.value;
-      this._previousValidInput = this.value;
-      this._patternAlreadyChecked = false;
-    },
-
-    _isPrintable: function(event) {
-      // What a control/printable character is varies wildly based on the browser.
-      // - most control characters (arrows, backspace) do not send a `keypress` event
-      //   in Chrome, but the *do* on Firefox
-      // - in Firefox, when they do send a `keypress` event, control chars have
-      //   a charCode = 0, keyCode = xx (for ex. 40 for down arrow)
-      // - printable characters always send a keypress event.
-      // - in Firefox, printable chars always have a keyCode = 0. In Chrome, the keyCode
-      //   always matches the charCode.
-      // None of this makes any sense.
-
-      var nonPrintable =
-        (event.keyCode == 8)   ||  // backspace
-        (event.keyCode == 19)  ||  // pause
-        (event.keyCode == 20)  ||  // caps lock
-        (event.keyCode == 27)  ||  // escape
-        (event.keyCode == 45)  ||  // insert
-        (event.keyCode == 46)  ||  // delete
-        (event.keyCode == 144) ||  // num lock
-        (event.keyCode == 145) ||  // scroll lock
-        (event.keyCode > 32 && event.keyCode < 41)   || // page up/down, end, home, arrows
-        (event.keyCode > 111 && event.keyCode < 124); // fn keys
-
-      return !(event.charCode == 0 && nonPrintable);
-    },
-
-    _onKeypress: function(event) {
-      if (!this.preventInvalidInput && this.type !== 'number') {
-        return;
-      }
-      var regexp = this._patternRegExp;
-      if (!regexp) {
-        return;
-      }
-
-      // Handle special keys and backspace
-      if (event.metaKey || event.ctrlKey || event.altKey)
-        return;
-
-      // Check the pattern either here or in `_onInput`, but not in both.
-      this._patternAlreadyChecked = true;
-
-      var thisChar = String.fromCharCode(event.charCode);
-      if (this._isPrintable(event) && !regexp.test(thisChar)) {
-        event.preventDefault();
-      }
-    },
-
-    _checkPatternValidity: function() {
-      var regexp = this._patternRegExp;
-      if (!regexp) {
-        return true;
-      }
-      for (var i = 0; i < this.value.length; i++) {
-        if (!regexp.test(this.value[i])) {
-          return false;
-        }
-      }
-      return true;
-    },
-
-    /**
-     * Returns true if `value` is valid. The validator provided in `validator` will be used first,
-     * then any constraints.
-     * @return {Boolean} True if the value is valid.
-     */
-    validate: function() {
-      // Empty, non-required input is valid.
-      if (!this.required && this.value == '')
-        return true;
-
-      var valid;
-      if (this.hasValidator()) {
-        valid = Polymer.IronValidatableBehavior.validate.call(this, this.value);
-      } else {
-        this.invalid = !this.validity.valid;
-        valid = this.validity.valid;
-      }
-      this.fire('iron-input-validate');
-      return valid;
-    }
-
-  });
-
-  /*
-  The `iron-input-validate` event is fired whenever `validate()` is called.
-  @event iron-input-validate
-  */
-
-
-;
-
-  /** 
-  
-  @demo demo/index.html
-  @polymerBehavior 
-  
-  */
-  Polymer.IronFormElementBehavior = {
-
-    properties: {
-
-      /**
-       * The name of this element.
-       */
-      name: {
-        type: String
-      },
-
-      /**
-       * The value for this element.
-       */
-      value: {
-        notify: true,
-        type: String
-      },
-    },
-
-    attached: function() {
-      this.fire('iron-form-element-register');
-    }
-
-  };
-
-
-;
-
-  /**
-   * Use `Polymer.PaperInputBehavior` to implement inputs with `<paper-input-container>`. This
-   * behavior is implemented by `<paper-input>`. It exposes a number of properties from
-   * `<paper-input-container>` and `<input is="iron-input">` and they should be bound in your
-   * template.
-   *
-   * The input element can be accessed by the `inputElement` property if you need to access
-   * properties or methods that are not exposed.
-   * @polymerBehavior
-   */
-  Polymer.PaperInputBehavior = {
-
-    properties: {
-
-      /**
-       * The label for this input. Bind this to `<paper-input-container>`'s `label` property.
-       */
-      label: {
-        type: String
-      },
-
-      /**
-       * The value for this input. Bind this to the `<input is="iron-input">`'s `bindValue`
-       * property, or the value property of your input that is `notify:true`.
-       */
-      value: {
-        notify: true,
-        type: String
-      },
-
-      /**
-       * Set to true to disable this input. Bind this to both the `<paper-input-container>`'s
-       * and the input's `disabled` property.
-       */
-      disabled: {
-        type: Boolean,
-        value: false
-      },
-
-      /**
-       * Returns true if the value is invalid. Bind this to both the `<paper-input-container>`'s
-       * and the input's `invalid` property.
-       */
-      invalid: {
-        type: Boolean,
-        value: false
-      },
-
-      /**
-       * Set to true to prevent the user from entering invalid input. Bind this to the
-       * `<input is="iron-input">`'s `preventInvalidInput` property.
-       */
-      preventInvalidInput: {
-        type: Boolean
-      },
-
-      /**
-       * Set this to specify the pattern allowed by `preventInvalidInput`. Bind this to the
-       * `<input is="iron-input">`'s `allowedPattern` property.
-       */
-      allowedPattern: {
-        type: String
-      },
-
-      /**
-       * The type of the input. The supported types are `text`, `number` and `password`. Bind this
-       * to the `<input is="iron-input">`'s `type` property.
-       */
-      type: {
-        type: String
-      },
-
-      /**
-       * A pattern to validate the `input` with. Bind this to the `<input is="iron-input">`'s
-       * `pattern` property.
-       */
-      pattern: {
-        type: String
-      },
-
-      /**
-       * Set to true to mark the input as required. Bind this to the `<input is="iron-input">`'s
-       * `required` property.
-       */
-      required: {
-        type: Boolean,
-        value: false
-      },
-
-      /**
-       * The maximum length of the input value. Bind this to the `<input is="iron-input">`'s
-       * `maxlength` property.
-       */
-      maxlength: {
-        type: Number
-      },
-
-      /**
-       * The error message to display when the input is invalid. Bind this to the
-       * `<paper-input-error>`'s content, if using.
-       */
-      errorMessage: {
-        type: String
-      },
-
-      /**
-       * Set to true to show a character counter.
-       */
-      charCounter: {
-        type: Boolean,
-        value: false
-      },
-
-      /**
-       * Set to true to disable the floating label. Bind this to the `<paper-input-container>`'s
-       * `noLabelFloat` property.
-       */
-      noLabelFloat: {
-        type: Boolean,
-        value: false
-      },
-
-      /**
-       * Set to true to always float the label. Bind this to the `<paper-input-container>`'s
-       * `alwaysFloatLabel` property.
-       */
-      alwaysFloatLabel: {
-        type: Boolean,
-        value: false
-      },
-
-      /**
-       * Set to true to auto-validate the input value. Bind this to the `<paper-input-container>`'s
-       * `autoValidate` property.
-       */
-      autoValidate: {
-        type: Boolean,
-        value: false
-      },
-
-      /**
-       * Name of the validator to use. Bind this to the `<input is="iron-input">`'s `validator`
-       * property.
-       */
-      validator: {
-        type: String
-      },
-
-      // HTMLInputElement attributes for binding if needed
-
-      /**
-       * Bind this to the `<input is="iron-input">`'s `autocomplete` property.
-       */
-      autocomplete: {
-        type: String,
-        value: 'off'
-      },
-
-      /**
-       * Bind this to the `<input is="iron-input">`'s `autofocus` property.
-       */
-      autofocus: {
-        type: Boolean
-      },
-
-      /**
-       * Bind this to the `<input is="iron-input">`'s `inputmode` property.
-       */
-      inputmode: {
-        type: String
-      },
-
-      /**
-       * Bind this to the `<input is="iron-input">`'s `minlength` property.
-       */
-      minlength: {
-        type: Number
-      },
-
-      /**
-       * Bind this to the `<input is="iron-input">`'s `name` property.
-       */
-      name: {
-        type: String
-      },
-
-      /**
-       * A placeholder string in addition to the label. If this is set, the label will always float.
-       */
-      placeholder: {
-        type: String
-      },
-
-      /**
-       * Bind this to the `<input is="iron-input">`'s `readonly` property.
-       */
-      readonly: {
-        type: Boolean,
-        value: false
-      },
-
-      /**
-       * Bind this to the `<input is="iron-input">`'s `size` property.
-       */
-      size: {
-        type: Number
-      },
-
-      _ariaDescribedBy: {
-        type: String,
-        value: ''
-      }
-
-    },
-
-    listeners: {
-      'addon-attached': '_onAddonAttached'
-    },
-
-    /**
-     * Returns a reference to the input element.
-     */
-    get inputElement() {
-      return this.$.input;
-    },
-
-    attached: function() {
-      this._updateAriaLabelledBy();
-    },
-
-    _appendStringWithSpace: function(str, more) {
-      if (str) {
-        str = str + ' ' + more;
-      } else {
-        str = more;
-      }
-      return str;
-    },
-
-    _onAddonAttached: function(event) {
-      var target = event.path ? event.path[0] : event.target;
-      if (target.id) {
-        this._ariaDescribedBy = this._appendStringWithSpace(this._ariaDescribedBy, target.id);
-      } else {
-        var id = 'paper-input-add-on-' + Math.floor((Math.random() * 100000));
-        target.id = id;
-        this._ariaDescribedBy = this._appendStringWithSpace(this._ariaDescribedBy, id);
-      }
-    },
-
-    /**
-     * Validates the input element and sets an error style if needed.
-     */
-     validate: function () {
-       return this.inputElement.validate();
-     },
-
-    _computeAlwaysFloatLabel: function(alwaysFloatLabel, placeholder) {
-      return placeholder || alwaysFloatLabel;
-    },
-
-    _updateAriaLabelledBy: function() {
-      var label = Polymer.dom(this.root).querySelector('label');
-      if (!label) {
-        this._ariaLabelledBy = '';
-        return;
-      }
-      var labelledBy;
-      if (label.id) {
-        labelledBy = label.id;
-      } else {
-        labelledBy = 'paper-input-label-' + new Date().getUTCMilliseconds();
-        label.id = labelledBy;
-      }
-      this._ariaLabelledBy = labelledBy;
-    }
-
-  };
-
-
-;
-
-  /**
-   * Use `Polymer.PaperInputAddonBehavior` to implement an add-on for `<paper-input-container>`. A
-   * add-on appears below the input, and may display information based on the input value and
-   * validity such as a character counter or an error message.
-   * @polymerBehavior
-   */
-  Polymer.PaperInputAddonBehavior = {
-
-    hostAttributes: {
-      'add-on': ''
-    },
-
-    attached: function() {
-      this.fire('addon-attached');
-    },
-
-    /**
-     * The function called by `<paper-input-container>` when the input value or validity changes.
-     * @param {Object} state All properties are optional.
-     * @param {Node} state.inputElement The input element.
-     * @param {String} state.value The input value.
-     * @param {Boolean} state.invalid True if the input value is invalid.
-     */
-    update: function(state) {
-    }
-
-  };
-
 
 ;
 if (!window.Promise) {
@@ -6608,7 +6167,7 @@ if (!window.Promise) {
        * resolved.
        *
        * @attribute response
-       * @type Object
+       * @type {*}
        * @default null
        */
       response: {
@@ -6714,7 +6273,7 @@ if (!window.Promise) {
       var xhr = this.xhr;
 
       if (xhr.readyState > 0) {
-        return;
+        return null;
       }
 
       xhr.addEventListener('readystatechange', function () {
@@ -6776,7 +6335,7 @@ if (!window.Promise) {
      * the value returned will be deserialized based on the `responseType`
      * set on the XHR.
      *
-     * @return {Object|Array|Document|string|undefined} The parsed response,
+     * @return {*} The parsed response,
      * or undefined if there was an empty response or parsing failed.
      */
     parseResponse: function () {
@@ -7040,7 +6599,7 @@ if (!window.Promise) {
         notify: true,
         readOnly: true,
         value: function() {
-          this._setActiveRequests([]);
+          return [];
         }
       },
 
@@ -7133,7 +6692,14 @@ if (!window.Promise) {
      * Request options suitable for generating an `iron-request` instance based
      * on the current state of the `iron-ajax` instance's properties.
      *
-     * @return {Object}
+     * @return {{
+     *   url: string,
+     *   method: (string|undefined),
+     *   async: (boolean|undefined),
+     *   body: (ArrayBuffer|ArrayBufferView|Blob|Document|FormData|null|string|undefined),
+     *   headers: (Object|undefined),
+     *   handleAs: (string|undefined),
+     *   withCredentials: (boolean|undefined)}}
      */
     toRequestOptions: function() {
       return {
@@ -7150,10 +6716,10 @@ if (!window.Promise) {
     /**
      * Performs an AJAX request to the specified URL.
      *
-     * @return {iron-request}
+     * @return {!IronRequestElement}
      */
     generateRequest: function() {
-      var request = document.createElement('iron-request');
+      var request = /** @type {!IronRequestElement} */ (document.createElement('iron-request'));
       var requestOptions = this.toRequestOptions();
 
       this.activeRequests.push(request);
@@ -7244,9 +6810,21 @@ if (!window.Promise) {
    **/
   Polymer.IronResizableBehavior = {
     properties: {
+      /**
+       * The closest ancestor element that implements `IronResizableBehavior`.
+       */
       _parentResizable: {
         type: Object,
         observer: '_parentResizableChanged'
+      },
+
+      /**
+       * True if this element is currently notifying its descedant elements of
+       * resize.
+       */
+      _notifyingDescendant: {
+        type: Boolean,
+        value: false
       }
     },
 
@@ -7264,7 +6842,8 @@ if (!window.Promise) {
     attached: function() {
       this.fire('iron-request-resize-notifications', null, {
         node: this,
-        bubbles: true
+        bubbles: true,
+        cancelable: true
       });
 
       if (!this._parentResizable) {
@@ -7293,16 +6872,12 @@ if (!window.Promise) {
       }
 
       this._interestedResizables.forEach(function(resizable) {
-        // TODO(cdata): Currently behaviors cannot define "abstract" methods..
-        if (!this.resizerShouldNotify || this.resizerShouldNotify(resizable)) {
-          resizable.notifyResize();
+        if (this.resizerShouldNotify(resizable)) {
+          this._notifyDescendant(resizable);
         }
       }, this);
 
-      this.fire('iron-resize', null, {
-        node: this,
-        bubbles: false
-      });
+      this._fireResize();
     },
 
     /**
@@ -7322,16 +6897,40 @@ if (!window.Promise) {
 
       if (index > -1) {
         this._interestedResizables.splice(index, 1);
+        this.unlisten(target, 'iron-resize', '_onDescendantIronResize');
       }
     },
 
-    // TODO(cdata): Currently behaviors cannot define "abstract" methods.
-    // resizerShouldNotify: function(el) { return true; },
+    /**
+     * This method can be overridden to filter nested elements that should or
+     * should not be notified by the current element. Return true if an element
+     * should be notified, or false if it should not be notified.
+     *
+     * @param {HTMLElement} element A candidate descendant element that
+     * implements `IronResizableBehavior`.
+     * @return {boolean} True if the `element` should be notified of resize.
+     */
+    resizerShouldNotify: function(element) { return true; },
 
-    _parentResizableChanged: function(parentResizable) {
-      if (parentResizable) {
-        window.removeEventListener('resize', this._boundNotifyResize);
+    _onDescendantIronResize: function(event) {
+      if (this._notifyingDescendant) {
+        event.stopPropagation();
+        return;
       }
+
+      // NOTE(cdata): In ShadowDOM, event retargetting makes echoing of the
+      // otherwise non-bubbling event "just work." We do it manually here for
+      // the case where Polymer is not using shadow roots for whatever reason:
+      if (!Polymer.Settings.useShadow) {
+        this._fireResize();
+      }
+    },
+
+    _fireResize: function() {
+      this.fire('iron-resize', null, {
+        node: this,
+        bubbles: false
+      });
     },
 
     _onIronRequestResizeNotifications: function(event) {
@@ -7343,11 +6942,32 @@ if (!window.Promise) {
 
       if (this._interestedResizables.indexOf(target) === -1) {
         this._interestedResizables.push(target);
+        this.listen(target, 'iron-resize', '_onDescendantIronResize');
       }
 
       target.assignParentResizable(this);
+      this._notifyDescendant(target);
 
       event.stopPropagation();
+    },
+
+    _parentResizableChanged: function(parentResizable) {
+      if (parentResizable) {
+        window.removeEventListener('resize', this._boundNotifyResize);
+      }
+    },
+
+    _notifyDescendant: function(descendant) {
+      // NOTE(cdata): In IE10, attached is fired on children first, so it's
+      // important not to notify them if the parent is not attached yet (or
+      // else they will get redundantly notified when the parent attaches).
+      if (!this.isAttached) {
+        return;
+      }
+
+      this._notifyingDescendant = true;
+      descendant.notifyResize();
+      this._notifyingDescendant = false;
     }
   };
 
@@ -7833,10 +7453,10 @@ if (!window.Promise) {
      * in a KeyboardEvent instance.
      */
     var MODIFIER_KEYS = {
-      shift: 'shiftKey',
-      ctrl: 'ctrlKey',
-      alt: 'altKey',
-      meta: 'metaKey'
+      'shift': 'shiftKey',
+      'ctrl': 'ctrlKey',
+      'alt': 'altKey',
+      'meta': 'metaKey'
     };
 
     /**
@@ -7979,6 +7599,7 @@ if (!window.Promise) {
      * The `keys-pressed` event will fire when one of the key combinations set with the
      * `keys` property is pressed.
      *
+     * @demo demo/index.html
      * @polymerBehavior IronA11yKeysBehavior
      */
     Polymer.IronA11yKeysBehavior = {
@@ -7994,6 +7615,7 @@ if (!window.Promise) {
         },
 
         _boundKeyHandlers: {
+          type: Array,
           value: function() {
             return [];
           }
@@ -8002,6 +7624,7 @@ if (!window.Promise) {
         // We use this due to a limitation in IE10 where instances will have
         // own properties of everything on the "prototype".
         _imperativeKeyBindings: {
+          type: Object,
           value: function() {
             return {};
           }
@@ -8157,18 +7780,16 @@ if (!window.Promise) {
 
 ;
 
-  /** @polymerBehavior */
-
+  /**
+   * @demo demo/index.html
+   * @polymerBehavior
+   */
   Polymer.IronControlState = {
 
     properties: {
 
       /**
        * If true, the element currently has focus.
-       *
-       * @attribute focused
-       * @type boolean
-       * @default false
        */
       focused: {
         type: Boolean,
@@ -8180,10 +7801,6 @@ if (!window.Promise) {
 
       /**
        * If true, the user cannot interact with this element.
-       *
-       * @attribute disabled
-       * @type boolean
-       * @default false
        */
       disabled: {
         type: Boolean,
@@ -8195,17 +7812,20 @@ if (!window.Promise) {
 
       _oldTabIndex: {
         type: Number
+      },
+
+      _boundFocusBlurHandler: {
+        type: Function,
+        value: function() {
+          return this._focusBlurHandler.bind(this);
+        }
       }
+
     },
 
     observers: [
       '_changedControlState(focused, disabled)'
     ],
-
-    listeners: {
-      focus: '_focusHandler',
-      blur: '_blurHandler'
-    },
 
     ready: function() {
       // TODO(sjmiles): ensure read-only property is valued so the compound
@@ -8213,14 +7833,23 @@ if (!window.Promise) {
       if (this.focused === undefined) {
         this._setFocused(false);
       }
+      this.addEventListener('focus', this._boundFocusBlurHandler, true);
+      this.addEventListener('blur', this._boundFocusBlurHandler, true);
     },
 
-    _focusHandler: function() {
-      this._setFocused(true);
-    },
-
-    _blurHandler: function() {
-      this._setFocused(false);
+    _focusBlurHandler: function(event) {
+      var target = event.path ? event.path[0] : event.target;
+      if (target === this) {
+        var focused = event.type === 'focus';
+        this._setFocused(focused);
+      } else if (!this.shadowRoot) {
+        event.stopPropagation();
+        this.fire(event.type, {sourceEvent: event}, {
+          node: this,
+          bubbles: event.bubbles,
+          cancelable: event.cancelable
+        });
+      }
     },
 
     _disabledChanged: function(disabled, old) {
@@ -8247,17 +7876,16 @@ if (!window.Promise) {
 
 ;
 
-  /** @polymerBehavior Polymer.IronButtonState */
+  /**
+   * @demo demo/index.html
+   * @polymerBehavior Polymer.IronButtonState
+   */
   Polymer.IronButtonStateImpl = {
 
     properties: {
 
       /**
        * If true, the user is currently holding down the button.
-       *
-       * @attribute pressed
-       * @type boolean
-       * @default false
        */
       pressed: {
         type: Boolean,
@@ -8270,10 +7898,6 @@ if (!window.Promise) {
       /**
        * If true, the button toggles the active state with each tap or press
        * of the spacebar.
-       *
-       * @attribute toggles
-       * @type boolean
-       * @default false
        */
       toggles: {
         type: Boolean,
@@ -8283,10 +7907,6 @@ if (!window.Promise) {
 
       /**
        * If true, the button is a toggle and is currently in the active state.
-       *
-       * @attribute active
-       * @type boolean
-       * @default false
        */
       active: {
         type: Boolean,
@@ -8419,7 +8039,7 @@ if (!window.Promise) {
 
   };
 
-  /** @polymerBehavior Polymer.IronButtonState */
+  /** @polymerBehavior */
   Polymer.IronButtonState = [
     Polymer.IronA11yKeysBehavior,
     Polymer.IronButtonStateImpl
@@ -8461,6 +8081,7 @@ if (!window.Promise) {
     }
   };
 
+  /** @polymerBehavior */
   Polymer.PaperButtonBehavior = [
     Polymer.IronButtonState,
     Polymer.IronControlState,
@@ -8871,7 +8492,7 @@ if (!window.Promise) {
    *
    * Example:
    *
-   *     <iron-iconset-svg id="my-svg-icons" iconSize="24">
+   *     <iron-iconset-svg name="my-svg-icons" size="24">
    *       <svg>
    *         <defs>
    *           <g id="shape">
@@ -8891,6 +8512,7 @@ if (!window.Promise) {
    *     iconset.applyIcon(iconNode, 'car');
    *
    * @element iron-iconset-svg
+   * @demo demo/index.html
    */
   Polymer({
 
@@ -8987,7 +8609,7 @@ if (!window.Promise) {
     /**
      * Create a map of child SVG elements by id.
      *
-     * @return {Object} Map of id's to SVG elements.
+     * @return {!Object} Map of id's to SVG elements.
      */
     _createIconMap: function() {
       // Objects chained to Object.prototype (`{}`) have members. Specifically,
@@ -9059,28 +8681,6 @@ var PtmListBehavior = {
   open: function(e) {
     var project = this.projectManager.getProjectFromId(e.detail.projectId);
     project.open();
-  },
-  _onAddBookmark: function(e) {
-    var that = this;
-    e.stopPropagation();
-    var project = this.projectManager.getProjectFromId(e.detail.projectId);
-    project.addBookmark(e.detail.tabId, function(bookmark) {
-      that.fire('show-toast', {
-        text: 'Bookmark added'
-      });
-      that.$.repeat.render();
-    });
-  },
-  _onRemoveBookmark: function(e) {
-    var that = this;
-    e.stopPropagation();
-    var project = this.projectManager.getProjectFromId(e.detail.projectId);
-    project.removeBookmark(e.detail.bookmarkId, function(bookmark) {
-      that.fire('show-toast', {
-        text: 'Bookmark removed'
-      });
-      that.$.repeat.render();
-    });
   }
 };
 
@@ -9145,6 +8745,10 @@ var PtmListBehavior = {
 ;
 var PtmProjectBehavior = {
   properties: {
+    project: {
+      type: Object,
+      value: {}
+    },
     fields: {
       type: Array,
       value: []
@@ -9184,6 +8788,10 @@ var PtmProjectBehavior = {
       value: '',
       observer: 'search'
     },
+    matchedBookmarks: {
+      type: Number,
+      value: -1
+    },
     _unfoldIcon: {
       type: String,
       value: 'unfold-more'
@@ -9203,13 +8811,19 @@ var PtmProjectBehavior = {
     this._elevation = this.expanded ? 2 : 0;
   },
   search: function() {
-    this.$.repeat.render();
+    if (this.query.length < 2) {
+      this.matchedBookmarks = 0;
+    }
   },
   filter: function(item) {
+    // TODO: This won't be executed unless project.title matches the query.
+    // Needs to fix this
     if (this.query.length < 2) {
       return true
     } else {
-      return item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
+      var matched = item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
+      this.matchedBookmarks += matched ? 1 : 0;
+      return matched;
     }
   },
   openProject: function(e) {
@@ -9218,23 +8832,39 @@ var PtmProjectBehavior = {
       projectId: this.projectId
     });
   },
+  _computeElevation: function(expanded) {
+    return expanded ? 2 : 0;
+  },
+  _computeFoldIcon: function(expanded) {
+    return expanded ? 'unfold-less' : 'unfold-more';
+  },
   _computeProjectLinked: function(projectId) {
     return projectId * 1 > -1 ? true : false;
   },
   _onToggleBookmark: function(e) {
+    var that = this;
     e.stopPropagation();
     var field = e.model.item;
-    if (field.id !== undefined) {
-      this.fire('remove-bookmark', {
-        projectId: this.projectId,
-        bookmarkId: field.id
+    var index = e.model.index;
+    if (field.id === undefined || field.id === '') {
+      this.project.addBookmark(field.tabId, function(bookmark) {
+        that.set('fields.'+index+'.id', bookmark.id);
+        that.fire('show-toast', {
+          text: 'Bookmark added'
+        });
       });
     } else {
-      this.fire('add-bookmark', {
-        projectId: this.projectId,
-        tabId: field.tabId
+      this.project.removeBookmark(field.id, function() {
+        that.set('fields.'+index+'.id', '');
+        that.fire('show-toast', {
+          text: 'Bookmark removed'
+        });
       });
     }
+  },
+  _onFieldUpdated: function() {
+    console.log('field updated');
+    this.$.repeat.render();
   }
 };
 
@@ -9305,10 +8935,7 @@ var PtmProjectBehavior = {
     /**
      * Called when the animation finishes.
      */
-    complete: function() {
-      // FIXME not sure about non-bubbling event
-      this.fire(this.animationEndEvent, null, {bubbles: false});
-    }
+    complete: function() {}
 
   };
 
@@ -9488,9 +9115,10 @@ var PtmProjectBehavior = {
 
   /**
    * `Polymer.NeonAnimationRunnerBehavior` adds a method to run animations.
-   * @polymerBehavior
+   *
+   * @polymerBehavior Polymer.NeonAnimationRunnerBehavior
    */
-  Polymer.NeonAnimationRunnerBehavior = [Polymer.NeonAnimatableBehavior, {
+  Polymer.NeonAnimationRunnerBehaviorImpl = {
 
     properties: {
 
@@ -9501,6 +9129,7 @@ var PtmProjectBehavior = {
         }
       },
 
+      /** @type {?Object} */
       _player: {
         type: Object
       }
@@ -9531,7 +9160,7 @@ var PtmProjectBehavior = {
     },
 
     _runAnimationEffects: function(allEffects) {
-      return player = document.timeline.play(new GroupEffect(allEffects));
+      return document.timeline.play(new GroupEffect(allEffects));
     },
 
     _completeAnimations: function(allAnimations) {
@@ -9542,6 +9171,8 @@ var PtmProjectBehavior = {
 
     /**
      * Plays an animation with an optional `type`.
+     * @param {string=} type
+     * @param {!Object=} cookie
      */
     playAnimation: function(type, cookie) {
       var allConfigs = this.getAnimationConfig(type);
@@ -9579,8 +9210,13 @@ var PtmProjectBehavior = {
         this._player.cancel();
       }
     }
+  };
 
-  }];
+  /** @polymerBehavior Polymer.NeonAnimationRunnerBehavior */
+  Polymer.NeonAnimationRunnerBehavior = [
+    Polymer.NeonAnimatableBehavior,
+    Polymer.NeonAnimationRunnerBehaviorImpl
+  ];
 
 ;
 
@@ -9611,6 +9247,7 @@ CSS properties               | Action
        * The element that will receive a `max-height`/`width`. By default it is the same as `this`,
        * but it can be set to a child element. This is useful, for example, for implementing a
        * scrolling region inside the element.
+       * @type {!Element}
        */
       sizingTarget: {
         type: Object,
@@ -9635,6 +9272,7 @@ CSS properties               | Action
         value: false
       },
 
+      /** @type {?Object} */
       _fitInfo: {
         type: Object
       }
@@ -9659,6 +9297,26 @@ CSS properties               | Action
         fitHeight = this.fitInto.getBoundingClientRect().height;
       }
       return fitHeight;
+    },
+
+    get _fitLeft() {
+      var fitLeft;
+      if (this.fitInto === window) {
+        fitLeft = 0;
+      } else {
+        fitLeft = this.fitInto.getBoundingClientRect().left;
+      }
+      return fitLeft;
+    },
+
+    get _fitTop() {
+      var fitTop;
+      if (this.fitInto === window) {
+        fitTop = 0;
+      } else {
+        fitTop = this.fitInto.getBoundingClientRect().top;
+      }
+      return fitTop;
     },
 
     attached: function() {
@@ -9692,6 +9350,10 @@ CSS properties               | Action
       var target = window.getComputedStyle(this);
       var sizer = window.getComputedStyle(this.sizingTarget);
       this._fitInfo = {
+        inlineStyle: {
+          top: this.style.top || '',
+          left: this.style.left || ''
+        },
         positionedBy: {
           vertically: target.top !== 'auto' ? 'top' : (target.bottom !== 'auto' ?
             'bottom' : null),
@@ -9719,11 +9381,11 @@ CSS properties               | Action
     resetFit: function() {
       if (!this._fitInfo || !this._fitInfo.sizedBy.height) {
         this.sizingTarget.style.maxHeight = '';
-        this.style.top = '';
+        this.style.top = this._fitInfo ? this._fitInfo.inlineStyle.top : '';
       }
       if (!this._fitInfo || !this._fitInfo.sizedBy.width) {
         this.sizingTarget.style.maxWidth = '';
-        this.style.left = '';
+        this.style.left = this._fitInfo ? this._fitInfo.inlineStyle.left : '';
       }
       if (this._fitInfo) {
         this.style.position = this._fitInfo.positionedBy.css;
@@ -9786,12 +9448,12 @@ CSS properties               | Action
         this.style.position = 'fixed';
       }
       if (!this._fitInfo.positionedBy.vertically) {
-        var top = (this._fitHeight - this.offsetHeight) / 2;
+        var top = (this._fitHeight - this.offsetHeight) / 2 + this._fitTop;
         top -= this._fitInfo.margin.top;
         this.style.top = top + 'px';
       }
       if (!this._fitInfo.positionedBy.horizontally) {
-        var left = (this._fitWidth - this.offsetWidth) / 2;
+        var left = (this._fitWidth - this.offsetWidth) / 2 + this._fitLeft;
         left -= this._fitInfo.margin.left;
         this.style.left = left + 'px';
       }
@@ -9897,7 +9559,7 @@ CSS properties               | Action
 
 ;
 
-/*
+/**
 Use `Polymer.IronOverlayBehavior` to implement an element that can be hidden or shown, and displays
 on top of other content. It includes an optional backdrop, and can be used to implement a variety
 of UI controls including dialogs and drop downs. Multiple overlays may be displayed at once.
@@ -9942,7 +9604,8 @@ context. You should place this element as a child of `<body>` whenever possible.
       opened: {
         observer: '_openedChanged',
         type: Boolean,
-        value: false
+        value: false,
+        notify: true
       },
 
       /**
@@ -10017,6 +9680,17 @@ context. You should place this element as a child of `<body>` whenever possible.
       }
 
     },
+
+/**
+ * Fired after the `iron-overlay` opens.
+ * @event iron-overlay-opened
+ */
+
+/**
+ * Fired after the `iron-overlay` closes.
+ * @event iron-overlay-closed {{canceled: boolean}} detail -
+ *     canceled: True if the overlay was canceled.
+ */
 
     listeners: {
       'click': '_onClick',
@@ -10239,7 +9913,7 @@ context. You should place this element as a child of `<body>` whenever possible.
       this.style.display = '';
     },
 
-    _finishPositioning: function(target) {
+    _finishPositioning: function() {
       this.style.display = 'none';
       this.style.transform = this.style.webkitTransform = '';
       // force layout to avoid application of transform
@@ -10299,21 +9973,11 @@ context. You should place this element as a child of `<body>` whenever possible.
   /** @polymerBehavior */
   Polymer.IronOverlayBehavior = [Polymer.IronFitBehavior, Polymer.IronResizableBehavior, Polymer.IronOverlayBehaviorImpl];
 
-/*
- * Fired after the `iron-overlay` opens.
- * @event iron-overlay-opened
- */
-
-/*
- * Fired after the `iron-overlay` closes.
- * @event iron-overlay-closed {{canceled: boolean}} detail -
- *     canceled: True if the overlay was canceled.
- */
 
 
 ;
 
-/*
+/**
 Use `Polymer.PaperDialogBehavior` and `paper-dialog-common.css` to implement a Material Design
 dialog.
 
@@ -10351,7 +10015,7 @@ Custom property | Description | Default
 ### Accessibility
 
 This element has `role="dialog"` by default. Depending on the context, it may be more appropriate
-to override this attribute with `role="alertdialog"`. The header (a `<h2>` element) will
+to override this attribute with `role="alertdialog"`.
 
 If `modal` is set, the element will set `aria-modal` and prevent the focus from exiting the element.
 It will also ensure that focus remains in the dialog.
@@ -10381,8 +10045,9 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
         value: false
       },
 
+      /** @type {?Node} */
       _lastFocusedElement: {
-        type: Node
+        type: Object
       },
 
       _boundOnFocus: {
@@ -10471,15 +10136,17 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
     _onDialogClick: function(event) {
       var target = event.target;
-      while (target !== this) {
-        if (target.hasAttribute('dialog-dismiss')) {
-          this._updateClosingReasonConfirmed(false);
-          this.close();
-          break;
-        } else if (target.hasAttribute('dialog-confirm')) {
-          this._updateClosingReasonConfirmed(true);
-          this.close();
-          break;
+      while (target && target !== this) {
+        if (target.hasAttribute) {
+          if (target.hasAttribute('dialog-dismiss')) {
+            this._updateClosingReasonConfirmed(false);
+            this.close();
+            break;
+          } else if (target.hasAttribute('dialog-confirm')) {
+            this._updateClosingReasonConfirmed(true);
+            this.close();
+            break;
+          }
         }
         target = target.parentNode;
       }
@@ -10534,17 +10201,478 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
 
 ;
-(function() {
 
-  Polymer({
-
-    is: 'paper-input-container',
+  /**
+   * Use `Polymer.IronValidatableBehavior` to implement an element that validates user input.
+   *
+   * ### Accessiblity
+   *
+   * Changing the `invalid` property, either manually or by calling `validate()` will update the
+   * `aria-invalid` attribute.
+   *
+   * @demo demo/index.html
+   * @polymerBehavior
+   */
+  Polymer.IronValidatableBehavior = {
 
     properties: {
 
       /**
-       * Set to true to disable the floating label. The label disappears when the input value is
-       * not null.
+       * Namespace for this validator.
+       */
+      validatorType: {
+        type: String,
+        value: 'validator'
+      },
+
+      /**
+       * Name of the validator to use.
+       */
+      validator: {
+        type: String
+      },
+
+      /**
+       * True if the last call to `validate` is invalid.
+       */
+      invalid: {
+        notify: true,
+        reflectToAttribute: true,
+        type: Boolean,
+        value: false
+      },
+
+      _validatorMeta: {
+        type: Object
+      }
+
+    },
+
+    observers: [
+      '_invalidChanged(invalid)'
+    ],
+
+    get _validator() {
+      return this._validatorMeta && this._validatorMeta.byKey(this.validator);
+    },
+
+    ready: function() {
+      this._validatorMeta = new Polymer.IronMeta({type: this.validatorType});
+    },
+
+    _invalidChanged: function() {
+      if (this.invalid) {
+        this.setAttribute('aria-invalid', 'true');
+      } else {
+        this.removeAttribute('aria-invalid');
+      }
+    },
+
+    /**
+     * @return {boolean} True if the validator `validator` exists.
+     */
+    hasValidator: function() {
+      return this._validator != null;
+    },
+
+    /**
+     * @param {Object} values Passed to the validator's `validate()` function.
+     * @return {boolean} True if `values` is valid.
+     */
+    validate: function(values) {
+      var valid = this._validator && this._validator.validate(values);
+      this.invalid = !valid;
+      return valid;
+    }
+
+  };
+
+
+;
+
+/*
+`<iron-input>` adds two-way binding and custom validators using `Polymer.IronValidatorBehavior`
+to `<input>`.
+
+### Two-way binding
+
+By default you can only get notified of changes to an `input`'s `value` due to user input:
+
+    <input value="{{myValue::input}}">
+
+`iron-input` adds the `bind-value` property that mirrors the `value` property, and can be used
+for two-way data binding. `bind-value` will notify if it is changed either by user input or by script.
+
+    <input is="iron-input" bind-value="{{myValue}}">
+
+### Custom validators
+
+You can use custom validators that implement `Polymer.IronValidatorBehavior` with `<iron-input>`.
+
+    <input is="iron-input" validator="my-custom-validator">
+
+### Stopping invalid input
+
+It may be desirable to only allow users to enter certain characters. You can use the
+`prevent-invalid-input` and `allowed-pattern` attributes together to accomplish this. This feature
+is separate from validation, and `allowed-pattern` does not affect how the input is validated.
+
+    <!-- only allow characters that match [0-9] -->
+    <input is="iron-input" prevent-invaild-input allowed-pattern="[0-9]">
+
+@hero hero.svg
+@demo demo/index.html
+*/
+
+  Polymer({
+
+    is: 'iron-input',
+
+    extends: 'input',
+
+    behaviors: [
+      Polymer.IronValidatableBehavior
+    ],
+
+    properties: {
+
+      /**
+       * Use this property instead of `value` for two-way data binding.
+       */
+      bindValue: {
+        observer: '_bindValueChanged',
+        type: String
+      },
+
+      /**
+       * Set to true to prevent the user from entering invalid input. The new input characters are
+       * matched with `allowedPattern` if it is set, otherwise it will use the `pattern` attribute if
+       * set, or the `type` attribute (only supported for `type=number`).
+       */
+      preventInvalidInput: {
+        type: Boolean
+      },
+
+      /**
+       * Regular expression to match valid input characters.
+       */
+      allowedPattern: {
+        type: String
+      },
+
+      _previousValidInput: {
+        type: String,
+        value: ''
+      },
+
+      _patternAlreadyChecked: {
+        type: Boolean,
+        value: false
+      }
+
+    },
+
+    listeners: {
+      'input': '_onInput',
+      'keypress': '_onKeypress'
+    },
+
+    get _patternRegExp() {
+      var pattern;
+      if (this.allowedPattern) {
+        pattern = new RegExp(this.allowedPattern);
+      } else if (this.pattern) {
+        pattern = new RegExp(this.pattern);
+      } else {
+        switch (this.type) {
+          case 'number':
+            pattern = /[0-9.,e-]/;
+            break;
+        }
+      }
+      return pattern;
+    },
+
+    ready: function() {
+      this.bindValue = this.value;
+    },
+
+    _bindValueChanged: function() {
+      if (this.value !== this.bindValue) {
+        this.value = !this.bindValue ? '' : this.bindValue;
+      }
+      // manually notify because we don't want to notify until after setting value
+      this.fire('bind-value-changed', {value: this.bindValue});
+    },
+
+    _onInput: function() {
+      // Need to validate each of the characters pasted if they haven't
+      // been validated inside `_onKeypress` already.
+      if (this.preventInvalidInput && !this._patternAlreadyChecked) {
+        var valid = this._checkPatternValidity();
+        if (!valid) {
+          this.value = this._previousValidInput;
+        }
+      }
+
+      this.bindValue = this.value;
+      this._previousValidInput = this.value;
+      this._patternAlreadyChecked = false;
+    },
+
+    _isPrintable: function(event) {
+      // What a control/printable character is varies wildly based on the browser.
+      // - most control characters (arrows, backspace) do not send a `keypress` event
+      //   in Chrome, but the *do* on Firefox
+      // - in Firefox, when they do send a `keypress` event, control chars have
+      //   a charCode = 0, keyCode = xx (for ex. 40 for down arrow)
+      // - printable characters always send a keypress event.
+      // - in Firefox, printable chars always have a keyCode = 0. In Chrome, the keyCode
+      //   always matches the charCode.
+      // None of this makes any sense.
+
+      var nonPrintable =
+        (event.keyCode == 8)   ||  // backspace
+        (event.keyCode == 19)  ||  // pause
+        (event.keyCode == 20)  ||  // caps lock
+        (event.keyCode == 27)  ||  // escape
+        (event.keyCode == 45)  ||  // insert
+        (event.keyCode == 46)  ||  // delete
+        (event.keyCode == 144) ||  // num lock
+        (event.keyCode == 145) ||  // scroll lock
+        (event.keyCode > 32 && event.keyCode < 41)   || // page up/down, end, home, arrows
+        (event.keyCode > 111 && event.keyCode < 124); // fn keys
+
+      return !(event.charCode == 0 && nonPrintable);
+    },
+
+    _onKeypress: function(event) {
+      if (!this.preventInvalidInput && this.type !== 'number') {
+        return;
+      }
+      var regexp = this._patternRegExp;
+      if (!regexp) {
+        return;
+      }
+
+      // Handle special keys and backspace
+      if (event.metaKey || event.ctrlKey || event.altKey)
+        return;
+
+      // Check the pattern either here or in `_onInput`, but not in both.
+      this._patternAlreadyChecked = true;
+
+      var thisChar = String.fromCharCode(event.charCode);
+      if (this._isPrintable(event) && !regexp.test(thisChar)) {
+        event.preventDefault();
+      }
+    },
+
+    _checkPatternValidity: function() {
+      var regexp = this._patternRegExp;
+      if (!regexp) {
+        return true;
+      }
+      for (var i = 0; i < this.value.length; i++) {
+        if (!regexp.test(this.value[i])) {
+          return false;
+        }
+      }
+      return true;
+    },
+
+    /**
+     * Returns true if `value` is valid. The validator provided in `validator` will be used first,
+     * then any constraints.
+     * @return {boolean} True if the value is valid.
+     */
+    validate: function() {
+      // Empty, non-required input is valid.
+      if (!this.required && this.value == '') {
+        this.invalid = false;
+        return true;
+      }
+
+      var valid;
+      if (this.hasValidator()) {
+        valid = Polymer.IronValidatableBehavior.validate.call(this, this.value);
+      } else {
+        this.invalid = !this.validity.valid;
+        valid = this.validity.valid;
+      }
+      this.fire('iron-input-validate');
+      return valid;
+    }
+
+  });
+
+  /*
+  The `iron-input-validate` event is fired whenever `validate()` is called.
+  @event iron-input-validate
+  */
+
+
+;
+
+  /** 
+  
+  @demo demo/index.html
+  @polymerBehavior 
+  
+  */
+  Polymer.IronFormElementBehavior = {
+
+    properties: {
+
+      /**
+       * The name of this element.
+       */
+      name: {
+        type: String
+      },
+
+      /**
+       * The value for this element.
+       */
+      value: {
+        notify: true,
+        type: String
+      },
+    },
+
+    attached: function() {
+      this.fire('iron-form-element-register');
+    }
+
+  };
+
+
+;
+
+  /**
+   * Use `Polymer.PaperInputBehavior` to implement inputs with `<paper-input-container>`. This
+   * behavior is implemented by `<paper-input>`. It exposes a number of properties from
+   * `<paper-input-container>` and `<input is="iron-input">` and they should be bound in your
+   * template.
+   *
+   * The input element can be accessed by the `inputElement` property if you need to access
+   * properties or methods that are not exposed.
+   * @polymerBehavior Polymer.PaperInputBehavior
+   */
+  Polymer.PaperInputBehaviorImpl = {
+
+    properties: {
+
+      /**
+       * The label for this input. Bind this to `<paper-input-container>`'s `label` property.
+       */
+      label: {
+        type: String
+      },
+
+      /**
+       * The value for this input. Bind this to the `<input is="iron-input">`'s `bindValue`
+       * property, or the value property of your input that is `notify:true`.
+       */
+      value: {
+        notify: true,
+        type: String
+      },
+
+      /**
+       * Set to true to disable this input. Bind this to both the `<paper-input-container>`'s
+       * and the input's `disabled` property.
+       */
+      disabled: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * Returns true if the value is invalid. Bind this to both the `<paper-input-container>`'s
+       * and the input's `invalid` property.
+       */
+      invalid: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * Set to true to prevent the user from entering invalid input. Bind this to the
+       * `<input is="iron-input">`'s `preventInvalidInput` property.
+       */
+      preventInvalidInput: {
+        type: Boolean
+      },
+
+      /**
+       * Set this to specify the pattern allowed by `preventInvalidInput`. Bind this to the
+       * `<input is="iron-input">`'s `allowedPattern` property.
+       */
+      allowedPattern: {
+        type: String
+      },
+
+      /**
+       * The type of the input. The supported types are `text`, `number` and `password`. Bind this
+       * to the `<input is="iron-input">`'s `type` property.
+       */
+      type: {
+        type: String
+      },
+
+      /**
+       * The datalist of the input (if any). This should match the id of an existing <datalist>. Bind this
+       * to the `<input is="iron-input">`'s `list` property.
+       */
+      list: {
+        type: String
+      },
+
+      /**
+       * A pattern to validate the `input` with. Bind this to the `<input is="iron-input">`'s
+       * `pattern` property.
+       */
+      pattern: {
+        type: String
+      },
+
+      /**
+       * Set to true to mark the input as required. Bind this to the `<input is="iron-input">`'s
+       * `required` property.
+       */
+      required: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * The maximum length of the input value. Bind this to the `<input is="iron-input">`'s
+       * `maxlength` property.
+       */
+      maxlength: {
+        type: Number
+      },
+
+      /**
+       * The error message to display when the input is invalid. Bind this to the
+       * `<paper-input-error>`'s content, if using.
+       */
+      errorMessage: {
+        type: String
+      },
+
+      /**
+       * Set to true to show a character counter.
+       */
+      charCounter: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * Set to true to disable the floating label. Bind this to the `<paper-input-container>`'s
+       * `noLabelFloat` property.
        */
       noLabelFloat: {
         type: Boolean,
@@ -10552,7 +10680,8 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       },
 
       /**
-       * Set to true to always float the floating label.
+       * Set to true to always float the label. Bind this to the `<paper-input-container>`'s
+       * `alwaysFloatLabel` property.
        */
       alwaysFloatLabel: {
         type: Boolean,
@@ -10560,15 +10689,8 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       },
 
       /**
-       * The attribute to listen for value changes on.
-       */
-      attrForValue: {
-        type: String,
-        value: 'bind-value'
-      },
-
-      /**
-       * Set to true to auto-validate the input value when it changes.
+       * Set to true to auto-validate the input value. Bind this to the `<paper-input-container>`'s
+       * `autoValidate` property.
        */
       autoValidate: {
         type: Boolean,
@@ -10576,310 +10698,483 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       },
 
       /**
-       * True if the input is invalid. This property is set automatically when the input value
-       * changes if auto-validating, or when the `iron-input-valid` event is heard from a child.
+       * Name of the validator to use. Bind this to the `<input is="iron-input">`'s `validator`
+       * property.
        */
-      invalid: {
-        observer: '_invalidChanged',
+      validator: {
+        type: String
+      },
+
+      // HTMLInputElement attributes for binding if needed
+
+      /**
+       * Bind this to the `<input is="iron-input">`'s `autocomplete` property.
+       */
+      autocomplete: {
+        type: String,
+        value: 'off'
+      },
+
+      /**
+       * Bind this to the `<input is="iron-input">`'s `autofocus` property.
+       */
+      autofocus: {
+        type: Boolean
+      },
+
+      /**
+       * Bind this to the `<input is="iron-input">`'s `inputmode` property.
+       */
+      inputmode: {
+        type: String
+      },
+
+      /**
+       * Bind this to the `<input is="iron-input">`'s `minlength` property.
+       */
+      minlength: {
+        type: Number
+      },
+
+      /**
+       * Bind this to the `<input is="iron-input">`'s `name` property.
+       */
+      name: {
+        type: String
+      },
+
+      /**
+       * A placeholder string in addition to the label. If this is set, the label will always float.
+       */
+      placeholder: {
+        type: String,
+        // need to set a default so _computeAlwaysFloatLabel is run
+        value: ''
+      },
+
+      /**
+       * Bind this to the `<input is="iron-input">`'s `readonly` property.
+       */
+      readonly: {
         type: Boolean,
         value: false
       },
 
       /**
-       * True if the input has focus.
+       * Bind this to the `<input is="iron-input">`'s `size` property.
        */
-      focused: {
-        readOnly: true,
-        type: Boolean,
-        value: false
+      size: {
+        type: Number
       },
 
-      _addons: {
-        type: Array,
-        value: function() {
-          return [];
-        }
-      },
-
-      _inputHasContent: {
-        type: Boolean,
-        value: false
-      },
-
-      _inputSelector: {
+      _ariaDescribedBy: {
         type: String,
-        value: 'input,textarea,.paper-input-input'
-      },
-
-      _boundOnFocus: {
-        type: Function,
-        value: function() {
-          return this._onFocus.bind(this);
-        }
-      },
-
-      _boundOnBlur: {
-        type: Function,
-        value: function() {
-          return this._onBlur.bind(this);
-        }
-      },
-
-      _boundOnInput: {
-        type: Function,
-        value: function() {
-          this._onInput.bind(this)
-        }
-      },
-
-      _boundValueChanged: {
-        type: Function,
-        value: function() {
-          return this._onValueChanged.bind(this);
-        }
+        value: ''
       }
 
     },
 
     listeners: {
-      'addon-attached': '_onAddonAttached',
-      'iron-input-validate': '_onIronInputValidate'
+      'addon-attached': '_onAddonAttached'
     },
 
-    get _valueChangedEvent() {
-      return this.attrForValue + '-changed';
-    },
-
-    get _propertyForValue() {
-      return Polymer.CaseMap.dashToCamelCase(this.attrForValue);
-    },
-
-    get _inputElement() {
-      return Polymer.dom(this).querySelector(this._inputSelector);
-    },
-
-    ready: function() {
-      this.addEventListener('focus', this._boundOnFocus, true);
-      this.addEventListener('blur', this._boundOnBlur, true);
-      if (this.attrForValue) {
-        this._inputElement.addEventListener(this._valueChangedEvent, this._boundValueChanged);
-      } else {
-        this.addEventListener('input', this._onInput);
-      }
+    /**
+     * Returns a reference to the input element.
+     */
+    get inputElement() {
+      return this.$.input;
     },
 
     attached: function() {
-      this._handleValue(this._inputElement);
+      this._updateAriaLabelledBy();
+    },
+
+    _appendStringWithSpace: function(str, more) {
+      if (str) {
+        str = str + ' ' + more;
+      } else {
+        str = more;
+      }
+      return str;
     },
 
     _onAddonAttached: function(event) {
-      this._addons.push(event.target);
-      this._handleValue(this._inputElement);
-    },
-
-    _onFocus: function() {
-      this._setFocused(true);
-    },
-
-    _onBlur: function() {
-      this._setFocused(false);
-    },
-
-    _onInput: function(event) {
-      this._handleValue(event.target);
-    },
-
-    _onValueChanged: function(event) {
-      this._handleValue(event.target);
-    },
-
-    _handleValue: function(inputElement) {
-      var value = inputElement[this._propertyForValue] || inputElement.value;
-
-      if (this.autoValidate) {
-        var valid;
-        if (inputElement.validate) {
-          valid = inputElement.validate(value);
-        } else {
-          valid = inputElement.checkValidity();
-        }
-        this.invalid = !valid;
-      }
-
-      // type="number" hack needed because this.value is empty until it's valid
-      if (value || (inputElement.type === 'number' && !inputElement.checkValidity())) {
-        this._inputHasContent = true;
+      var target = event.path ? event.path[0] : event.target;
+      if (target.id) {
+        this._ariaDescribedBy = this._appendStringWithSpace(this._ariaDescribedBy, target.id);
       } else {
-        this._inputHasContent = false;
-      }
-
-      this.updateAddons({
-        inputElement: inputElement,
-        value: value,
-        invalid: this.invalid
-      });
-    },
-
-    _onIronInputValidate: function(event) {
-      this.invalid = this._inputElement.invalid;
-    },
-
-    _invalidChanged: function() {
-      if (this._addons) {
-        this.updateAddons({invalid: this.invalid});
+        var id = 'paper-input-add-on-' + Math.floor((Math.random() * 100000));
+        target.id = id;
+        this._ariaDescribedBy = this._appendStringWithSpace(this._ariaDescribedBy, id);
       }
     },
 
     /**
-     * Call this to update the state of add-ons.
-     * @param {Object} state Add-on state.
+     * Validates the input element and sets an error style if needed.
      */
-    updateAddons: function(state) {
-      for (var addon, index = 0; addon = this._addons[index]; index++) {
-        addon.update(state);
+     validate: function() {
+       return this.inputElement.validate();
+     },
+
+    /**
+     * Restores the cursor to its original position after updating the value.
+     * @param {string} newValue The value that should be saved.
+     */
+    updateValueAndPreserveCaret: function(newValue) {
+      // Not all elements might have selection, and even if they have the
+      // right properties, accessing them might throw an exception (like for
+      // <input type=number>)
+      try {
+        var start = this.inputElement.selectionStart;
+        this.value = newValue;
+
+        // The cursor automatically jumps to the end after re-setting the value,
+        // so restore it to its original position.
+        this.inputElement.selectionStart = start;
+        this.inputElement.selectionEnd = start;
+      } catch (e) {
+        // Just set the value and give up on the caret.
+        this.value = newValue;
       }
     },
 
-    _computeInputContentClass: function(noLabelFloat, alwaysFloatLabel, focused, invalid, _inputHasContent) {
-      var cls = 'input-content';
-      if (!noLabelFloat) {
-        if (alwaysFloatLabel || _inputHasContent) {
-          cls += ' label-is-floating';
-          if (invalid) {
-            cls += ' is-invalid';
-          } else if (focused) {
-            cls += " label-is-highlighted";
-          }
-        }
+    _computeAlwaysFloatLabel: function(alwaysFloatLabel, placeholder) {
+      return placeholder || alwaysFloatLabel;
+    },
+
+    _updateAriaLabelledBy: function() {
+      var label = Polymer.dom(this.root).querySelector('label');
+      if (!label) {
+        this._ariaLabelledBy = '';
+        return;
+      }
+      var labelledBy;
+      if (label.id) {
+        labelledBy = label.id;
       } else {
-        if (_inputHasContent) {
-          cls += ' label-is-hidden';
-        }
+        labelledBy = 'paper-input-label-' + new Date().getUTCMilliseconds();
+        label.id = labelledBy;
       }
-      return cls;
-    },
-
-    _computeUnderlineClass: function(focused, invalid) {
-      var cls = 'underline';
-      if (invalid) {
-        cls += ' is-invalid';
-      } else if (focused) {
-        cls += ' is-highlighted'
-      }
-      return cls;
-    },
-
-    _computeAddOnContentClass: function(focused, invalid) {
-      var cls = 'add-on-content';
-      if (invalid) {
-        cls += ' is-invalid';
-      } else if (focused) {
-        cls += ' is-highlighted'
-      }
-      return cls;
+      this._ariaLabelledBy = labelledBy;
     }
 
-  });
+  };
 
-})();
+  Polymer.PaperInputBehavior = [Polymer.IronControlState, Polymer.PaperInputBehaviorImpl];
+
 
 ;
 
-(function() {
-
-  Polymer({
-
-    is: 'paper-input-error',
-
-    behaviors: [
-      Polymer.PaperInputAddonBehavior
-    ],
+  /**
+   * Use `Polymer.PaperInputAddonBehavior` to implement an add-on for `<paper-input-container>`. A
+   * add-on appears below the input, and may display information based on the input value and
+   * validity such as a character counter or an error message.
+   * @polymerBehavior
+   */
+  Polymer.PaperInputAddonBehavior = {
 
     hostAttributes: {
-      'role': 'alert'
+      'add-on': ''
     },
 
-    properties: {
-
-      /**
-       * True if the error is showing.
-       */
-      invalid: {
-        readOnly: true,
-        reflectToAttribute: true,
-        type: Boolean
-      }
-
+    attached: function() {
+      this.fire('addon-attached');
     },
 
+    /**
+     * The function called by `<paper-input-container>` when the input value or validity changes.
+     * @param {{
+     *   inputElement: (Node|undefined),
+     *   value: (string|undefined),
+     *   invalid: (boolean|undefined)
+     * }} state All properties are optional -
+     *     inputElement: The input element.
+     *     value: The input value.
+     *     invalid: True if the input value is invalid.
+     */
     update: function(state) {
-      this._setInvalid(state.invalid);
     }
 
-  })
-
-})();
+  };
 
 
 ;
-
-(function() {
+  // Cache connetions to open database
+  var database = {};
 
   Polymer({
-
-    is: 'paper-input-char-counter',
-
-    behaviors: [
-      Polymer.PaperInputAddonBehavior
-    ],
-
+    is: 'idb-node',
     properties: {
-
-      _charCounterStr: {
+      databaseName: {
         type: String,
-        value: '0'
+        value: ''
+      },
+      version: Number,
+      objectStore: {
+        type: Object,
+        value: ''
+      },
+      keyPath: {
+        type: String,
+        value: ''
+      },
+      db: {
+        type: Object,
+        value: {}
+      },
+      dbReady: {
+        type: Boolean,
+        value: false
+      },
+      metaName: {
+        type: String,
+        value: ''
       }
-
     },
+    detached: function() {
+      this.db.close();
+    },
+    ready: function() {
+      var that = this;
 
-    update: function(state) {
-      if (!state.inputElement) {
+      // Is indexedDB available?
+      if (!window.indexedDB) {
+        console.error('idb not available on this browser');
         return;
       }
 
-      state.value = state.value || '';
-
-      // Account for the textarea's new lines.
-      var str = state.value.replace(/(\r\n|\n|\r)/g, '--').length;
-
-      if (state.inputElement.hasAttribute('maxlength')) {
-        str += '/' + state.inputElement.getAttribute('maxlength');
+      // Check if attributes are properly set
+      if (!this.databaseName || !this.version || !this['objectStore']) {
+        console.error('You need to set `database-name`, `version` and `object-store` to enable `idb-node` element.');
+        return;
       }
-      this._charCounterStr = str;
+
+      // Register to iron-meta
+      this.metaName = this.databaseName + '-' + this.objectStore;
+      new Polymer.IronMeta({type: 'idb', key: this.metaName, value: this});
+
+      // Open the database
+      this.openDatabase().then(function() {
+        that.dbReady = true;
+        that.fire('idb-ready');
+      }, function() {
+        that.fire('idb-error');
+      });
+    },
+    /**
+     * Use database with given name if already opened. Otherwise, open one.
+     */
+    openDatabase: function() {
+      var that = this;
+      return new Promise(function(resolve, reject) {
+        // If the database is already open, use it
+        if (database[that.databaseName]) {
+          that.db = database[that.databaseName];
+          console.log('idb already open');
+          resolve();
+        }
+
+        // Otherwise, open it
+        var req = window.indexedDB.open(that.databaseName, that.version);
+        req.onsuccess = function(e) {
+          that.db = e.target.result;
+          database[that.databaseName] = that.db;
+          resolve();
+        };
+        req.onblocked = function(e) {
+          error = e;
+          console.error(e);
+          reject();
+        };
+        req.onerror = function(e) {
+          error = e;
+          console.error(e);
+          reject();
+        };
+        req.onupgradeneeded = function(e) {
+          that.db = e.target.result;
+          database[that.databaseName] = that.db;
+          // TODO: Should we delete existing stores upon upgrade?
+          // Create object stores if they don't exist
+          that.createObjectStore();
+        };
+      });
+    },
+    /**
+     * Deletes database with given name
+     */
+    deleteDatabase: function() {
+      // Delete the database
+      var req = window.indexedDB.deleteDatabase(this.databaseName);
+      this.db = undefined;
+      delete database[this.databaseName];
+    },
+    /**
+     * Creates an object store if it doesn't exist
+     */
+    createObjectStore: function() {
+      // Does the object store exist?
+      if (!this.db.objectStoreNames.contains(this['objectStore'])) {
+        var keyPath = null;
+        // If `key-path` is configured, set it as a key
+        if (this['keyPath']) {
+          keyPath = {keyPath: this['keyPath']};
+        }
+        // Create the object store
+        this.db.createObjectStore(this['objectStore'], keyPath);
+      }
+    },
+    /**
+     * Deletes an object store if exists
+     */
+    deleteObjectStore: function() {
+      // Does the object store exist?
+      if (this.db.objectStoreNames.contains(this['objectStore'])) {
+        // Delete the object store
+        this.db.deleteObjectStore(this['objectStore']);
+      }
+    },
+    /**
+     * Returns promise that contains IndexedDB transaction
+     * @return {Promise} Promise with idb transaction
+     */
+    transaction: function() {
+      var that = this;
+      return new Promise(function(resolve, reject) {
+        // Return a transaction
+        resolve(that.db.transaction(that['objectStore'], 'readwrite'));
+      });
+    },
+    /**
+     * Puts a new object into the store
+     * @param  {Object} item An item to put into the store
+     * @return {Promise}     Promise with a result
+     */
+    put: function(item) {
+      var that = this;
+      return new Promise(function(resolve, reject) {
+        that.transaction().then(function(trans) {
+          // Put an object
+          var req = trans.objectStore(that['objectStore']).put(item);
+          req.onsuccess = function(e) {
+            resolve(e.target.result);
+          }
+          req.onerror = reject;
+          trans.onerror = reject;
+        });
+      });
+    },
+    /**
+     * Puts an array of objects into the store
+     * @param {Array<Object>} items An array of objects to put into the store
+     */
+    putBulk: function(items) {
+      var that = this;
+      return new Promise(function(resolve, reject) {
+        that.transaction().then(function(trans) {
+          var store = trans.objectStore(that['objectStore']);
+          // Put objects in loop
+          for (var i = 0; i < items.length; i++) {
+            store.put(items[i]);
+          }
+          trans.oncomplete = resolve;
+          trans.onerror = reject;
+        });
+      });
+    },
+    /**
+     * Gets an item that matches given key
+     * @param  {String} key A key to store to search for
+     * @return {Promise}    Promise with a result
+     */
+    get: function(key) {
+      var that = this;
+      return new Promise(function(resolve, reject) {
+        that.transaction().then(function(trans) {
+          // Get an object with a key
+          var req = trans.objectStore(that['objectStore']).get(key);
+          req.onsuccess = function(e) {
+            resolve(e.target.result);
+          }
+          req.onerror = reject;
+          trans.onerror = reject;
+        })
+      });
+    },
+    /**
+     * Deletes an item that mactches given key
+     * @param  {String} key A key to database to delete
+     * @return {Promise}    Promise with a result
+     */
+    delete: function(key) {
+      var that = this;
+      return new Promise(function(resolve, reject) {
+        that.transaction().then(function(trans) {
+          // Delete an object with a key
+          var req = trans.objectStore(that['objectStore']).delete(key);
+          req.onsuccess = function(e) {
+            resolve(e.target.result);
+          }
+          req.onerror = reject;
+          trans.onerror = reject;
+        });
+      })
+    },
+    /**
+     * Gets all items in the store
+     */
+    getAll: function() {
+      var that = this;
+      return new Promise(function(resolve, reject) {
+        that.transaction().then(function(trans) {
+          var table = [];
+          // Open a cursor
+          var req = trans.objectStore(that['objectStore']).openCursor();
+          req.onsuccess = function(e) {
+            // Loop through cursor to obtain results
+            var cursor = e.target.result;
+            if (cursor) {
+              table.push(cursor.value);
+              cursor.continue();
+            }
+          };
+          req.onerror = reject;
+          trans.oncomplete = function(e) {
+            // Finally resolve with all results
+            resolve(table);
+          };
+          trans.onerror = reject;
+        });
+      });
+    },
+    /**
+     * Delets all items in the store
+     */
+    deleteAll: function() {
+      var that = this;
+      return new Promise(function(resolve, reject) {
+        that.transaction().then(function(trans) {
+          var store = trans.objectStore(that['objectStore']);
+          // Open a cursor
+          var req = store.openCursor();
+          req.onsuccess = function(e) {
+            // Loop through cursor to delete objects
+            var cursor = e.target.result;
+            if (cursor) {
+              store.delete(cursor.key);
+              cursor.continue();
+            }
+          };
+          req.onerror = reject;
+          trans.oncomplete = function(e) {
+            // Finally resolve with all results
+            resolve(e.target.result);
+          }
+          trans.onerror = reject;
+        })
+      });
     }
-
   });
-
-})();
-
-
-;
-
-(function() {
-
-  Polymer({
-
-    is: 'paper-input',
-
-    behaviors: [
-      Polymer.PaperInputBehavior,
-      Polymer.IronFormElementBehavior
-    ]
-
-  })
-
-})();
-
 
 ;
 
@@ -10891,6 +11186,18 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       Polymer.IronResizableBehavior,
       Polymer.IronSelectableBehavior
     ],
+
+    properties: {
+
+      // as the selected page is the only one visible, activateEvent
+      // is both non-sensical and problematic; e.g. in cases where a user
+      // handler attempts to change the page and the activateEvent
+      // handler immediately changes it back
+      activateEvent: {
+        value: null
+      }
+
+    },
 
     observers: [
       '_selectedPageChanged(selected)'
@@ -11226,6 +11533,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
         this.wave.style.transform = 'scale3d(' + scale + ',' + scale + ',1)';
       },
 
+      /** @param {Event=} event */
       downAction: function(event) {
         var xCenter = this.containerMetrics.width / 2;
         var yCenter = this.containerMetrics.height / 2;
@@ -11270,6 +11578,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
         this.waveContainer.style.height = this.containerMetrics.size + 'px';
       },
 
+      /** @param {Event=} event */
       upAction: function(event) {
         if (!this.isMouseDown) {
           return;
@@ -11393,11 +11702,9 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
         var ownerRoot = Polymer.dom(this).getOwnerRoot();
         var target;
 
-        if (ownerRoot) {
+        if (this.parentNode.nodeType == 11) { // DOCUMENT_FRAGMENT_NODE
           target = ownerRoot.host;
-        }
-
-        if (!target) {
+        } else {
           target = this.parentNode;
         }
 
@@ -11411,8 +11718,8 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       },
 
       attached: function() {
-        this._listen(this.target, 'up', this.upAction.bind(this));
-        this._listen(this.target, 'down', this.downAction.bind(this));
+        this.listen(this.target, 'up', 'upAction');
+        this.listen(this.target, 'down', 'downAction');
 
         if (!this.target.hasAttribute('noink')) {
           this.keyEventTarget = this.target;
@@ -11438,6 +11745,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
         }, 1);
       },
 
+      /** @param {Event=} event */
       downAction: function(event) {
         if (this.holdDown && this.ripples.length > 0) {
           return;
@@ -11452,6 +11760,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
         }
       },
 
+      /** @param {Event=} event */
       upAction: function(event) {
         if (this.holdDown) {
           return;
@@ -11550,8 +11859,12 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
   Polymer({
     is: 'paper-icon-button',
 
+    hostAttributes: {
+      role: 'button',
+      tabindex: '0'
+    },
+
     behaviors: [
-      Polymer.PaperButtonBehavior,
       Polymer.PaperInkyFocusBehavior
     ],
 
@@ -11571,9 +11884,277 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
        */
       icon: {
         type: String
+      },
+
+      /**
+       * Specifies the alternate text for the button, for accessibility.
+       */
+      alt: {
+        type: String,
+        observer: "_altChanged"
+      }
+    },
+
+    _altChanged: function(newValue, oldValue) {
+      var label = this.getAttribute('aria-label');
+
+      // Don't stomp over a user-set aria-label.
+      if (!label || oldValue == label) {
+        this.setAttribute('aria-label', newValue);
       }
     }
   });
+
+;
+
+  (function() {
+
+    'use strict';
+
+    var SHADOW_WHEN_SCROLLING = 1;
+    var SHADOW_ALWAYS = 2;
+
+
+    var MODE_CONFIGS = {
+
+      outerScroll: {
+        scroll: true
+      },
+
+      shadowMode: {
+        standard: SHADOW_ALWAYS,
+        waterfall: SHADOW_WHEN_SCROLLING,
+        'waterfall-tall': SHADOW_WHEN_SCROLLING
+      },
+
+      tallMode: {
+        'waterfall-tall': true
+      }
+    };
+
+    Polymer({
+
+      is: 'paper-header-panel',
+
+      /**
+       * Fired when the content has been scrolled.  `event.detail.target` returns
+       * the scrollable element which you can use to access scroll info such as
+       * `scrollTop`.
+       *
+       *     <paper-header-panel on-content-scroll="{{scrollHandler}}">
+       *       ...
+       *     </paper-header-panel>
+       *
+       *
+       *     scrollHandler: function(event) {
+       *       var scroller = event.detail.target;
+       *       console.log(scroller.scrollTop);
+       *     }
+       *
+       * @event content-scroll
+       */
+
+      properties: {
+
+        /**
+         * Controls header and scrolling behavior. Options are
+         * `standard`, `seamed`, `waterfall`, `waterfall-tall`, `scroll` and
+         * `cover`. Default is `standard`.
+         *
+         * `standard`: The header is a step above the panel. The header will consume the
+         * panel at the point of entry, preventing it from passing through to the
+         * opposite side.
+         *
+         * `seamed`: The header is presented as seamed with the panel.
+         *
+         * `waterfall`: Similar to standard mode, but header is initially presented as
+         * seamed with panel, but then separates to form the step.
+         *
+         * `waterfall-tall`: The header is initially taller (`tall` class is added to
+         * the header).  As the user scrolls, the header separates (forming an edge)
+         * while condensing (`tall` class is removed from the header).
+         *
+         * `scroll`: The header keeps its seam with the panel, and is pushed off screen.
+         *
+         * `cover`: The panel covers the whole `paper-header-panel` including the
+         * header. This allows user to style the panel in such a way that the panel is
+         * partially covering the header.
+         *
+         *     <paper-header-panel mode="cover">
+         *       <paper-toolbar class="tall">
+         *         <core-icon-button icon="menu"></core-icon-button>
+         *       </paper-toolbar>
+         *       <div class="content"></div>
+         *     </paper-header-panel>
+         */
+        mode: {
+          type: String,
+          value: 'standard',
+          observer: '_modeChanged',
+          reflectToAttribute: true
+        },
+
+        /**
+         * If true, the drop-shadow is always shown no matter what mode is set to.
+         */
+        shadow: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * The class used in waterfall-tall mode.  Change this if the header
+         * accepts a different class for toggling height, e.g. "medium-tall"
+         */
+        tallClass: {
+          type: String,
+          value: 'tall'
+        },
+
+        /**
+         * If true, the scroller is at the top
+         */
+        atTop: {
+          type: Boolean,
+          value: true,
+          readOnly: true
+        }
+      },
+
+      observers: [
+        '_computeDropShadowHidden(atTop, mode, shadow)'
+      ],
+
+      ready: function() {
+        this.scrollHandler = this._scroll.bind(this);
+        this._addListener();
+
+        // Run `scroll` logic once to initialze class names, etc.
+        this._keepScrollingState();
+      },
+
+      detached: function() {
+        this._removeListener();
+      },
+
+      /**
+       * Returns the header element
+       *
+       * @property header
+       * @type Object
+       */
+      get header() {
+        return Polymer.dom(this.$.headerContent).getDistributedNodes()[0];
+      },
+
+      /**
+       * Returns the scrollable element.
+       *
+       * @property scroller
+       * @type Object
+       */
+      get scroller() {
+        return this._getScrollerForMode(this.mode);
+      },
+
+      /**
+       * Returns true if the scroller has a visible shadow.
+       *
+       * @property visibleShadow
+       * @type Boolean
+       */
+      get visibleShadow() {
+        return this.header.classList.contains('has-shadow');
+      },
+
+      _computeDropShadowHidden: function(atTop, mode, shadow) {
+
+        var shadowMode = MODE_CONFIGS.shadowMode[mode];
+
+        if (this.shadow) {
+          this.toggleClass('has-shadow', true, this.header);
+
+        } else if (shadowMode === SHADOW_ALWAYS) {
+          this.toggleClass('has-shadow', true, this.header);
+
+        } else if (shadowMode === SHADOW_WHEN_SCROLLING && !atTop) {
+          this.toggleClass('has-shadow', true, this.header);
+
+        } else {
+          this.toggleClass('has-shadow', false, this.header);
+
+        }
+      },
+
+      _computeMainContainerClass: function(mode) {
+        // TODO:  It will be useful to have a utility for classes
+        // e.g. Polymer.Utils.classes({ foo: true });
+
+        var classes = {};
+
+        classes['flex'] = mode !== 'cover';
+
+        return Object.keys(classes).filter(
+          function(className) {
+            return classes[className];
+          }).join(' ');
+      },
+
+      _addListener: function() {
+        this.scroller.addEventListener('scroll', this.scrollHandler, false);
+      },
+
+      _removeListener: function() {
+        this.scroller.removeEventListener('scroll', this.scrollHandler);
+      },
+
+      _modeChanged: function(newMode, oldMode) {
+        var configs = MODE_CONFIGS;
+        var header = this.header;
+        var animateDuration = 200;
+
+        if (header) {
+          // in tallMode it may add tallClass to the header; so do the cleanup
+          // when mode is changed from tallMode to not tallMode
+          if (configs.tallMode[oldMode] && !configs.tallMode[newMode]) {
+            header.classList.remove(this.tallClass);
+            this.async(function() {
+              header.classList.remove('animate');
+            }, animateDuration);
+          } else {
+            header.classList.toggle('animate', configs.tallMode[newMode]);
+          }
+        }
+        this._keepScrollingState();
+      },
+
+      _keepScrollingState: function () {
+        var main = this.scroller;
+        var header = this.header;
+
+        this._setAtTop(main.scrollTop === 0);
+
+        if (header && MODE_CONFIGS.tallMode[this.mode]) {
+          this.toggleClass(this.tallClass, this.atTop ||
+              header.classList.contains(this.tallClass) &&
+              main.scrollHeight < this.offsetHeight, header);
+        }
+      },
+
+      _scroll: function(e) {
+        this._keepScrollingState();
+        this.fire('content-scroll', {target: this.scroller}, {bubbles: false});
+      },
+
+      _getScrollerForMode: function(mode) {
+        return MODE_CONFIGS.outerScroll[mode] ?
+            this : this.$.mainContainer;
+      }
+
+    });
+
+  })();
+
 
 ;
 
@@ -12411,8 +12992,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
     hostAttributes: {
       role: 'group',
-      'aria-expanded': 'false',
-      tabindex: 0
+      'aria-expanded': 'false'
     },
 
     listeners: {
@@ -12495,356 +13075,9 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
 
 ;
-  // Cache connetions to open database
-  var database = {};
-
-  Polymer({
-    is: 'idb-node',
-    properties: {
-      database: {
-        type: String,
-        value: ''
-      },
-      version: Number,
-      objectStore: {
-        type: Object,
-        value: ''
-      },
-      keyPath: {
-        type: String,
-        value: ''
-      },
-      db: Object,
-      dbReady: Boolean
-    },
-    detached: function() {
-      this.db.close();
-    },
-    ready: function() {
-      var that = this;
-
-      // Is indexedDB available?
-      if (!window.indexedDB) {
-        console.error('idb not available on this browser');
-        return;
-      }
-
-      // Check if attributes are properly set
-      if (!this.database || !this.version || !this['objectStore']) {
-        console.error('You need to set `database`, `version` and `object-store` to enable `idb-node` element.');
-        return;
-      }
-
-      // Open the database
-      this.openDatabase().then(function() {
-        that.dbReady = true;
-        that.fire('idb-ready');
-      }, function() {
-        that.fire('idb-error');
-      });
-    },
-    /**
-     * Use database with given name if already opened. Otherwise, open one.
-     */
-    openDatabase: function() {
-      var that = this;
-      return new Promise(function(resolve, reject) {
-        // If the database is already open, use it
-        if (database[that.database]) {
-          that.db = database[that.database];
-          console.log('idb already open');
-          resolve();
-        }
-
-        // Otherwise, open it
-        var req = window.indexedDB.open(that.database, that.version);
-        req.onsuccess = function(e) {
-          that.db = e.target.result;
-          database[that.database] = that.db;
-          resolve();
-        };
-        req.onblocked = function(e) {
-          error = e;
-          console.error(e);
-          reject();
-        };
-        req.onerror = function(e) {
-          error = e;
-          console.error(e);
-          reject();
-        };
-        req.onupgradeneeded = function(e) {
-          that.db = e.target.result;
-          database[that.database] = that.db;
-          // TODO: Should we delete existing stores upon upgrade?
-          // Create object stores if they don't exist
-          that.createObjectStore();
-        };
-      });
-    },
-    /**
-     * Deletes database with given name
-     */
-    deleteDatabase: function() {
-      // Delete the database
-      var req = window.indexedDB.deleteDatabase(this.database);
-      this.db = undefined;
-      delete database[this.database];
-    },
-    /**
-     * Creates an object store if it doesn't exist
-     */
-    createObjectStore: function() {
-      // Does the object store exist?
-      if (!this.db.objectStoreNames.contains(this['objectStore'])) {
-        var keyPath = null;
-        // If `key-path` is configured, set it as a key
-        if (this['keyPath']) {
-          keyPath = {keyPath: this['keyPath']};
-        }
-        // Create the object store
-        this.db.createObjectStore(this['objectStore'], keyPath);
-      }
-    },
-    /**
-     * Deletes an object store if exists
-     */
-    deleteObjectStore: function() {
-      // Does the object store exist?
-      if (this.db.objectStoreNames.contains(this['objectStore'])) {
-        // Delete the object store
-        this.db.deleteObjectStore(this['objectStore']);
-      }
-    },
-    /**
-     * Returns promise that contains IndexedDB transaction
-     * @return {Promise} Promise with idb transaction
-     */
-    transaction: function() {
-      var that = this;
-      return new Promise(function(resolve, reject) {
-        // Return a transaction
-        resolve(that.db.transaction(that['objectStore'], 'readwrite'));
-      });
-    },
-    /**
-     * Puts a new object into the store
-     * @param  {Object} item An item to put into the store
-     * @return {Promise}     Promise with a result
-     */
-    put: function(item) {
-      var that = this;
-      return new Promise(function(resolve, reject) {
-        that.transaction().then(function(trans) {
-          // Put an object
-          var req = trans.objectStore(that['objectStore']).put(item);
-          req.onsuccess = function(e) {
-            resolve(e.target.result);
-          }
-          req.onerror = reject;
-          trans.onerror = reject;
-        });
-      });
-    },
-    /**
-     * Puts an array of objects into the store
-     * @param {Array<Object>} items An array of objects to put into the store
-     */
-    putBulk: function(items) {
-      var that = this;
-      return new Promise(function(resolve, reject) {
-        that.transaction().then(function(trans) {
-          var store = trans.objectStore(that['objectStore']);
-          // Put objects in loop
-          for (var i = 0; i < items.length; i++) {
-            store.put(items[i]);
-          }
-          trans.oncomplete = resolve;
-          trans.onerror = reject;
-        });
-      });
-    },
-    /**
-     * Gets an item that matches given key
-     * @param  {String} key A key to store to search for
-     * @return {Promise}    Promise with a result
-     */
-    get: function(key) {
-      var that = this;
-      return new Promise(function(resolve, reject) {
-        that.transaction().then(function(trans) {
-          // Get an object with a key
-          var req = trans.objectStore(that['objectStore']).get(key);
-          req.onsuccess = function(e) {
-            resolve(e.target.result);
-          }
-          req.onerror = reject;
-          trans.onerror = reject;
-        })
-      });
-    },
-    /**
-     * Deletes an item that mactches given key
-     * @param  {String} key A key to database to delete
-     * @return {Promise}    Promise with a result
-     */
-    delete: function(key) {
-      var that = this;
-      return new Promise(function(resolve, reject) {
-        that.transaction().then(function(trans) {
-          // Delete an object with a key
-          var req = trans.objectStore(that['objectStore']).delete(key);
-          req.onsuccess = function(e) {
-            resolve(e.target.result);
-          }
-          req.onerror = reject;
-          trans.onerror = reject;
-        });
-      })
-    },
-    /**
-     * Gets all items in the store
-     */
-    getAll: function() {
-      var that = this;
-      return new Promise(function(resolve, reject) {
-        that.transaction().then(function(trans) {
-          var table = [];
-          // Open a cursor
-          var req = trans.objectStore(that['objectStore']).openCursor();
-          req.onsuccess = function(e) {
-            // Loop through cursor to obtain results
-            var cursor = e.target.result;
-            if (cursor) {
-              table.push(cursor.value);
-              cursor.continue();
-            }
-          };
-          req.onerror = reject;
-          trans.oncomplete = function(e) {
-            // Finally resolve with all results
-            resolve(table);
-          };
-          trans.onerror = reject;
-        });
-      });
-    },
-    /**
-     * Delets all items in the store
-     */
-    deleteAll: function() {
-      var that = this;
-      return new Promise(function(resolve, reject) {
-        that.transaction().then(function(trans) {
-          var store = trans.objectStore(that['objectStore']);
-          // Open a cursor
-          var req = store.openCursor();
-          req.onsuccess = function(e) {
-            // Loop through cursor to delete objects
-            var cursor = e.target.result;
-            if (cursor) {
-              store.delete(cursor.key);
-              cursor.continue();
-            }
-          };
-          req.onerror = reject;
-          trans.oncomplete = function(e) {
-            // Finally resolve with all results
-            resolve(e.target.result);
-          }
-          trans.onerror = reject;
-        })
-      });
-    }
-  });
-
-;
   var DEFAULT_FAVICON_URL = '/img/favicon.png';
   var cache = {};
-  Polymer({
-    is: 'ptm-favicon',
-    properties: {
-      url: {
-        type: String,
-        value: '',
-        reflectToAttribute: true
-      },
-      favIconUrl: {
-        type: String,
-        value: '',
-        reflectToAttribute: true
-      }
-    },
-    validateFavIcon: function(src) {
-      return !src ? DEFAULT_FAVICON_URL : src;
-    },
-    readFavicon: function() {
-      var that = this;
-      var domain = this._extractDomain(this.url);
 
-      // If favicon is not specified
-      if (!this.favIconUrl) {
-        // But favicon url is already cached
-        if (cache[domain]) {
-          // Use the cache
-          this.favIconUrl = cache[domain].url || '';
-        // favicon url is not yet cached
-        } else {
-          // Look up on database
-          this.$.db.get(domain).then(function(result) {
-            // If there's an entry, use it and cache
-            // Otherwise, fallback to default icon
-            if (result) {
-              that.favIconUrl = result.url || '';
-              cache[domain] = {
-                domain: domain,
-                url: that.favIconUrl
-              }
-            }
-            if (result && result.url != that.favIconUrl) {
-              console.log('overwritten favicon');
-              that._saveFavIconUrl(domain, that.favIconUrl);
-            }
-          });
-        }
-      // If favicon is specified
-      } else {
-        // Check if cache exists
-        if (!cache[domain]) {
-          // Look up on database
-          this.$.db.get(domain).then(function(result) {
-            // If there's no entry or exists but differ
-            if (!result || result.url != that.favIconUrl) {
-              // Save the favicon
-              console.log('overwritten favicon');
-              that._saveFavIconUrl(domain, that.favIconUrl);
-            }
-            // Cache it regardless of database entry exists or not
-            cache[domain] = {
-              domain: domain,
-              url: that.favIconUrl
-            }
-          })
-        }
-      }
-    },
-    _extractDomain: function(url) {
-      var domain = url.replace(/^.*?:\/\/(.*?)\/.*$/, "$1");
-      // Special case, if Google Docs, it could be /spreadsheet, /document or /presentation
-      if (/docs.google.com/.test(domain)) {
-        domain = url.replace(/^.*?:\/\/(.*?\/.*?)\/.*$/, "$1");
-      }
-      return domain;
-    },
-    _saveFavIconUrl: function(domain, favIconUrl) {
-      this.$.db.put({
-        domain: domain,
-        url: favIconUrl
-      });
-    }
-  });
-
-;
   Polymer({
     is: 'ptm-bookmark',
     properties: {
@@ -12906,6 +13139,14 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
         });
       }
     },
+    ready: function() {
+      this.db = this.$.meta.byKey('ProjectTabManager-favicons');
+      if (this.db.dbReady) {
+        this._readFavicon();
+      } else {
+        this.db.addEventListener('idb-ready', this._readFavicon.bind(this));
+      }
+    },
     _isActive: function(tabId) {
       return tabId !== undefined;
     },
@@ -12915,6 +13156,73 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
     _onTapStar: function(e) {
       e.stopPropagation();
       this.fire('toggle-bookmark');
+    },
+    _validateFavIcon: function(src) {
+      // Avoid blob url from older version
+      if (!src || src.indexOf('blob') === 0) {
+        return DEFAULT_FAVICON_URL;
+      } else {
+        return src;
+      }
+    },
+    _readFavicon: function() {
+      var that = this;
+      var domain = this._extractDomain(this.url);
+
+      // If favicon is not specified
+      if (!this.favIconUrl) {
+        // But favicon url is already cached
+        if (cache[domain]) {
+          // Use the cache
+          this.favIconUrl = cache[domain].url || '';
+        // favicon url is not yet cached
+        } else {
+          // Look up on database
+          this.db.get(domain).then(function(result) {
+            // If there's an entry, use it and cache
+            // Otherwise, fallback to default icon
+            if (result) {
+              that.favIconUrl = result.url || '';
+              cache[domain] = {
+                domain: domain,
+                url: that.favIconUrl
+              }
+            }
+          });
+        }
+      // If favicon is specified
+      } else {
+        // Check if cache exists
+        if (!cache[domain]) {
+          // Look up on database
+          this.db.get(domain).then(function(result) {
+            // If there's no entry or exists but differ
+            if (!result || result.url != that.favIconUrl) {
+              // Save the favicon
+              that._saveFavIconUrl(domain, that.favIconUrl);
+            }
+            // Cache it regardless of database entry exists or not
+            cache[domain] = {
+              domain: domain,
+              url: that.favIconUrl
+            }
+          })
+        }
+      }
+    },
+    _extractDomain: function(url) {
+      var domain = url.replace(/^.*?:\/\/(.*?)\/.*$/, "$1");
+      // Special case, if Google Docs, it could be /spreadsheet, /document or /presentation
+      if (/docs.google.com/.test(domain)) {
+        domain = url.replace(/^.*?:\/\/(.*?\/.*?)\/.*$/, "$1");
+      }
+      return domain;
+    },
+    _saveFavIconUrl: function(domain, favIconUrl) {
+      this.db.put({
+        domain: domain,
+        url: favIconUrl
+      });
     }
   })
 
@@ -12953,7 +13261,8 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       if (this.query.length < 2) {
         return !!item.session;
       } else {
-        return item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
+        var matched = item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
+        return matched || this.matchedBookmarks > 0;
       }
     },
     _isSearching: function(query, winId) {
@@ -12976,16 +13285,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       //   projectId: sender.entry.id
       // });
     },
-//     reload: function() {
-//       chrome.runtime.sendMessage({
-//         command: 'update',
-//         // forceReload: force_reload
-//         forceReload: true
-//       }, function() {
-// console.log('reloaded');
-//         // this.sessions = ProjectManager.projects;
-//       });
-//     },
     ready: function() {
       var that = this;
       // this.projectManager.update();
@@ -13028,7 +13327,8 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       if (this.query.length < 2) {
         return !!item.bookmark;
       } else {
-        return item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
+        var matched = item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
+        return matched || this.matchedBookmarks > 0;
       }
     },
     _isSearching: function(query) {
@@ -13178,6 +13478,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
       /**
        * The dialog element that implements `Polymer.PaperDialogBehavior` containing this element.
+       * @type {?Node}
        */
       dialogElement: {
         type: Object,
@@ -13269,6 +13570,365 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       return className;
     }
   });
+
+
+;
+(function() {
+
+  Polymer({
+
+    is: 'paper-input-container',
+
+    properties: {
+
+      /**
+       * Set to true to disable the floating label. The label disappears when the input value is
+       * not null.
+       */
+      noLabelFloat: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * Set to true to always float the floating label.
+       */
+      alwaysFloatLabel: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * The attribute to listen for value changes on.
+       */
+      attrForValue: {
+        type: String,
+        value: 'bind-value'
+      },
+
+      /**
+       * Set to true to auto-validate the input value when it changes.
+       */
+      autoValidate: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * True if the input is invalid. This property is set automatically when the input value
+       * changes if auto-validating, or when the `iron-input-valid` event is heard from a child.
+       */
+      invalid: {
+        observer: '_invalidChanged',
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * True if the input has focus.
+       */
+      focused: {
+        readOnly: true,
+        type: Boolean,
+        value: false
+      },
+
+      _addons: {
+        type: Array
+        // do not set a default value here intentionally - it will be initialized lazily when a
+        // distributed child is attached, which may occur before configuration for this element
+        // in polyfill.
+      },
+
+      _inputHasContent: {
+        type: Boolean,
+        value: false
+      },
+
+      _inputSelector: {
+        type: String,
+        value: 'input,textarea,.paper-input-input'
+      },
+
+      _boundOnFocus: {
+        type: Function,
+        value: function() {
+          return this._onFocus.bind(this);
+        }
+      },
+
+      _boundOnBlur: {
+        type: Function,
+        value: function() {
+          return this._onBlur.bind(this);
+        }
+      },
+
+      _boundOnInput: {
+        type: Function,
+        value: function() {
+          return this._onInput.bind(this);
+        }
+      },
+
+      _boundValueChanged: {
+        type: Function,
+        value: function() {
+          return this._onValueChanged.bind(this);
+        }
+      }
+
+    },
+
+    listeners: {
+      'addon-attached': '_onAddonAttached',
+      'iron-input-validate': '_onIronInputValidate'
+    },
+
+    get _valueChangedEvent() {
+      return this.attrForValue + '-changed';
+    },
+
+    get _propertyForValue() {
+      return Polymer.CaseMap.dashToCamelCase(this.attrForValue);
+    },
+
+    get _inputElement() {
+      return Polymer.dom(this).querySelector(this._inputSelector);
+    },
+
+    ready: function() {
+      if (!this._addons) {
+        this._addons = [];
+      }
+      this.addEventListener('focus', this._boundOnFocus, true);
+      this.addEventListener('blur', this._boundOnBlur, true);
+      if (this.attrForValue) {
+        this._inputElement.addEventListener(this._valueChangedEvent, this._boundValueChanged);
+      } else {
+        this.addEventListener('input', this._onInput);
+      }
+    },
+
+    attached: function() {
+      this._handleValue(this._inputElement);
+    },
+
+    _onAddonAttached: function(event) {
+      if (!this._addons) {
+        this._addons = [];
+      }
+      var target = event.target;
+      if (this._addons.indexOf(target) === -1) {
+        this._addons.push(target);
+        if (this.isAttached) {
+          this._handleValue(this._inputElement);
+        }
+      }
+    },
+
+    _onFocus: function() {
+      this._setFocused(true);
+    },
+
+    _onBlur: function() {
+      this._setFocused(false);
+    },
+
+    _onInput: function(event) {
+      this._handleValue(event.target);
+    },
+
+    _onValueChanged: function(event) {
+      this._handleValue(event.target);
+    },
+
+    _handleValue: function(inputElement) {
+      var value = inputElement[this._propertyForValue] || inputElement.value;
+
+      if (this.autoValidate) {
+        var valid;
+        if (inputElement.validate) {
+          valid = inputElement.validate(value);
+        } else {
+          valid = inputElement.checkValidity();
+        }
+        this.invalid = !valid;
+      }
+
+      // type="number" hack needed because this.value is empty until it's valid
+      if (value || (inputElement.type === 'number' && !inputElement.checkValidity())) {
+        this._inputHasContent = true;
+      } else {
+        this._inputHasContent = false;
+      }
+
+      this.updateAddons({
+        inputElement: inputElement,
+        value: value,
+        invalid: this.invalid
+      });
+    },
+
+    _onIronInputValidate: function(event) {
+      this.invalid = this._inputElement.invalid;
+    },
+
+    _invalidChanged: function() {
+      if (this._addons) {
+        this.updateAddons({invalid: this.invalid});
+      }
+    },
+
+    /**
+     * Call this to update the state of add-ons.
+     * @param {Object} state Add-on state.
+     */
+    updateAddons: function(state) {
+      for (var addon, index = 0; addon = this._addons[index]; index++) {
+        addon.update(state);
+      }
+    },
+
+    _computeInputContentClass: function(noLabelFloat, alwaysFloatLabel, focused, invalid, _inputHasContent) {
+      var cls = 'input-content';
+      if (!noLabelFloat) {
+        if (alwaysFloatLabel || _inputHasContent) {
+          cls += ' label-is-floating';
+          if (invalid) {
+            cls += ' is-invalid';
+          } else if (focused) {
+            cls += " label-is-highlighted";
+          }
+        }
+      } else {
+        if (_inputHasContent) {
+          cls += ' label-is-hidden';
+        }
+      }
+      return cls;
+    },
+
+    _computeUnderlineClass: function(focused, invalid) {
+      var cls = 'underline';
+      if (invalid) {
+        cls += ' is-invalid';
+      } else if (focused) {
+        cls += ' is-highlighted'
+      }
+      return cls;
+    },
+
+    _computeAddOnContentClass: function(focused, invalid) {
+      var cls = 'add-on-content';
+      if (invalid) {
+        cls += ' is-invalid';
+      } else if (focused) {
+        cls += ' is-highlighted'
+      }
+      return cls;
+    }
+
+  });
+
+})();
+
+;
+
+(function() {
+
+  Polymer({
+
+    is: 'paper-input-error',
+
+    behaviors: [
+      Polymer.PaperInputAddonBehavior
+    ],
+
+    hostAttributes: {
+      'role': 'alert'
+    },
+
+    properties: {
+
+      /**
+       * True if the error is showing.
+       */
+      invalid: {
+        readOnly: true,
+        reflectToAttribute: true,
+        type: Boolean
+      }
+
+    },
+
+    update: function(state) {
+      this._setInvalid(state.invalid);
+    }
+
+  })
+
+})();
+
+
+;
+
+(function() {
+
+  Polymer({
+
+    is: 'paper-input-char-counter',
+
+    behaviors: [
+      Polymer.PaperInputAddonBehavior
+    ],
+
+    properties: {
+
+      _charCounterStr: {
+        type: String,
+        value: '0'
+      }
+
+    },
+
+    update: function(state) {
+      if (!state.inputElement) {
+        return;
+      }
+
+      state.value = state.value || '';
+
+      // Account for the textarea's new lines.
+      var str = state.value.replace(/(\r\n|\n|\r)/g, '--').length;
+
+      if (state.inputElement.hasAttribute('maxlength')) {
+        str += '/' + state.inputElement.getAttribute('maxlength');
+      }
+      this._charCounterStr = str;
+    }
+
+  });
+
+})();
+
+
+;
+
+(function() {
+
+  Polymer({
+
+    is: 'paper-input',
+
+    behaviors: [
+      Polymer.PaperInputBehavior,
+      Polymer.IronControlState
+    ]
+
+  })
+
+})();
 
 
 ;

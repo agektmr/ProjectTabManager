@@ -8,6 +8,7 @@
   <template>
     <template id="repeat" is="dom-repeat" items="{{projectManager.projects}}" filter="filter">
       <ptm-session
+        project="{{item}}"
         project-id="{{item.id}}"
         session-id="{{item.session.id}}"
         win-id="{{item.session.winId}}"
@@ -46,7 +47,8 @@
       if (this.query.length < 2) {
         return !!item.session;
       } else {
-        return item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
+        var matched = item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
+        return matched || this.matchedBookmarks > 0;
       }
     },
     _isSearching: function(query, winId) {
@@ -69,16 +71,6 @@
       //   projectId: sender.entry.id
       // });
     },
-//     reload: function() {
-//       chrome.runtime.sendMessage({
-//         command: 'update',
-//         // forceReload: force_reload
-//         forceReload: true
-//       }, function() {
-// console.log('reloaded');
-//         // this.sessions = ProjectManager.projects;
-//       });
-//     },
     ready: function() {
       var that = this;
       // this.projectManager.update();

@@ -183,11 +183,17 @@ var ProjectManager = (function() {
      * @param {requestCallback} callback
      */
     addBookmark: function(tabId, callback) {
+      var mergeBookmark = function(callback, bookmark) {
+        this.bookmark = bookmarkManager.getFolder(bookmark.parentId);
+        this.load(this.session.tabs, this.bookmark.children);
+        callback(bookmark);
+      };
       var url = '', title = '';
       for (var i = 0; i < this.fields.length; i++) {
         if (this.fields[i].tabId === tabId) {
           title = this.fields[i].title;
           url   = this.fields[i].url;
+          break;
         }
       }
       if (url === '') {
@@ -200,10 +206,10 @@ var ProjectManager = (function() {
           if (this.session) {
             this.session.setId(folder.id);
           }
-          bookmarkManager.addBookmark(this.id, title, url, callback);
+          bookmarkManager.addBookmark(this.id, title, url, mergeBookmark.bind(this, callback));
         }).bind(this));
       } else {
-        bookmarkManager.addBookmark(this.id, title, url, callback);
+        bookmarkManager.addBookmark(this.id, title, url, mergeBookmark.bind(this, callback));
       }
     },
 

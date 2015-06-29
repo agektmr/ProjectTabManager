@@ -4,7 +4,9 @@
   "description": "Project tab management per window on your Chrome",
   "main": "app/js/background.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "postinstall": "bower install",
+    "vulcanize": "vulcanize src/elements/elements.html | crisper -h src/elements/vulcanized.elements.html -j src/elements/vulcanized.elements.js",
+    "build": "npm run vulcanize & grunt vulcanizeless --force"
   },
   "repository": "",
   "keywords": [

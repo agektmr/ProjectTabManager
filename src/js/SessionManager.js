@@ -341,12 +341,16 @@ var SessionManager = (function() {
 
     // chrome.tabs.onCreated.addListener(this.oncreated.bind(this));
     chrome.tabs.onUpdated.addListener(this.onupdated.bind(this));
-    chrome.tabs.onRemoved.addListener(this.onremoved.bind(this));
     chrome.tabs.onMoved.addListener(this.onmoved.bind(this));
-    chrome.tabs.onReplaced.addListener(this.onreplaced.bind(this));
-    chrome.tabs.onAttached.addListener(this.onattached.bind(this));
-    chrome.tabs.onDetached.addListener(this.ondetached.bind(this));
+    // chrome.tabs.onSelectionChanged.addListener(TODO);
+    // chrome.tabs.onActiveChanged.addListener(TODO);
     chrome.tabs.onActivated.addListener(this.onactivated.bind(this));
+    // chrome.tabs.onHighlightChanged.addListener(TODO);
+    // chrome.tabs.onHighlighted.addListener(TODO);
+    chrome.tabs.onDetached.addListener(this.ondetached.bind(this));
+    chrome.tabs.onAttached.addListener(this.onattached.bind(this));
+    chrome.tabs.onRemoved.addListener(this.onremoved.bind(this));
+    chrome.tabs.onReplaced.addListener(this.onreplaced.bind(this));
 
     chrome.windows.onCreated.addListener(this.onwindowcreated.bind(this));
     chrome.windows.onFocusChanged.addListener(this.onwindowfocuschanged.bind(this));

@@ -28,13 +28,14 @@
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
+      @apply(--layout-flex);
     }
   </style>
   <template>
-    <paper-material elevation="[[_elevation]]" expanded$="{{expanded}}">
-      <paper-item class="layout">
-        <paper-icon-button tabindex="-1" icon="[[_unfoldIcon]]" on-tap="toggle"></paper-icon-button>
-        <div class="title flex" on-tap="openProject">
+    <paper-material elevation="[[_computeElevation(expanded)]]" expanded$="[[expanded]]">
+      <paper-item>
+        <paper-icon-button tabindex="-1" icon="[[_computeFoldIcon(expanded)]]" on-tap="toggle"></paper-icon-button>
+        <div class="title" on-tap="openProject">
           <!-- <paper-ripple></paper-ripple> -->
           <span>{{projectTitle}}</span>
         </div>
@@ -47,18 +48,20 @@
         <template is="dom-if" if="[[!fields.length]]">
           <paper-item class="layout">
             <paper-icon-button icon="icons:warning"></paper-icon-button>
-            <span on-tap="open" class="flex title">No bookmarks</span>
+            <span on-tap="open" class="title">No bookmarks</span>
           </paper-item>
         </template>
-        <template id="repeat" is="dom-repeat" items="[[fields]]" filter="filter">
-          <ptm-bookmark
-            url="[[item.url]]"
-            fav-icon-url="[[item.favIconUrl]]"
-            bookmark-id="[[item.id]]"
-            tab-id="[[item.tabId]]"
-            title="[[item.title]]"
-            project-linked="[[_computeProjectLinked(projectId)]]"
-            on-toggle-bookmark="_onToggleBookmark"></ptm-bookmark>
+        <template is="dom-if" if="[[expanded]]">
+          <template id="repeat" is="dom-repeat" items="[[fields]]" filter="filter">
+            <ptm-bookmark
+              url="[[item.url]]"
+              fav-icon-url="{{item.favIconUrl}}"
+              bookmark-id="[[item.id]]"
+              tab-id="[[item.tabId]]"
+              title="[[item.title]]"
+              project-linked="[[_computeProjectLinked(projectId)]]"
+              on-toggle-bookmark="_onToggleBookmark"></ptm-bookmark>
+          </template>
         </template>
       </iron-collapse>
     </paper-material>

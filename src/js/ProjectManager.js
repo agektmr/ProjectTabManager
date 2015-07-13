@@ -116,9 +116,6 @@ var ProjectManager = (function() {
       name = name+'';
       if (name.length === 0) callback();
       this.title = name+'';
-      if (this.session) {
-        this.session.title = name;
-      }
       if (!this.bookmark) {
         bookmarkManager.addFolder(name, (function(folder) {
           this.id       = folder.id;
@@ -237,9 +234,24 @@ var ProjectManager = (function() {
      */
     associateBookmark: function(folder) {
       this.id = folder.id; // Overwrite project id
+      if (config_.debug) console.log('[ProjectEntity] associated bookmark', folder);
       this.bookmark = folder;
       this.session.setId(this.id); // Overwrite project id
       this.load(this.session.tabs, this.bookmark.children);
+    },
+
+    /**
+     * Remove association of a project with bookmark entity. Use when:
+     * - unlinking bookmark with a session
+     * - abondoning a session from linked project
+     */
+    deassociateBookmark: function() {
+      this.id = '-'+this.session.id;
+      if (config_.debug) console.log('[ProjectEntity] deassociated bookmark', this.bookmark);
+      this.bookmark = null;
+      this.title = this.session.title;
+      this.session.setId(this.id);
+      this.load(this.session.tabs, undefined);
     }
   };
 
@@ -326,7 +338,7 @@ var ProjectManager = (function() {
 
     /**
      * Removes a project from bookmark
-     * @param  {String}           id [description]
+     * @param  {String}           id        [description]
      * @param  {requestCallback}  callback  [description]
      */
     removeProject: function(id, callback) {
@@ -340,9 +352,26 @@ var ProjectManager = (function() {
               if (typeof callback === 'function') callback(project);
             }).bind(this));
             if (config_.debug) console.log('[ProjectManager] removed project %s from bookmark', id);
+          } else {
+            // non-bound session should be removed from session list as well
+            sessionManager.removeSessionFromProjectId(id);
+            if (typeof callback === 'function') callback(project);
           }
-          // non-bound session should be removed from session list as well
-          sessionManager.removeSessionFromProjectId(id);
+        }
+      }
+    },
+
+    /**
+     * Removes session part of the project
+     * @param  {String}           id       [description]
+     * @param  {requestCallback}  callback [description]
+     */
+    removeSession: function(id, callback) {
+      for (var i = 0; i < this.projects.length; i++) {
+        if (this.projects[i].id === id) {
+          this.projects[i].deassociateBookmark();
+          this.removeProject(this.projects[i].id, callback);
+          break;
         }
       }
     },

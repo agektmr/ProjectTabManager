@@ -1,5 +1,8 @@
+<link rel="import" href="../../bower_components/iron-behaviors/iron-control-state.html">
+<link rel="import" href="../../bower_components/iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
+
 <script>
-var PtmProjectBehavior = {
+var PtmProjectBehaviorImpl = {
   properties: {
     project: {
       type: Object,
@@ -37,16 +40,12 @@ var PtmProjectBehavior = {
     expanded: {
       type: Boolean,
       value: false,
-      reflectToAttribute: true
+      reflectToAttribute: true,
+      observer: '_expandedChanged'
     },
     query: {
       type: String,
-      value: '',
-      observer: 'search'
-    },
-    matchedBookmarks: {
-      type: Number,
-      value: -1
+      value: ''
     },
     _unfoldIcon: {
       type: String,
@@ -60,33 +59,48 @@ var PtmProjectBehavior = {
   hostAttributes: {
     tabindex: 0
   },
+  observers: [
+    '_focusedChanged(receivedFocusFromKeyboard)'
+  ],
+  ready: function() {
+    this.keyEventTarget = this;
+    this.addOwnKeyBinding('left right', '_onArrow');
+    this.addOwnKeyBinding('enter', 'openProject');
+  },
   toggle: function(e) {
     e.stopPropagation();
     this.expanded = !this.expanded;
-    this._unfoldIcon = this.expanded ? 'unfold-less' : 'unfold-more';
-    this._elevation = this.expanded ? 2 : 0;
-  },
-  search: function() {
-    if (this.query.length < 2) {
-      this.matchedBookmarks = 0;
-    }
   },
   filter: function(item) {
-    // TODO: This won't be executed unless project.title matches the query.
-    // Needs to fix this
     if (this.query.length < 2) {
       return true
     } else {
-      var matched = item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
-      this.matchedBookmarks += matched ? 1 : 0;
-      return matched;
+      return item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
     }
   },
   openProject: function(e) {
     e.stopPropagation();
-    this.fire('open-project', {
+    this.fire('open-clicked', {
       projectId: this.projectId
     });
+  },
+  _onArrow: function(e) {
+    e.stopPropagation();
+    switch (e.detail.key) {
+      case 'left':
+        this.expanded = false;
+        break;
+      case 'right':
+        this.expanded = true;
+        break;
+    }
+  },
+  _expandedChanged: function() {
+    this._unfoldIcon = this.expanded ? 'unfold-less' : 'unfold-more';
+    this._elevation = this.expanded ? 2 : 0;
+  },
+  _focusedChanged: function(receivedFocusFromKeyboard) {
+    this.focused != this.focused;
   },
   _computeElevation: function(expanded) {
     return expanded ? 2 : 0;
@@ -96,6 +110,9 @@ var PtmProjectBehavior = {
   },
   _computeProjectLinked: function(projectId) {
     return projectId * 1 > -1 ? true : false;
+  },
+  _computeActive: function(winId) {
+    return winId !== null;
   },
   _onToggleBookmark: function(e) {
     var that = this;
@@ -123,4 +140,10 @@ var PtmProjectBehavior = {
     this.$.repeat.render();
   }
 };
+
+var PtmProjectBehavior = [
+  PtmProjectBehaviorImpl,
+  Polymer.IronControlState,
+  Polymer.IronA11yKeysBehavior
+];
 </script>

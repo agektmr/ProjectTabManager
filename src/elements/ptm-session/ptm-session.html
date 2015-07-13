@@ -13,14 +13,14 @@
     :host {
       display: block;
     }
-    :host:focus paper-item {
-      background-color: var(--light-primary-color);
-    }
     paper-material[expanded] {
       margin: 0 0 1em 0;
     }
     paper-item > *:not(:first-child):not(:last-child) {
       margin-right: 0 !important;
+    }
+    paper-item[focused] {
+      background-color: var(--light-primary-color);
     }
     .title {
       cursor: pointer;
@@ -31,21 +31,24 @@
       @apply(--layout-flex);
     }
     .title[active] {
+      font-weight: bold;
       color: var(--primary-text-color);
     }
   </style>
   <template>
-    <paper-material elevation="[[_computeElevation(expanded)]]" expanded$="[[expanded]]">
-      <paper-item>
+    <paper-material elevation="[[_computeElevation(expanded)]]" expanded$="[[expanded]]" animated>
+      <paper-item focused$="{{focused}}">
         <paper-icon-button tabindex="-1" icon="[[_computeFoldIcon(expanded)]]" on-tap="toggle"></paper-icon-button>
-        <div class="title" on-tap="openProject" active$="[[_isActive(winId)]]">
+        <div class="title" on-tap="openProject" active$="[[_computeActive(winId)]]">
           <!-- <paper-ripple></paper-ripple> -->
           <span>[[projectTitle]]</span>
         </div>
+        <template is="dom-if" if="[[!_computeProjectLinked(projectId)]]" restamp>
+          <paper-icon-button icon="icons:link" on-tap="_onTapLink" tabindex="-1"></paper-icon-button>
+        </template>
         <template is="dom-if" if="[[expanded]]" restamp>
-          <paper-icon-button icon="icons:link" on-tap="_onTapLink"></paper-icon-button>
-          <template is="dom-if" if="[[!_isActive(winId)]]">
-            <paper-icon-button icon="icons:delete" on-tap="_onTapRemove"></paper-icon-button>
+          <template is="dom-if" if="[[!_computeActive(winId)]]">
+            <paper-icon-button icon="icons:delete" on-tap="_onTapRemove" tabindex="-1"></paper-icon-button>
           </template>
         </template>
       </paper-item>
@@ -67,6 +70,7 @@
               project-linked="[[_computeProjectLinked(projectId)]]"
               on-toggle-bookmark="_onToggleBookmark"></ptm-bookmark>
           </template>
+          <!-- <paper-icon-button icon="icons:expand-more"></paper-icon-button> -->
         </template>
       </iron-collapse>
     </paper-material>
@@ -79,16 +83,13 @@
     behaviors: [
       PtmProjectBehavior
     ],
-    _isActive: function(winId) {
-      return winId !== null;
-    },
     _onTapLink: function(e) {
-      e.stopPropagation();
-      this.fire('link-project');
+      // e.stopPropagation();
+      this.fire('link-clicked');
     },
     _onTapRemove: function(e) {
-      e.stopPropagation();
-      this.fire('remove-session');
+      // e.stopPropagation();
+      this.fire('remove-clicked');
     }
   });
 </script>

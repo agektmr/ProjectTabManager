@@ -62,7 +62,7 @@ entry {
         <span>[[title]]</span>
       </div>
       <template is="dom-if" if="[[projectLinked]]">
-        <paper-icon-button id="star" icon="icons:star" on-tap="_onTapStar" bookmarked$="[[_isBookmarked(bookmarkId)]]"></paper-icon-button>
+        <paper-icon-button id="star" icon="icons:star" on-tap="_onTapStar" bookmarked$="[[_isBookmarked(bookmarkId)]]" tabindex="-1"></paper-icon-button>
       </template>
     </paper-item>
   </template>
@@ -135,11 +135,7 @@ entry {
     },
     ready: function() {
       this.db = this.$.meta.byKey('ProjectTabManager-favicons');
-      if (this.db.dbReady) {
-        this._readFavicon();
-      } else {
-        this.db.addEventListener('idb-ready', this._readFavicon.bind(this));
-      }
+      this._readFavicon();
     },
     _isActive: function(tabId) {
       return tabId !== undefined;
@@ -181,6 +177,8 @@ entry {
                 domain: domain,
                 url: that.favIconUrl
               }
+            } else {
+              that.favIconUrl = DEFAULT_FAVICON_URL;
             }
           });
         }
@@ -201,6 +199,9 @@ entry {
               url: that.favIconUrl
             }
           })
+        // Renew cache with new favicon
+        } else if (cache[domain].url == DEFAULT_FAVICON_URL) {
+          cache[domain].url = this.favIconUrl;
         }
       }
     },
@@ -208,7 +209,7 @@ entry {
       var domain = url.replace(/^.*?:\/\/(.*?)\/.*$/, "$1");
       // Special case, if Google Docs, it could be /spreadsheet, /document or /presentation
       if (/docs.google.com/.test(domain)) {
-        domain = url.replace(/^.*?:\/\/(.*?\/.*?)\/.*$/, "$1");
+        domain = url.replace(/^.*?:\/\/(docs.google.com\/(a\/.*?\/)?.*?)\/.*$/, "$1");
       }
       return domain;
     },

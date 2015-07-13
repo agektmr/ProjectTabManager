@@ -498,7 +498,7 @@ debouncer.stop();
 }
 }
 });
-Polymer.version = '1.0.5';
+Polymer.version = '1.0.6';
 Polymer.Base._addFeature({
 _registerFeatures: function () {
 this._prepIs();
@@ -936,6 +936,8 @@ var getInnerHTML = Polymer.domInnerHTML.getInnerHTML;
 var nativeInsertBefore = Element.prototype.insertBefore;
 var nativeRemoveChild = Element.prototype.removeChild;
 var nativeAppendChild = Element.prototype.appendChild;
+var nativeCloneNode = Element.prototype.cloneNode;
+var nativeImportNode = Document.prototype.importNode;
 var dirtyRoots = [];
 var DomApi = function (node) {
 this.node = node;
@@ -1064,8 +1066,8 @@ return parentNeedsDist || hasContent && !wrappedContent;
 },
 _tryRemoveUndistributedNode: function (node) {
 if (this.node.shadyRoot) {
-if (node.parentNode) {
-nativeRemoveChild.call(node.parentNode, node);
+if (node._composedParent) {
+nativeRemoveChild.call(node._composedParent, node);
 }
 return true;
 }
@@ -1074,7 +1076,7 @@ _updateInsertionPoints: function (host) {
 host.shadyRoot._insertionPoints = factory(host.shadyRoot).querySelectorAll(CONTENT);
 },
 _nodeIsInLogicalTree: function (node) {
-return Boolean(node._lightParent || node._isShadyRoot || this._ownerShadyRootForNode(node) || node.shadyRoot);
+return Boolean(node._lightParent !== undefined || node._isShadyRoot || this._ownerShadyRootForNode(node) || node.shadyRoot);
 },
 _parentNeedsDistribution: function (parent) {
 return parent && parent.shadyRoot && hasInsertionPoint(parent.shadyRoot);
@@ -1247,6 +1249,31 @@ _distributeParent: function () {
 if (this._parentNeedsDistribution(this.parentNode)) {
 this._lazyDistribute(this.parentNode);
 }
+},
+cloneNode: function (deep) {
+var n = nativeCloneNode.call(this.node, false);
+if (deep) {
+var c$ = this.childNodes;
+var d = factory(n);
+for (var i = 0, nc; i < c$.length; i++) {
+nc = factory(c$[i]).cloneNode(true);
+d.appendChild(nc);
+}
+}
+return n;
+},
+importNode: function (externalNode, deep) {
+var doc = this.node instanceof HTMLDocument ? this.node : this.node.ownerDocument;
+var n = nativeImportNode.call(doc, externalNode, false);
+if (deep) {
+var c$ = factory(externalNode).childNodes;
+var d = factory(n);
+for (var i = 0, nc; i < c$.length; i++) {
+nc = factory(doc).importNode(c$[i], true);
+d.appendChild(nc);
+}
+}
+return n;
 }
 };
 Object.defineProperty(DomApi.prototype, 'classList', {
@@ -1395,8 +1422,9 @@ if (this.node.nodeType !== Node.TEXT_NODE) {
 this._clear();
 var d = document.createElement('div');
 d.innerHTML = text;
-for (var e = d.firstChild; e; e = e.nextSibling) {
-this.appendChild(e);
+var c$ = Array.prototype.slice.call(d.childNodes);
+for (var i = 0; i < c$.length; i++) {
+this.appendChild(c$[i]);
 }
 }
 },
@@ -1418,6 +1446,13 @@ return n;
 }
 n = n.parentNode;
 }
+};
+DomApi.prototype.cloneNode = function (deep) {
+return this.node.cloneNode(deep);
+};
+DomApi.prototype.importNode = function (externalNode, deep) {
+var doc = this.node instanceof HTMLDocument ? this.node : this.node.ownerDocument;
+return doc.importNode(externalNode, deep);
 };
 DomApi.prototype.getDestinationInsertionPoints = function () {
 var n$ = this.node.getDestinationInsertionPoints();
@@ -2303,6 +2338,7 @@ var MOUSE_EVENTS = [
 'mouseup',
 'click'
 ];
+var IS_TOUCH_ONLY = navigator.userAgent.match(/iP(?:[oa]d|hone)|Android/);
 var mouseCanceller = function (mouseEvent) {
 mouseEvent[HANDLED_OBJ] = { skip: true };
 if (mouseEvent.type === 'click') {
@@ -2327,6 +2363,9 @@ document.removeEventListener(en, mouseCanceller, true);
 }
 }
 function ignoreMouse() {
+if (IS_TOUCH_ONLY) {
+return;
+}
 if (!POINTERSTATE.mouse.mouseIgnoreJob) {
 setupTeardownMouseCanceller(true);
 }
@@ -2374,6 +2413,12 @@ node = next;
 }
 }
 return node;
+},
+findOriginalTarget: function (ev) {
+if (ev.path) {
+return ev.path[0];
+}
+return ev.target;
 },
 handleNative: function (ev) {
 var handled;
@@ -2459,12 +2504,18 @@ node[GESTURE_KEY] = gobj = {};
 }
 for (var i = 0, dep, gd; i < deps.length; i++) {
 dep = deps[i];
+if (IS_TOUCH_ONLY && MOUSE_EVENTS.indexOf(dep) > -1) {
+continue;
+}
 gd = gobj[dep];
 if (!gd) {
-gobj[dep] = gd = {};
+gobj[dep] = gd = { _count: 0 };
+}
+if (gd._count === 0) {
 node.addEventListener(dep, this.handleNative);
 }
 gd[name] = (gd[name] || 0) + 1;
+gd._count = (gd._count || 0) + 1;
 }
 node.addEventListener(evType, handler);
 if (recognizer.touchAction) {
@@ -2482,9 +2533,10 @@ dep = deps[i];
 gd = gobj[dep];
 if (gd && gd[name]) {
 gd[name] = (gd[name] || 1) - 1;
-if (gd[name] === 0) {
-node.removeEventListener(dep, this.handleNative);
+gd._count = (gd._count || 1) - 1;
 }
+if (gd._count === 0) {
+node.removeEventListener(dep, this.handleNative);
 }
 }
 }
@@ -2546,7 +2598,7 @@ emits: [
 'up'
 ],
 mousedown: function (e) {
-var t = e.currentTarget;
+var t = Gestures.findOriginalTarget(e);
 var self = this;
 var upfn = function upfn(e) {
 self.fire('up', t, e);
@@ -2556,10 +2608,10 @@ document.addEventListener('mouseup', upfn);
 this.fire('down', t, e);
 },
 touchstart: function (e) {
-this.fire('down', e.currentTarget, e.changedTouches[0]);
+this.fire('down', Gestures.findOriginalTarget(e), e.changedTouches[0]);
 },
 touchend: function (e) {
-this.fire('up', e.currentTarget, e.changedTouches[0]);
+this.fire('up', Gestures.findOriginalTarget(e), e.changedTouches[0]);
 },
 fire: function (type, target, event) {
 var self = this;
@@ -2615,7 +2667,7 @@ var dy = Math.abs(this.info.y - y);
 return dx >= TRACK_DISTANCE || dy >= TRACK_DISTANCE;
 },
 mousedown: function (e) {
-var t = e.currentTarget;
+var t = Gestures.findOriginalTarget(e);
 var self = this;
 var movefn = function movefn(e) {
 var x = e.clientX, y = e.clientY;
@@ -2649,7 +2701,7 @@ this.info.x = ct.clientX;
 this.info.y = ct.clientY;
 },
 touchmove: function (e) {
-var t = e.currentTarget;
+var t = Gestures.findOriginalTarget(e);
 var ct = e.changedTouches[0];
 var x = ct.clientX, y = ct.clientY;
 if (this.hasMovedEnough(x, y)) {
@@ -2663,7 +2715,7 @@ this.info.started = true;
 }
 },
 touchend: function (e) {
-var t = e.currentTarget;
+var t = Gestures.findOriginalTarget(e);
 var ct = e.changedTouches[0];
 if (this.info.started) {
 Gestures.prevent('tap');
@@ -2739,9 +2791,10 @@ this.forward(e.changedTouches[0]);
 forward: function (e) {
 var dx = Math.abs(e.clientX - this.info.x);
 var dy = Math.abs(e.clientY - this.info.y);
+var t = Gestures.findOriginalTarget(e);
 if (isNaN(dx) || isNaN(dy) || dx <= TAP_DISTANCE && dy <= TAP_DISTANCE) {
 if (!this.info.prevent) {
-Gestures.fire(e.target, 'tap', {
+Gestures.fire(t, 'tap', {
 x: e.clientX,
 y: e.clientY,
 sourceEvent: e
@@ -2988,15 +3041,15 @@ Polymer.Bind = {
 prepareModel: function (model) {
 model._propertyEffects = {};
 model._bindListeners = [];
-var api = this._modelApi;
-for (var n in api) {
-model[n] = api[n];
-}
+Polymer.Base.mixin(model, this._modelApi);
 },
 _modelApi: {
 _notifyChange: function (property) {
 var eventName = Polymer.CaseMap.camelToDashCase(property) + '-changed';
-this.fire(eventName, { value: this[property] }, { bubbles: false });
+Polymer.Base.fire(eventName, { value: this[property] }, {
+bubbles: false,
+node: this
+});
 },
 _propertySetter: function (property, value, effects, fromAbove) {
 var old = this.__data__[property];
@@ -3087,8 +3140,11 @@ return this.__data__[property];
 var setter = function (value) {
 this._propertySetter(property, value, effects);
 };
-if (model.getPropertyInfo && model.getPropertyInfo(property).readOnly) {
+var info = model.getPropertyInfo && model.getPropertyInfo(property);
+if (info && info.readOnly) {
+if (!info.computed) {
 model['_set' + this.upper(property)] = setter;
+}
 } else {
 defun.set = setter;
 }
@@ -3546,6 +3602,7 @@ this._pathEffector(path, value);
 if (!fromAbove) {
 this._notifyPath(path, value);
 }
+return true;
 }
 },
 _getPathParts: function (path) {
@@ -3887,7 +3944,7 @@ var VAR_START = '--';
 var MEDIA_START = '@media';
 var AT_START = '@';
 var rx = {
-comments: /\/\*[^*]*\*+([^/*][^*]*\*+)*\//gim,
+comments: /\/\*[^*]*\*+([^\/*][^*]*\*+)*\//gim,
 port: /@import[^;]*;/gim,
 customProp: /(?:^|[\s;])--[^;{]*?:[^{};]*?(?:[;\n]|$)/gim,
 mixinProp: /(?:^|[\s;])--[^;{]*?:[^{;]*?{[^}]*?}(?:[;\n]|$)?/gim,
@@ -4559,10 +4616,10 @@ props[i] = v;
 }
 },
 rx: {
-VAR_ASSIGN: /(?:^|[;\n]\s*)(--[\w-]*?):\s*?(?:([^;{]*?)|{([^}]*)})(?:(?=[;\n])|$)/gim,
-MIXIN_MATCH: /(?:^|\W+)@apply[\s]*\(([^)]*)\)/im,
-VAR_MATCH: /(^|\W+)var\([\s]*([^,)]*)[\s]*,?[\s]*((?:[^,)]*)|(?:[^;]*\([^;)]*\)))[\s]*?\)/gim,
-VAR_CAPTURE: /\([\s]*(--[^,\s)]*)(?:,[\s]*(--[^,\s)]*))?(?:\)|,)/gim,
+VAR_ASSIGN: /(?:^|[;\n]\s*)(--[\w-]*?):\s*(?:([^;{]*)|{([^}]*)})(?:(?=[;\n])|$)/gi,
+MIXIN_MATCH: /(?:^|\W+)@apply[\s]*\(([^)]*)\)/i,
+VAR_MATCH: /(^|\W+)var\([\s]*([^,)]*)[\s]*,?[\s]*((?:[^,)]*)|(?:[^;]*\([^;)]*\)))[\s]*?\)/gi,
+VAR_CAPTURE: /\([\s]*(--[^,\s)]*)(?:,[\s]*(--[^,\s)]*))?(?:\)|,)/gi,
 IS_VAR: /^--/,
 BRACKETED: /\{[^}]*\}/g,
 HOST_PREFIX: '(?:^|[^.#[:])',
@@ -4901,7 +4958,7 @@ styleTransformer.documentRule(rule);
 });
 }());
 Polymer.Templatizer = {
-properties: { _hideTemplateChildren: { observer: '_showHideChildren' } },
+properties: { __hideTemplateChildren__: { observer: '_showHideChildren' } },
 _templatizerStatic: {
 count: 0,
 callbacks: {},
@@ -4930,6 +4987,7 @@ this._prepParentProperties(archetype, template);
 archetype._notifyPath = this._notifyPathImpl;
 archetype._scopeElementClass = this._scopeElementClassImpl;
 archetype.listen = this._listenImpl;
+archetype._showHideChildren = this._showHideChildrenImpl;
 var _constructor = this._constructorImpl;
 var ctor = function TemplateInstance(model, host) {
 _constructor.call(this, model, host);
@@ -4942,7 +5000,15 @@ this.ctor = ctor;
 _getRootDataHost: function () {
 return this.dataHost && this.dataHost._rootDataHost || this.dataHost;
 },
-_showHideChildren: function (hidden) {
+_showHideChildrenImpl: function (hide) {
+var c = this._children;
+for (var i = 0; i < c.length; i++) {
+var n = c[i];
+if (n.style) {
+n.style.display = hide ? 'none' : '';
+n.__hideTemplateChildren__ = hide;
+}
+}
 },
 _debounceTemplate: function (fn) {
 this._templatizerStatic.callbacks[this._templatizerId] = fn.bind(this);
@@ -5043,6 +5109,8 @@ template._propertySetter(n, val);
 }
 });
 },
+_showHideChildren: function (hidden) {
+},
 _forwardInstancePath: function (inst, path, value) {
 },
 _forwardInstanceProp: function (inst, prop, value) {
@@ -5081,6 +5149,9 @@ children.push(n);
 n._templateInstance = this;
 }
 this._children = children;
+if (host.__hideTemplateChildren__) {
+this._showHideChildren(true);
+}
 this._tryReady();
 },
 _listenImpl: function (node, eventName, methodName) {
@@ -5107,6 +5178,20 @@ model[prop] = this['_parent_' + prop];
 }
 }
 return new this.ctor(model, this);
+},
+modelForElement: function (el) {
+var model;
+while (el) {
+if (model = el._templateInstance) {
+if (model.dataHost != this) {
+el = model.dataHost;
+} else {
+return model;
+}
+} else {
+el = el.parentNode;
+}
+}
 }
 };
 Polymer({
@@ -5153,7 +5238,7 @@ this._removeFromMap(this.store[key]);
 delete this.store[key];
 },
 _removeFromMap: function (item) {
-if (typeof item == 'object') {
+if (item && typeof item == 'object') {
 this.omap.delete(item);
 } else {
 delete this.pmap[item];
@@ -5165,7 +5250,7 @@ this.removeKey(key);
 return key;
 },
 getKey: function (item) {
-if (typeof item == 'object') {
+if (item && typeof item == 'object') {
 return this.omap.get(item);
 } else {
 return this.pmap[item];
@@ -5534,14 +5619,7 @@ return row;
 _showHideChildren: function (hidden) {
 if (this.rows) {
 for (var i = 0; i < this.rows.length; i++) {
-var c$ = this.rows[i]._children;
-for (var j = 0; j < c$.length; j++) {
-var c = c$[j];
-if (c.style) {
-c.style.display = hidden ? 'none' : '';
-}
-c._hideTemplateChildren = hidden;
-}
+this.rows[i]._showHideChildren(hidden);
 }
 }
 },
@@ -5588,20 +5666,6 @@ row.notifyPath(path, value, true);
 } else {
 row.__setProperty(this.as, value, true);
 }
-}
-}
-},
-modelForElement: function (el) {
-var model;
-while (el) {
-if (model = el._templateInstance) {
-if (model.dataHost != this) {
-el = model.dataHost;
-} else {
-return model;
-}
-} else {
-el = el.parentNode;
 }
 }
 },
@@ -5759,7 +5823,7 @@ this._instance = null;
 },
 _wrapTextNodes: function (root) {
 for (var n = root.firstChild; n; n = n.nextSibling) {
-if (n.nodeType === Node.TEXT_NODE) {
+if (n.nodeType === Node.TEXT_NODE && n.textContent.trim()) {
 var s = document.createElement('span');
 root.insertBefore(s, n);
 s.appendChild(n);
@@ -5768,14 +5832,9 @@ n = s;
 }
 },
 _showHideChildren: function () {
-var hidden = this._hideTemplateChildren || !this.if;
+var hidden = this.__hideTemplateChildren__ || !this.if;
 if (this._instance) {
-var c$ = this._instance._children;
-for (var i = 0; i < c$.length; i++) {
-var c = c$[i];
-c.style.display = hidden ? 'none' : '';
-c._hideTemplateChildren = hidden;
-}
+this._instance._showHideChildren(hidden);
 }
 },
 _forwardParentProp: function (prop, value) {
@@ -8676,7 +8735,24 @@ var PtmListBehavior = {
     'remove-bookmark': '_onRemoveBookmark'
   },
   search: function(e) {
-    this.$.repeat.render();
+    this.debounce('search', (function() {
+      this.$.repeat.render();
+    }).bind(this), 100);
+  },
+  /**
+   * See if there're any matching bookmarks / sessions
+   * @return {Boolean} True if matching bookmark exists.
+   */
+  _filterFields: function(item) {
+    var matched = false;
+    for (var i = 0; i < item.fields.length; i++) {
+      var field = item.fields[i];
+      if (field.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1) {
+        matched = true;
+        break;
+      }
+    }
+    return matched;
   },
   open: function(e) {
     var project = this.projectManager.getProjectFromId(e.detail.projectId);
@@ -8743,7 +8819,7 @@ var PtmListBehavior = {
 
 
 ;
-var PtmProjectBehavior = {
+var PtmProjectBehaviorImpl = {
   properties: {
     project: {
       type: Object,
@@ -8781,16 +8857,12 @@ var PtmProjectBehavior = {
     expanded: {
       type: Boolean,
       value: false,
-      reflectToAttribute: true
+      reflectToAttribute: true,
+      observer: '_expandedChanged'
     },
     query: {
       type: String,
-      value: '',
-      observer: 'search'
-    },
-    matchedBookmarks: {
-      type: Number,
-      value: -1
+      value: ''
     },
     _unfoldIcon: {
       type: String,
@@ -8804,33 +8876,48 @@ var PtmProjectBehavior = {
   hostAttributes: {
     tabindex: 0
   },
+  observers: [
+    '_focusedChanged(receivedFocusFromKeyboard)'
+  ],
+  ready: function() {
+    this.keyEventTarget = this;
+    this.addOwnKeyBinding('left right', '_onArrow');
+    this.addOwnKeyBinding('enter', 'openProject');
+  },
   toggle: function(e) {
     e.stopPropagation();
     this.expanded = !this.expanded;
-    this._unfoldIcon = this.expanded ? 'unfold-less' : 'unfold-more';
-    this._elevation = this.expanded ? 2 : 0;
-  },
-  search: function() {
-    if (this.query.length < 2) {
-      this.matchedBookmarks = 0;
-    }
   },
   filter: function(item) {
-    // TODO: This won't be executed unless project.title matches the query.
-    // Needs to fix this
     if (this.query.length < 2) {
       return true
     } else {
-      var matched = item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
-      this.matchedBookmarks += matched ? 1 : 0;
-      return matched;
+      return item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
     }
   },
   openProject: function(e) {
     e.stopPropagation();
-    this.fire('open-project', {
+    this.fire('open-clicked', {
       projectId: this.projectId
     });
+  },
+  _onArrow: function(e) {
+    e.stopPropagation();
+    switch (e.detail.key) {
+      case 'left':
+        this.expanded = false;
+        break;
+      case 'right':
+        this.expanded = true;
+        break;
+    }
+  },
+  _expandedChanged: function() {
+    this._unfoldIcon = this.expanded ? 'unfold-less' : 'unfold-more';
+    this._elevation = this.expanded ? 2 : 0;
+  },
+  _focusedChanged: function(receivedFocusFromKeyboard) {
+    this.focused != this.focused;
   },
   _computeElevation: function(expanded) {
     return expanded ? 2 : 0;
@@ -8840,6 +8927,9 @@ var PtmProjectBehavior = {
   },
   _computeProjectLinked: function(projectId) {
     return projectId * 1 > -1 ? true : false;
+  },
+  _computeActive: function(winId) {
+    return winId !== null;
   },
   _onToggleBookmark: function(e) {
     var that = this;
@@ -8867,6 +8957,12 @@ var PtmProjectBehavior = {
     this.$.repeat.render();
   }
 };
+
+var PtmProjectBehavior = [
+  PtmProjectBehaviorImpl,
+  Polymer.IronControlState,
+  Polymer.IronA11yKeysBehavior
+];
 
 ;
 
@@ -10514,15 +10610,26 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
 ;
 
-  /** 
-  
+  /**
+
   @demo demo/index.html
-  @polymerBehavior 
-  
+  @polymerBehavior
+
   */
   Polymer.IronFormElementBehavior = {
 
     properties: {
+      /**
+       * Fired when the element is added to an `iron-form`.
+       *
+       * @event iron-form-element-register
+       */
+
+      /**
+       * Fired when the element is removed from an `iron-form`.
+       *
+       * @event iron-form-element-unregister
+       */
 
       /**
        * The name of this element.
@@ -10538,10 +10645,25 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         notify: true,
         type: String
       },
+
+      /**
+       * Need to keep a reference to the form this element is registered
+       * to, so that it can unregister if detached.
+       */
+      _parentForm: {
+        type: Object
+      }
     },
 
     attached: function() {
+      this._parentForm = Polymer.dom(this).parentNode;
       this.fire('iron-form-element-register');
+    },
+
+    detached: function() {
+      if (this._parentForm) {
+        this._parentForm.fire('iron-form-element-unregister', {target: this});
+      }
     }
 
   };
@@ -10926,6 +11048,10 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         type: Boolean,
         value: false
       },
+      isReady: {
+        type: Object,
+        value: null
+      },
       metaName: {
         type: String,
         value: ''
@@ -10954,7 +11080,8 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       new Polymer.IronMeta({type: 'idb', key: this.metaName, value: this});
 
       // Open the database
-      this.openDatabase().then(function() {
+      this.openDatabase();
+      this.isReady.then(function() {
         that.dbReady = true;
         that.fire('idb-ready');
       }, function() {
@@ -10966,7 +11093,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
      */
     openDatabase: function() {
       var that = this;
-      return new Promise(function(resolve, reject) {
+      this.isReady = new Promise(function(resolve, reject) {
         // If the database is already open, use it
         if (database[that.databaseName]) {
           that.db = database[that.databaseName];
@@ -11041,8 +11168,10 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     transaction: function() {
       var that = this;
       return new Promise(function(resolve, reject) {
-        // Return a transaction
-        resolve(that.db.transaction(that['objectStore'], 'readwrite'));
+        that.isReady.then(function() {
+          // Return a transaction
+          resolve(that.db.transaction(that['objectStore'], 'readwrite'));
+        });
       });
     },
     /**
@@ -11098,7 +11227,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
           }
           req.onerror = reject;
           trans.onerror = reject;
-        })
+        });
       });
     },
     /**
@@ -11118,7 +11247,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
           req.onerror = reject;
           trans.onerror = reject;
         });
-      })
+      });
     },
     /**
      * Gets all items in the store
@@ -12684,7 +12813,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
       Polymer.IronA11yAnnouncer.requestAvailability = function() {
         if (!Polymer.IronA11yAnnouncer.instance) {
-          document.createElement('iron-a11y-announcer');
+          Polymer.IronA11yAnnouncer.instance = document.createElement('iron-a11y-announcer');
         }
 
         document.body.appendChild(Polymer.IronA11yAnnouncer.instance);
@@ -13141,11 +13270,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     },
     ready: function() {
       this.db = this.$.meta.byKey('ProjectTabManager-favicons');
-      if (this.db.dbReady) {
-        this._readFavicon();
-      } else {
-        this.db.addEventListener('idb-ready', this._readFavicon.bind(this));
-      }
+      this._readFavicon();
     },
     _isActive: function(tabId) {
       return tabId !== undefined;
@@ -13187,6 +13312,8 @@ is separate from validation, and `allowed-pattern` does not affect how the input
                 domain: domain,
                 url: that.favIconUrl
               }
+            } else {
+              that.favIconUrl = DEFAULT_FAVICON_URL;
             }
           });
         }
@@ -13207,6 +13334,9 @@ is separate from validation, and `allowed-pattern` does not affect how the input
               url: that.favIconUrl
             }
           })
+        // Renew cache with new favicon
+        } else if (cache[domain].url == DEFAULT_FAVICON_URL) {
+          cache[domain].url = this.favIconUrl;
         }
       }
     },
@@ -13214,7 +13344,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       var domain = url.replace(/^.*?:\/\/(.*?)\/.*$/, "$1");
       // Special case, if Google Docs, it could be /spreadsheet, /document or /presentation
       if (/docs.google.com/.test(domain)) {
-        domain = url.replace(/^.*?:\/\/(.*?\/.*?)\/.*$/, "$1");
+        domain = url.replace(/^.*?:\/\/(docs.google.com\/(a\/.*?\/)?.*?)\/.*$/, "$1");
       }
       return domain;
     },
@@ -13232,16 +13362,13 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     behaviors: [
       PtmProjectBehavior
     ],
-    _isActive: function(winId) {
-      return winId !== null;
-    },
     _onTapLink: function(e) {
-      e.stopPropagation();
-      this.fire('link-project');
+      // e.stopPropagation();
+      this.fire('link-clicked');
     },
     _onTapRemove: function(e) {
-      e.stopPropagation();
-      this.fire('remove-session');
+      // e.stopPropagation();
+      this.fire('remove-clicked');
     }
   });
 
@@ -13255,45 +13382,101 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       activeWinId: {
         type: Number,
         value: 0
+      },
+      linkerStyle: {
+        type: String,
+        reflectToAttribute: true
       }
     },
     filter: function(item) {
       if (this.query.length < 2) {
         return !!item.session;
       } else {
-        var matched = item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
-        return matched || this.matchedBookmarks > 0;
+        // If one of bookmarks / sessions matches, keep this project visible
+        if (this._filterFields(item)) {
+          return true;
+        // Otherwise, keep this project only if title matches query
+        } else {
+          return item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
+        }
+      }
+    },
+    sort: function(item1, item2) {
+      var winId1 = item1.session && item1.session.winId ? true : false;
+      var winId2 = item2.session && item2.session.winId ? true : false;
+      if (winId1 === winId2) {
+        return 0;
+      } else if (winId1) {
+        return -1;
+      } else {
+        return 1;
       }
     },
     _isSearching: function(query, winId) {
       if (this.projectManager) {
         var activeWinId = this.projectManager.getActiveWindowId();
-        console.log('activeWinId', activeWinId);
         if (activeWinId == winId) {
           return true;
         }
       }
-      return query == '' ? false : true;
+      return query.length > 2;
     },
-    _chooseProject: function(e) {
+    _showLinkingProject: function(e) {
       this.$.linker.projects = this.projectManager.projects;
+      var top = e.target.getBoundingClientRect().top;
+      this.$.linker.linkerStyle = 'top: '+top+'px;';
       this.$.linker.openDialog(e.model.item);
     },
-    remove: function(e) {
-      // chrome.runtime.sendMessage({
-      //   command: 'removeProject',
-      //   projectId: sender.entry.id
-      // });
+    link: function(e) {
+      e.detail.sourceProject.associateBookmark(e.detail.targetProject.bookmark);
+      this.fire('reload');
+      this.fire('show-toast', {
+        text: 'Project linked'
+      });
     },
-    ready: function() {
+    unlink: function(e) {
+      e.detail.targetProject.deassociateBookmark();
+      this.fire('reload');
+      this.fire('show-toast', {
+        text: 'Project unlinked'
+      });
+    },
+    create: function(e) {
       var that = this;
-      // this.projectManager.update();
-      // chrome.runtime.onMessage.addListener(function(msg, sender) {
-      //   console.log('ptm-session-list event received:', msg);
-      //   if (msg.command == 'app-ready') {
-      //     that.projects = ProjectManager.projects;
-      //   }
-      // });
+      this.$.meta.byKey('confirm')
+        .prompt({
+          line1: 'New project',
+          line2: 'By saving this session as a project, all open tabs will be saved as bookmarks and sync across same Chrome profile.',
+          answer: '',
+          placeholder: 'New project name',
+          confirm: 'Save',
+          cancel: 'Cancel'
+        }).then(function(result) {
+          e.detail.targetProject.deassociateBookmark();
+          that.projectManager.createProject(e.detail.targetProject.id, result, function() {
+            that.fire('reload');
+            that.fire('show-toast', {
+              text: 'Project created'
+            });
+          });
+        });
+    },
+    remove: function(e) {
+      var that = this;
+      this.$.meta.byKey('confirm')
+        .confirm({
+          line1: 'Remove session?',
+          line2: 'This won\'t delete linked project.',
+          confirm: 'OK',
+          cancel: 'Cancel'
+        }).then(function() {
+          that.projectManager.removeSession(e.model.item.id, function() {
+            that.fire('reload');
+            that.fire('show-toast', {
+              text: 'Session removed'
+            });
+          });
+        });
     }
   });
 
@@ -13303,17 +13486,13 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     behaviors: [
       PtmProjectBehavior
     ],
-    _onTapEdit: function(e) {
+    _onTapRename: function(e) {
       e.stopPropagation();
-      this.fire('rename-project', {
-        projectId: this.projectId
-      });
+      this.fire('rename-clicked');
     },
     _onTapRemove: function(e) {
       e.stopPropagation();
-      this.fire('remove-project', {
-        projectId: this.projectId
-      });
+      this.fire('remove-clicked');
     }
   });
 
@@ -13327,26 +13506,53 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       if (this.query.length < 2) {
         return !!item.bookmark;
       } else {
-        var matched = item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
-        return matched || this.matchedBookmarks > 0;
+        // If one of bookmarks / sessions matches, keep this project visible
+        if (this._filterFields(item)) {
+          return true;
+        // Otherwise, keep this project only if title matches query
+        } else {
+          return item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
+        }
       }
     },
     _isSearching: function(query) {
       return query == '' ? false : true;
     },
     rename: function(e) {
-      // TODO: implement
-      // chrome.runtime.sendMessage({
-      //   command: 'renameProject',
-      //   projectId: e.detail.projectId,
-      //   title: detail.newTitle
-      // });
+      var that = this;
+      this.$.meta.byKey('confirm')
+        .prompt({
+          line1: 'Rename project',
+          line2: 'Change project name. This will affect name of the project bookmark folder as well.',
+          answer: e.model.item.title,
+          placeholder: 'New project name',
+          confirm: 'Update',
+          cancel: 'Cancel'
+        }).then(function(result) {
+          that.projectManager.renameProject(e.model.item.id, result, function() {
+            that.fire('reload');
+            that.fire('show-toast', {
+              text: 'Project renamed'
+            });
+          });
+        });
     },
     remove: function(e) {
-      chrome.runtime.sendMessage({
-        command: 'removeProject',
-        projectId: e.detail.projectId
-      });
+      var that = this;
+      this.$.meta.byKey('confirm')
+        .confirm({
+          line1: 'Remove project?',
+          line2: 'This will permanently remove project.',
+          confirm: 'OK',
+          cancel: 'Cancel'
+        }).then(function() {
+          that.projectManager.removeProject(e.model.item.id, function() {
+            that.fire('reload');
+            that.fire('show-toast', {
+              text: 'Project removed'
+            });
+          });
+        });
     }
   });
 
@@ -13935,6 +14141,10 @@ is separate from validation, and `allowed-pattern` does not affect how the input
   Polymer({
     is: 'ptm-project-linker',
     properties: {
+      show: {
+        type: Boolean,
+        value: false
+      },
       projects: {
         type: Array,
         value: []
@@ -13944,36 +14154,148 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         value: {}
       }
     },
-    openDialog: function(linkingProject) {
-      this.linkingProject = linkingProject;
-      this.$.dialog.open();
+    listeners: {
+      'blur': '_onBlur'
     },
-    createNew: function() {
-      this.$.dialog.close();
-      this.$.create.open();
+    // behaviors: [
+    //   Polymer.IronA11yKeysBehavior
+    // ],
+    // ready: function() {
+    //   this.keyEventTarget = this;
+    //   this.addOwnKeyBinding('esc', '_onBlur');
+    // },
+    openDialog: function(linkingProject) {
+      this.show = true;
+      this.linkingProject = linkingProject;
+    },
+    _create: function(e) {
+      this.show = false;
+      this.fire('create-project', {
+        targetProject: this.linkingProject
+      });
     },
     _link: function(e) {
-      e.stopPropagation();
-      this.linkingProject.associateBookmark(e.model.item.bookmark);
-      this.$.dialog.close();
-      this.fire('show-toast', {
-        text: 'Project linked'
+      // e.stopPropagation();
+      this.show = false;
+      this.fire('link-project', {
+        sourceProject: this.linkingProject,
+        targetProject: e.model.item
       });
-      this.fire('reload');
     },
-    unlink: function(e) {
+    _unlink: function(e) {
+      // e.stopPropagation();
+      this.show = false;
+      this.fire('unlink-project', {
+        targetProject: this.linkingProject,
+      });
+    },
+    _onBlur: function(e) {
       e.stopPropagation();
+      e.preventDefault();
+      this.show = false;
     },
-    _isProjectNotUsed: function(item) {
+    _filterSessions: function(item) {
       return !!item.bookmark;
     },
-    _isAlreadyLinked: function(project) {
+    _isLinked: function(project) {
+      return !!project.session;
+    },
+    _showUnlinkIfLinked: function(project) {
       return !!project.bookmark ? true : false;
     },
-    _isLinkedProject: function(project) {
+    _getLinkedIcon: function(project) {
       return !project.session ? '' : 'check';
     }
   })
+
+;
+  Polymer({
+    is: 'ptm-dialog',
+    properties: {
+      line1: {
+        type: String,
+        value: ''
+      },
+      line2: {
+        type: String,
+        value: ''
+      },
+      answer: {
+        type: String,
+        value: ''
+      },
+      okay: {
+        type: String,
+        value: ''
+      },
+      cancel: {
+        type: String,
+        value: ''
+      },
+      _isPrompt: {
+        type: Boolean,
+        value: false
+      },
+      _confirmed: {
+        type: Function,
+        value: function() {}
+      },
+      _canceled: {
+        type: Function,
+        value: function() {}
+      }
+    },
+    ready: function() {
+      new Polymer.IronMeta({type: 'dialog', key: 'confirm', value: this});
+    },
+    prompt: function(qs) {
+      var that = this;
+      this.line1 = qs.line1 || '';
+      this.line2 = qs.line2 || 'This operation can\'t be undone.';
+      this.answer = qs.answer || '';
+      this.placeholder = qs.placeholder || 'Enter value';
+      this.okay = qs.confirm || 'OK';
+      this.cancel = qs.cancel || 'Cancel';
+      this._isPrompt = true;
+      this.$.dialog.open();
+      return new Promise(function(resolve, reject) {
+        that._confirmed = resolve || function() {};
+        that._canceled = reject || function() {};
+      });
+    },
+    confirm: function(qs) {
+      var that = this;
+      this.line1 = qs.line1 || 'Are you sure?';
+      this.line2 = qs.line2 || 'This operation can\'t be undone.';
+      this.okay = qs.confirm || 'OK';
+      this.cancel = qs.cancel || 'Cancel';
+      this._isPrompt = false;
+      this.$.dialog.open();
+      return new Promise(function(resolve, reject) {
+        that._confirmed = resolve || function() {};
+        that._canceled = reject || function() {};
+      });
+    },
+    close: function() {
+      this.$.dialog.close();
+    },
+    _onConfirmed: function(e) {
+      if (this._isPrompt) {
+        this._confirmed(this.answer);
+      } else {
+        this._confirmed();
+      }
+      this._confirmed = function() {};
+      this._canceled = function() {};
+      this.close();
+    },
+    _onCanceled: function(e) {
+      this._canceled();
+      this._canceled = function() {};
+      this._confirmed = function() {};
+      this.close();
+    }
+  });
 
 ;
   Polymer({
@@ -14026,6 +14348,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         forceReload: e.detail.forceReload || true
       }, function() {
         that.projectManager = chrome.extension.getBackgroundPage().projectManager;
+        that.set('projectManager.projects', that.projectManager.projects);
         that.$.pages.selected = that.selected;
       });
     },

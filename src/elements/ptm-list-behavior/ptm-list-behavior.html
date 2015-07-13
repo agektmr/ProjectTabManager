@@ -16,7 +16,24 @@ var PtmListBehavior = {
     'remove-bookmark': '_onRemoveBookmark'
   },
   search: function(e) {
-    this.$.repeat.render();
+    this.debounce('search', (function() {
+      this.$.repeat.render();
+    }).bind(this), 100);
+  },
+  /**
+   * See if there're any matching bookmarks / sessions
+   * @return {Boolean} True if matching bookmark exists.
+   */
+  _filterFields: function(item) {
+    var matched = false;
+    for (var i = 0; i < item.fields.length; i++) {
+      var field = item.fields[i];
+      if (field.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1) {
+        matched = true;
+        break;
+      }
+    }
+    return matched;
   },
   open: function(e) {
     var project = this.projectManager.getProjectFromId(e.detail.projectId);

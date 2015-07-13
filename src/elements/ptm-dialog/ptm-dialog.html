@@ -1,0 +1,121 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/iron-meta/iron-meta.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+
+
+<dom-module id="ptm-dialog">
+  <style>
+    .accent {
+      background-color: var(--accent-color);
+    }
+  </style>
+  <template>
+    <paper-dialog id="dialog">
+      <h2>{{line1}}</h2>
+      <template is="dom-if" if="{{line2}}">
+        <p>{{line2}}</p>
+      </template>
+      <template is="dom-if" if="{{_isPrompt}}">
+        <paper-input id="input" value="{{answer}}" placeholder="{{placeholder}}"></paper-input>
+      </template>
+      <div class="buttons">
+        <paper-button class="accent" raised on-tap="_onConfirmed">{{okay}}</paper-button>
+        <paper-button raised on-tap="_onCanceled">{{cancel}}</paper-button>
+      </div>
+    </paper-dialog>
+  </template>
+</dom-module>
+
+<script>
+  Polymer({
+    is: 'ptm-dialog',
+    properties: {
+      line1: {
+        type: String,
+        value: ''
+      },
+      line2: {
+        type: String,
+        value: ''
+      },
+      answer: {
+        type: String,
+        value: ''
+      },
+      okay: {
+        type: String,
+        value: ''
+      },
+      cancel: {
+        type: String,
+        value: ''
+      },
+      _isPrompt: {
+        type: Boolean,
+        value: false
+      },
+      _confirmed: {
+        type: Function,
+        value: function() {}
+      },
+      _canceled: {
+        type: Function,
+        value: function() {}
+      }
+    },
+    ready: function() {
+      new Polymer.IronMeta({type: 'dialog', key: 'confirm', value: this});
+    },
+    prompt: function(qs) {
+      var that = this;
+      this.line1 = qs.line1 || '';
+      this.line2 = qs.line2 || 'This operation can\'t be undone.';
+      this.answer = qs.answer || '';
+      this.placeholder = qs.placeholder || 'Enter value';
+      this.okay = qs.confirm || 'OK';
+      this.cancel = qs.cancel || 'Cancel';
+      this._isPrompt = true;
+      this.$.dialog.open();
+      return new Promise(function(resolve, reject) {
+        that._confirmed = resolve || function() {};
+        that._canceled = reject || function() {};
+      });
+    },
+    confirm: function(qs) {
+      var that = this;
+      this.line1 = qs.line1 || 'Are you sure?';
+      this.line2 = qs.line2 || 'This operation can\'t be undone.';
+      this.okay = qs.confirm || 'OK';
+      this.cancel = qs.cancel || 'Cancel';
+      this._isPrompt = false;
+      this.$.dialog.open();
+      return new Promise(function(resolve, reject) {
+        that._confirmed = resolve || function() {};
+        that._canceled = reject || function() {};
+      });
+    },
+    close: function() {
+      this.$.dialog.close();
+    },
+    _onConfirmed: function(e) {
+      if (this._isPrompt) {
+        this._confirmed(this.answer);
+      } else {
+        this._confirmed();
+      }
+      this._confirmed = function() {};
+      this._canceled = function() {};
+      this.close();
+    },
+    _onCanceled: function(e) {
+      this._canceled();
+      this._canceled = function() {};
+      this._confirmed = function() {};
+      this.close();
+    }
+  });
+</script>

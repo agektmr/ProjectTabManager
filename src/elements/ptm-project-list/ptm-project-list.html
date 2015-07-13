@@ -1,4 +1,5 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-meta/iron-meta.html">
 <link rel="import" href="../ptm-list-behavior/ptm-list-behavior.html">
 <link rel="import" href="../ptm-project/ptm-project.html">
 
@@ -6,6 +7,7 @@
   <style>
   </style>
   <template>
+    <iron-meta id="meta" type="dialog"></iron-meta>
     <template id="repeat" is="dom-repeat" items="{{projectManager.projects}}" filter="filter">
       <ptm-project
         project="{{item}}"
@@ -14,9 +16,9 @@
         fields="{{item.fields}}"
         query="{{query}}"
         expanded="{{_isSearching(query)}}"
-        on-open-project="open"
-        on-rename-project="rename"
-        on-remove-project="remove">
+        on-open-clicked="open"
+        on-rename-clicked="rename"
+        on-remove-clicked="remove">
       </ptm-project>
     </template>
   </template>
@@ -32,26 +34,53 @@
       if (this.query.length < 2) {
         return !!item.bookmark;
       } else {
-        var matched = item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
-        return matched || this.matchedBookmarks > 0;
+        // If one of bookmarks / sessions matches, keep this project visible
+        if (this._filterFields(item)) {
+          return true;
+        // Otherwise, keep this project only if title matches query
+        } else {
+          return item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
+        }
       }
     },
     _isSearching: function(query) {
       return query == '' ? false : true;
     },
     rename: function(e) {
-      // TODO: implement
-      // chrome.runtime.sendMessage({
-      //   command: 'renameProject',
-      //   projectId: e.detail.projectId,
-      //   title: detail.newTitle
-      // });
+      var that = this;
+      this.$.meta.byKey('confirm')
+        .prompt({
+          line1: 'Rename project',
+          line2: 'Change project name. This will affect name of the project bookmark folder as well.',
+          answer: e.model.item.title,
+          placeholder: 'New project name',
+          confirm: 'Update',
+          cancel: 'Cancel'
+        }).then(function(result) {
+          that.projectManager.renameProject(e.model.item.id, result, function() {
+            that.fire('reload');
+            that.fire('show-toast', {
+              text: 'Project renamed'
+            });
+          });
+        });
     },
     remove: function(e) {
-      chrome.runtime.sendMessage({
-        command: 'removeProject',
-        projectId: e.detail.projectId
-      });
+      var that = this;
+      this.$.meta.byKey('confirm')
+        .confirm({
+          line1: 'Remove project?',
+          line2: 'This will permanently remove project.',
+          confirm: 'OK',
+          cancel: 'Cancel'
+        }).then(function() {
+          that.projectManager.removeProject(e.model.item.id, function() {
+            that.fire('reload');
+            that.fire('show-toast', {
+              text: 'Project removed'
+            });
+          });
+        });
     }
   });
 </script>

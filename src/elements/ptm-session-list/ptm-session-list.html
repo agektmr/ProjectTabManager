@@ -1,4 +1,5 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-meta/iron-meta.html">
 <link rel="import" href="../ptm-list-behavior/ptm-list-behavior.html">
 <link rel="import" href="../ptm-session/ptm-session.html">
 
@@ -6,7 +7,17 @@
   <style>
   </style>
   <template>
-    <template id="repeat" is="dom-repeat" items="{{projectManager.projects}}" filter="filter">
+    <iron-meta id="meta" type="dialog"></iron-meta>
+    <ptm-project-linker
+      id="linker"
+      style$="{{linkerStyle}}"
+      on-link-project="link"
+      on-unlink-project="unlink"
+      on-create-project="create"
+      on-associate-bookmark="associate"
+      projects="{{projectManager.projects}}">
+    </ptm-project-linker>
+    <template id="repeat" is="dom-repeat" items="{{projectManager.projects}}" filter="filter" sort="sort">
       <ptm-session
         project="{{item}}"
         project-id="{{item.id}}"
@@ -17,17 +28,12 @@
         fields="{{item.fields}}"
         query="{{query}}"
         expanded="{{_isSearching(query, item.session.winId)}}"
-        on-link-project="_chooseProject"
-        on-open-project="open"
-        on-remove-session="remove">
+        on-open-clicked="open"
+        on-link-clicked="_showLinkingProject"
+        on-remove-clicked="remove"
+        tabindex="0">
       </ptm-session>
     </template>
-    <ptm-project-linker
-      id="linker"
-      on-link-project="link"
-      on-associate-bookmark="associate"
-      projects="{{projectManager.projects}}">
-    </ptm-project-linker>
   </template>
 </dom-module>
 
@@ -41,45 +47,101 @@
       activeWinId: {
         type: Number,
         value: 0
+      },
+      linkerStyle: {
+        type: String,
+        reflectToAttribute: true
       }
     },
     filter: function(item) {
       if (this.query.length < 2) {
         return !!item.session;
       } else {
-        var matched = item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
-        return matched || this.matchedBookmarks > 0;
+        // If one of bookmarks / sessions matches, keep this project visible
+        if (this._filterFields(item)) {
+          return true;
+        // Otherwise, keep this project only if title matches query
+        } else {
+          return item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
+        }
+      }
+    },
+    sort: function(item1, item2) {
+      var winId1 = item1.session && item1.session.winId ? true : false;
+      var winId2 = item2.session && item2.session.winId ? true : false;
+      if (winId1 === winId2) {
+        return 0;
+      } else if (winId1) {
+        return -1;
+      } else {
+        return 1;
       }
     },
     _isSearching: function(query, winId) {
       if (this.projectManager) {
         var activeWinId = this.projectManager.getActiveWindowId();
-        console.log('activeWinId', activeWinId);
         if (activeWinId == winId) {
           return true;
         }
       }
-      return query == '' ? false : true;
+      return query.length > 2;
     },
-    _chooseProject: function(e) {
+    _showLinkingProject: function(e) {
       this.$.linker.projects = this.projectManager.projects;
+      var top = e.target.getBoundingClientRect().top;
+      this.$.linker.linkerStyle = 'top: '+top+'px;';
       this.$.linker.openDialog(e.model.item);
     },
-    remove: function(e) {
-      // chrome.runtime.sendMessage({
-      //   command: 'removeProject',
-      //   projectId: sender.entry.id
-      // });
+    link: function(e) {
+      e.detail.sourceProject.associateBookmark(e.detail.targetProject.bookmark);
+      this.fire('reload');
+      this.fire('show-toast', {
+        text: 'Project linked'
+      });
     },
-    ready: function() {
+    unlink: function(e) {
+      e.detail.targetProject.deassociateBookmark();
+      this.fire('reload');
+      this.fire('show-toast', {
+        text: 'Project unlinked'
+      });
+    },
+    create: function(e) {
       var that = this;
-      // this.projectManager.update();
-      // chrome.runtime.onMessage.addListener(function(msg, sender) {
-      //   console.log('ptm-session-list event received:', msg);
-      //   if (msg.command == 'app-ready') {
-      //     that.projects = ProjectManager.projects;
-      //   }
-      // });
+      this.$.meta.byKey('confirm')
+        .prompt({
+          line1: 'New project',
+          line2: 'By saving this session as a project, all open tabs will be saved as bookmarks and sync across same Chrome profile.',
+          answer: '',
+          placeholder: 'New project name',
+          confirm: 'Save',
+          cancel: 'Cancel'
+        }).then(function(result) {
+          e.detail.targetProject.deassociateBookmark();
+          that.projectManager.createProject(e.detail.targetProject.id, result, function() {
+            that.fire('reload');
+            that.fire('show-toast', {
+              text: 'Project created'
+            });
+          });
+        });
+    },
+    remove: function(e) {
+      var that = this;
+      this.$.meta.byKey('confirm')
+        .confirm({
+          line1: 'Remove session?',
+          line2: 'This won\'t delete linked project.',
+          confirm: 'OK',
+          cancel: 'Cancel'
+        }).then(function() {
+          that.projectManager.removeSession(e.model.item.id, function() {
+            that.fire('reload');
+            that.fire('show-toast', {
+              text: 'Session removed'
+            });
+          });
+        });
     }
   });
 </script>

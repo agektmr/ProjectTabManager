@@ -6,7 +6,7 @@
   "scripts": {
     "postinstall": "bower install",
     "vulcanize": "vulcanize src/elements/elements.html | crisper -h src/elements/vulcanized.elements.html -j src/elements/vulcanized.elements.js",
-    "build": "npm run vulcanize & grunt vulcanizeless --force"
+    "build": "npm run vulcanize; grunt vulcanizeless --force"
   },
   "repository": "",
   "keywords": [

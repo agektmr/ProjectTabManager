@@ -1549,10 +1549,10 @@
     --menu-link-color:             #111111;
 
     /* paper-input */
-    --paper-input-container-color:       rgba(255, 255, 255, 0.64);
+/*    --paper-input-container-color:       rgba(255, 255, 255, 0.64);
     --paper-input-container-focus-color: rgba(255, 255, 255, 1);
     --paper-input-container-input-color: #fff;
-
+*/
     /* paper-icon-button */
     --paper-icon-button: {
       width: 16px;
@@ -1563,11 +1563,6 @@
     /* iron-icon */
     --iron-icon-width: 100%;
     --iron-icon-height: 100%;
-
-    /* paper-toolbar */
-    --paper-toolbar: {
-      /*height: 24px;*/
-    };
 
     /* paper-tabs */
     --paper-tabs: {
@@ -1590,8 +1585,7 @@
 
     --paper-dialog: {
       font-size: 1.0em;
-      margin: 12px 20px;
-      width: 80%;
+      margin: 0 20px;
     };
     --paper-dialog-background-color: var(--default-background-color);
     --paper-dialog-button-color: var(--default-background-color);
@@ -1606,7 +1600,8 @@
     };
 
     --paper-button: {
-
+      color: var(--text-primary-color);
+      background-color: var(--default-primary-color);
     };
 
     --paper-font-subhead: {
@@ -2784,7 +2779,7 @@
         <span>[[title]]</span>
       </div>
       <template is="dom-if" if="[[projectLinked]]">
-        <paper-icon-button id="star" icon="icons:star" on-tap="_onTapStar" bookmarked$="[[_isBookmarked(bookmarkId)]]"></paper-icon-button>
+        <paper-icon-button id="star" icon="icons:star" on-tap="_onTapStar" bookmarked$="[[_isBookmarked(bookmarkId)]]" tabindex="-1"></paper-icon-button>
       </template>
     </paper-item>
   </template>
@@ -2795,14 +2790,14 @@
     :host {
       display: block;
     }
-    :host:focus paper-item {
-      background-color: var(--light-primary-color);
-    }
     paper-material[expanded] {
       margin: 0 0 1em 0;
     }
     paper-item > *:not(:first-child):not(:last-child) {
       margin-right: 0 !important;
+    }
+    paper-item[focused] {
+      background-color: var(--light-primary-color);
     }
     .title {
       cursor: pointer;
@@ -2813,21 +2808,24 @@
       @apply(--layout-flex);
     }
     .title[active] {
+      font-weight: bold;
       color: var(--primary-text-color);
     }
   </style>
   <template>
-    <paper-material elevation="[[_computeElevation(expanded)]]" expanded$="[[expanded]]">
-      <paper-item>
+    <paper-material elevation="[[_computeElevation(expanded)]]" expanded$="[[expanded]]" animated="">
+      <paper-item focused$="{{focused}}">
         <paper-icon-button tabindex="-1" icon="[[_computeFoldIcon(expanded)]]" on-tap="toggle"></paper-icon-button>
-        <div class="title" on-tap="openProject" active$="[[_isActive(winId)]]">
+        <div class="title" on-tap="openProject" active$="[[_computeActive(winId)]]">
           
           <span>[[projectTitle]]</span>
         </div>
+        <template is="dom-if" if="[[!_computeProjectLinked(projectId)]]" restamp="">
+          <paper-icon-button icon="icons:link" on-tap="_onTapLink" tabindex="-1"></paper-icon-button>
+        </template>
         <template is="dom-if" if="[[expanded]]" restamp="">
-          <paper-icon-button icon="icons:link" on-tap="_onTapLink"></paper-icon-button>
-          <template is="dom-if" if="[[!_isActive(winId)]]">
-            <paper-icon-button icon="icons:delete" on-tap="_onTapRemove"></paper-icon-button>
+          <template is="dom-if" if="[[!_computeActive(winId)]]">
+            <paper-icon-button icon="icons:delete" on-tap="_onTapRemove" tabindex="-1"></paper-icon-button>
           </template>
         </template>
       </paper-item>
@@ -2842,6 +2840,7 @@
           <template id="repeat" is="dom-repeat" items="[[fields]]" filter="filter">
             <ptm-bookmark url="[[item.url]]" fav-icon-url="{{item.favIconUrl}}" bookmark-id="[[item.id]]" tab-id="[[item.tabId]]" title="[[item.title]]" project-linked="[[_computeProjectLinked(projectId)]]" on-toggle-bookmark="_onToggleBookmark"></ptm-bookmark>
           </template>
+          
         </template>
       </iron-collapse>
     </paper-material>
@@ -2852,12 +2851,13 @@
   <style>
   </style>
   <template>
-    <template id="repeat" is="dom-repeat" items="{{projectManager.projects}}" filter="filter">
-      <ptm-session project="{{item}}" project-id="{{item.id}}" session-id="{{item.session.id}}" win-id="{{item.session.winId}}" session-title="{{item.session.title}}" project-title="{{item.title}}" fields="{{item.fields}}" query="{{query}}" expanded="{{_isSearching(query, item.session.winId)}}" on-link-project="_chooseProject" on-open-project="open" on-remove-session="remove">
+    <iron-meta id="meta" type="dialog"></iron-meta>
+    <ptm-project-linker id="linker" style$="{{linkerStyle}}" on-link-project="link" on-unlink-project="unlink" on-create-project="create" on-associate-bookmark="associate" projects="{{projectManager.projects}}">
+    </ptm-project-linker>
+    <template id="repeat" is="dom-repeat" items="{{projectManager.projects}}" filter="filter" sort="sort">
+      <ptm-session project="{{item}}" project-id="{{item.id}}" session-id="{{item.session.id}}" win-id="{{item.session.winId}}" session-title="{{item.session.title}}" project-title="{{item.title}}" fields="{{item.fields}}" query="{{query}}" expanded="{{_isSearching(query, item.session.winId)}}" on-open-clicked="open" on-link-clicked="_showLinkingProject" on-remove-clicked="remove" tabindex="0">
       </ptm-session>
     </template>
-    <ptm-project-linker id="linker" on-link-project="link" on-associate-bookmark="associate" projects="{{projectManager.projects}}">
-    </ptm-project-linker>
   </template>
 </dom-module>
 
@@ -2866,14 +2866,17 @@
     :host {
       display: block;
     }
-    :host:focus paper-material {
-      background-color: var(--light-primary-color);
+    :host:focus {
+      outline: none;
     }
     paper-material[expanded] {
       margin: 0 0 1em 0;
     }
     paper-item > *:not(:first-child):not(:last-child) {
       margin-right: 0 !important;
+    }
+    paper-item[focused] {
+      background-color: var(--light-primary-color);
     }
     .title {
       cursor: pointer;
@@ -2885,15 +2888,15 @@
     }
   </style>
   <template>
-    <paper-material elevation="[[_computeElevation(expanded)]]" expanded$="[[expanded]]">
-      <paper-item>
+    <paper-material elevation="[[_computeElevation(expanded)]]" expanded$="[[expanded]]" animated="">
+      <paper-item focused$="{{focused}}">
         <paper-icon-button tabindex="-1" icon="[[_computeFoldIcon(expanded)]]" on-tap="toggle"></paper-icon-button>
         <div class="title" on-tap="openProject">
           
           <span>{{projectTitle}}</span>
         </div>
         <template is="dom-if" if="[[expanded]]">
-          <paper-icon-button icon="create" on-tap="_onTapEdit"></paper-icon-button>
+          <paper-icon-button icon="create" on-tap="_onTapRename"></paper-icon-button>
           <paper-icon-button icon="delete" on-tap="_onTapRemove"></paper-icon-button>
         </template>
       </paper-item>
@@ -2918,8 +2921,9 @@
   <style>
   </style>
   <template>
+    <iron-meta id="meta" type="dialog"></iron-meta>
     <template id="repeat" is="dom-repeat" items="{{projectManager.projects}}" filter="filter">
-      <ptm-project project="{{item}}" project-id="{{item.id}}" project-title="{{item.title}}" fields="{{item.fields}}" query="{{query}}" expanded="{{_isSearching(query)}}" on-open-project="open" on-rename-project="rename" on-remove-project="remove">
+      <ptm-project project="{{item}}" project-id="{{item.id}}" project-title="{{item.title}}" fields="{{item.fields}}" query="{{query}}" expanded="{{_isSearching(query)}}" on-open-clicked="open" on-rename-clicked="rename" on-remove-clicked="remove">
       </ptm-project>
     </template>
   </template>
@@ -3354,52 +3358,83 @@
 
 <dom-module id="ptm-project-linker" assetpath="ptm-project-linker/">
   <style>
+    :host {
+      position: absolute;
+      z-index: 12;
+      width: 100%;
+      padding: 0 24px;
+      box-sizing: border-box;
+    }
+    paper-material {
+      display: none;
+      background-color: var(--default-background-color);
+    }
+    paper-material[show] {
+      display: block;
+    }
     .accent {
       color: var(--text-primary-color);
-      background: var(--accent-color);
+      background-color: var(--accent-color);
     }
     paper-item {
       cursor: pointer;
+      padding-left: 6px;
+    }
+    paper-item[disabled] {
+      cursor: auto;
+      color: var(--disabled-text-color);
     }
     paper-ripple {
       color: var(--default-primary-color);
     }
-    paper-icon-button[icon="check"] ~ span {
-      color: var(--disabled-text-color);
-    }
-    paper-dialog-scrollable {
-      max-height: 300px;
+    .buttons {
+      padding: 10px 5px 10px 10px;
+      @apply(--layout-horizontal);
+      @apply(--layout-end-justified);
     }
   </style>
   <template>
-    <paper-dialog id="dialog" modal="">
-      <h2>Link with a project</h2>
-      <paper-dialog-scrollable>
-        <paper-item on-tap="createNew">
+    <paper-material id="dialog" elevation="3" show$="{{show}}" animated="">
+      <paper-item on-tap="_create">
+        
+        <span class="flex title">Create a new project</span>
+        <paper-icon-button icon="icons:add"></paper-icon-button>
+      </paper-item>
+      <template is="dom-repeat" items="[[projects]]" filter="_filterSessions">
+        <paper-item on-tap="_link" disabled$="[[_isLinked(item)]]">
           
-          <paper-icon-button icon="icons:add"></paper-icon-button>
-          <span class="flex title">Create a new project</span>
+          <span class="flex title">[[item.title]]</span>
+          <paper-icon-button icon$="[[_getLinkedIcon(item)]]"></paper-icon-button>
         </paper-item>
-        <template is="dom-repeat" items="{{projects}}" filter="_isProjectNotUsed">
-          <paper-item on-tap="_link">
-            
-            <paper-icon-button icon$="{{_isLinkedProject(item)}}"></paper-icon-button>
-            <span class="flex title">{{item.title}}</span>
-          </paper-item>
+      </template>
+      <div class="buttons">
+        <template is="dom-if" if="{{_showUnlinkIfLinked(linkingProject)}}">
+          <paper-button class="accent" raised="" on-tap="_unlink">Unlink</paper-button>
         </template>
-      </paper-dialog-scrollable>
-      <div class="buttons">
-        <paper-button dialog-dismiss="" raised="">Cancel</paper-button>
+        <paper-button on-tap="_onBlur" raised="">Cancel</paper-button>
       </div>
-    </paper-dialog>
-    <paper-dialog id="create" modal="">
-      <h2>Create a new project</h2>
-      <div>
-        <paper-input label="New Project Name" value$="{{projectName}}"></paper-input>
-      </div>
+    </paper-material>
+  </template>
+</dom-module>
+
+<dom-module id="ptm-dialog" assetpath="ptm-dialog/">
+  <style>
+    .accent {
+      background-color: var(--accent-color);
+    }
+  </style>
+  <template>
+    <paper-dialog id="dialog">
+      <h2>{{line1}}</h2>
+      <template is="dom-if" if="{{line2}}">
+        <p>{{line2}}</p>
+      </template>
+      <template is="dom-if" if="{{_isPrompt}}">
+        <paper-input id="input" value="{{answer}}" placeholder="{{placeholder}}"></paper-input>
+      </template>
       <div class="buttons">
-        <paper-button dialog-dismiss="" raised="">Cancel</paper-button>
-        <paper-button class="accent" dialog-confirm="" raised="">Save</paper-button>
+        <paper-button class="accent" raised="" on-tap="_onConfirmed">{{okay}}</paper-button>
+        <paper-button raised="" on-tap="_onCanceled">{{cancel}}</paper-button>
       </div>
     </paper-dialog>
   </template>
@@ -3410,19 +3445,28 @@
     paper-header-panel {
       min-height: 400px;
     }
-    #toolbar {
+    paper-input {
+      --paper-input-container-color:       rgba(255, 255, 255, 0.64);
+      --paper-input-container-focus-color: rgba(255, 255, 255, 1);
+      --paper-input-container-input-color: var(--default-background-color);
+    }
+    .paper-header {
       background-color: var(--default-primary-color);
-      /*padding: 0;*/
     }
-    #toolbar paper-icon-button {
+    .toolbar-header {
+      @apply(--layout-horizontal);
+      @apply(--layout-center);
+      margin: 0 4px -8px 16px;
+    }
+    .paper-header paper-icon-button {
       color: var(--text-primary-color);
+      margin-left: 4px;
     }
-    .bottom {
+    .paper-header .bottom {
       @apply(--layout-horizontal);
       @apply(--layout-center);
     }
     .loading {
-      height: 100%;
       @apply(--layout-horizontal);
       @apply(--layout-center);
       @apply(--layout-center-justified);
@@ -3431,35 +3475,26 @@
       @apply(--layout-horizontal);
       @apply(--layout-center);
     }
-    #spinner {
-      @apply(--layout-center-center);
-    }
   </style>
   <template>
+    <ptm-dialog></ptm-dialog>
     <paper-header-panel>
-      <paper-toolbar id="toolbar">
-        <div class="top flex layout horizontal">
+      <div class="paper-header">
+        <div class="toolbar-header">
           <paper-input placeholder="Project Tab Manager" class="flex" value="{{query}}"></paper-input>
-          <paper-icon-button icon="icons:more-vert"></paper-icon-button>
-          <iron-selector id="menu" hidden="">
-            <template is="dom-repeat" items="{{menuItems}}">
-              <paper-item>
-                <div class="flex">{{item.text}}</div>
-              </paper-item>
-            </template>
-          </iron-selector>
+          <paper-icon-button icon="icons:more-vert" tabindex="-1"></paper-icon-button>
         </div>
-        <paper-tabs class="bottom flex self-end" selected="{{selected}}">
-          <paper-tab>Sessions</paper-tab>
-          <paper-tab>Projects</paper-tab>
+        <paper-tabs class="flex" selected="{{selected}}" tabindex="-1">
+          <paper-tab tabindex="-1">Sessions</paper-tab>
+          <paper-tab tabindex="-1">Projects</paper-tab>
         </paper-tabs>
-      </paper-toolbar>
+      </div>
       <iron-pages id="pages" selected="[[selected]]">
         <ptm-session-list query="[[query]]" project-manager="[[projectManager]]">
         </ptm-session-list>
         <ptm-project-list query="[[query]]" project-manager="[[projectManager]]">
         </ptm-project-list>
-        <div class="loading">
+        <div class="fit loading">
           <paper-spinner active=""></paper-spinner>
         </div>
       </iron-pages>

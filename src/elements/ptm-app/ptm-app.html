@@ -11,25 +11,35 @@
 <link rel="import" href="../ptm-session-list/ptm-session-list.html">
 <link rel="import" href="../ptm-project-list/ptm-project-list.html">
 <link rel="import" href="../ptm-project-linker/ptm-project-linker.html">
+<link rel="import" href="../ptm-dialog/ptm-dialog.html">
 
 <dom-module id="ptm-app">
   <style>
     paper-header-panel {
       min-height: 400px;
     }
-    #toolbar {
+    paper-input {
+      --paper-input-container-color:       rgba(255, 255, 255, 0.64);
+      --paper-input-container-focus-color: rgba(255, 255, 255, 1);
+      --paper-input-container-input-color: var(--default-background-color);
+    }
+    .paper-header {
       background-color: var(--default-primary-color);
-      /*padding: 0;*/
     }
-    #toolbar paper-icon-button {
+    .toolbar-header {
+      @apply(--layout-horizontal);
+      @apply(--layout-center);
+      margin: 0 4px -8px 16px;
+    }
+    .paper-header paper-icon-button {
       color: var(--text-primary-color);
+      margin-left: 4px;
     }
-    .bottom {
+    .paper-header .bottom {
       @apply(--layout-horizontal);
       @apply(--layout-center);
     }
     .loading {
-      height: 100%;
       @apply(--layout-horizontal);
       @apply(--layout-center);
       @apply(--layout-center-justified);
@@ -38,29 +48,27 @@
       @apply(--layout-horizontal);
       @apply(--layout-center);
     }
-    #spinner {
-      @apply(--layout-center-center);
-    }
   </style>
   <template>
+    <ptm-dialog></ptm-dialog>
     <paper-header-panel>
-      <paper-toolbar id="toolbar">
-        <div class="top flex layout horizontal">
+      <div class="paper-header">
+        <div class="toolbar-header">
           <paper-input placeholder="Project Tab Manager" class="flex" value="{{query}}"></paper-input>
-          <paper-icon-button icon="icons:more-vert"></paper-icon-button>
-          <iron-selector id="menu" hidden>
+          <paper-icon-button icon="icons:more-vert" tabindex="-1"></paper-icon-button>
+<!--           <iron-selector id="menu" hidden>
             <template is="dom-repeat" items="{{menuItems}}">
               <paper-item>
                 <div class="flex">{{item.text}}</div>
               </paper-item>
             </template>
           </iron-selector>
-        </div>
-        <paper-tabs class="bottom flex self-end" selected="{{selected}}">
-          <paper-tab>Sessions</paper-tab>
-          <paper-tab>Projects</paper-tab>
+ -->        </div>
+        <paper-tabs class="flex" selected="{{selected}}" tabindex="-1">
+          <paper-tab tabindex="-1">Sessions</paper-tab>
+          <paper-tab tabindex="-1">Projects</paper-tab>
         </paper-tabs>
-      </paper-toolbar>
+      </div>
       <iron-pages id="pages" selected="[[selected]]">
         <ptm-session-list
           query="[[query]]"
@@ -70,7 +78,7 @@
           query="[[query]]"
           project-manager="[[projectManager]]">
         </ptm-project-list>
-        <div class="loading">
+        <div class="fit loading">
           <paper-spinner active></paper-spinner>
         </div>
       </iron-pages>
@@ -130,6 +138,7 @@
         forceReload: e.detail.forceReload || true
       }, function() {
         that.projectManager = chrome.extension.getBackgroundPage().projectManager;
+        that.set('projectManager.projects', that.projectManager.projects);
         that.$.pages.selected = that.selected;
       });
     },

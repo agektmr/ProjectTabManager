@@ -6,60 +6,66 @@
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<!-- <link rel="import" href="../../bower_components/iron-a11y-keys-behavior/iron-a11y-keys-behavior.html"> -->
 
 <dom-module id="ptm-project-linker">
   <style>
+    :host {
+      position: absolute;
+      z-index: 12;
+      width: 100%;
+      padding: 0 24px;
+      box-sizing: border-box;
+    }
+    paper-material {
+      display: none;
+      background-color: var(--default-background-color);
+    }
+    paper-material[show] {
+      display: block;
+    }
     .accent {
       color: var(--text-primary-color);
-      background: var(--accent-color);
+      background-color: var(--accent-color);
     }
     paper-item {
       cursor: pointer;
+      padding-left: 6px;
+    }
+    paper-item[disabled] {
+      cursor: auto;
+      color: var(--disabled-text-color);
     }
     paper-ripple {
       color: var(--default-primary-color);
     }
-    paper-icon-button[icon="check"] ~ span {
-      color: var(--disabled-text-color);
-    }
-    paper-dialog-scrollable {
-      max-height: 300px;
+    .buttons {
+      padding: 10px 5px 10px 10px;
+      @apply(--layout-horizontal);
+      @apply(--layout-end-justified);
     }
   </style>
   <template>
-    <paper-dialog id="dialog" modal>
-      <h2>Link with a project</h2>
-      <paper-dialog-scrollable>
-        <paper-item on-tap="createNew">
+    <paper-material id="dialog" elevation="3" show$="{{show}}" animated>
+      <paper-item on-tap="_create">
+        <!-- <paper-ripple></paper-ripple> -->
+        <span class="flex title">Create a new project</span>
+        <paper-icon-button icon="icons:add"></paper-icon-button>
+      </paper-item>
+      <template is="dom-repeat" items="[[projects]]" filter="_filterSessions">
+        <paper-item on-tap="_link" disabled$="[[_isLinked(item)]]">
           <!-- <paper-ripple></paper-ripple> -->
-          <paper-icon-button icon="icons:add"></paper-icon-button>
-          <span class="flex title">Create a new project</span>
+          <span class="flex title">[[item.title]]</span>
+          <paper-icon-button icon$="[[_getLinkedIcon(item)]]"></paper-icon-button>
         </paper-item>
-        <template is="dom-repeat" items="{{projects}}" filter="_isProjectNotUsed">
-          <paper-item on-tap="_link">
-            <!-- <paper-ripple></paper-ripple> -->
-            <paper-icon-button icon$="{{_isLinkedProject(item)}}"></paper-icon-button>
-            <span class="flex title">{{item.title}}</span>
-          </paper-item>
-        </template>
-      </paper-dialog-scrollable>
+      </template>
       <div class="buttons">
-<!--         <template is="dom-if" if="{{_isAlreadyLinked(linkingProject)}}">
-          <paper-button class="accent" raised on-tap="unlink">Unlink</paper-button>
+        <template is="dom-if" if="{{_showUnlinkIfLinked(linkingProject)}}">
+          <paper-button class="accent" raised on-tap="_unlink">Unlink</paper-button>
         </template>
- -->        <paper-button dialog-dismiss raised>Cancel</paper-button>
+        <paper-button on-tap="_onBlur" raised>Cancel</paper-button>
       </div>
-    </paper-dialog>
-    <paper-dialog id="create" modal>
-      <h2>Create a new project</h2>
-      <div>
-        <paper-input label="New Project Name" value$="{{projectName}}"></paper-input>
-      </div>
-      <div class="buttons">
-        <paper-button dialog-dismiss raised>Cancel</paper-button>
-        <paper-button class="accent" dialog-confirm raised>Save</paper-button>
-      </div>
-    </paper-dialog>
+    </paper-material>
   </template>
 </dom-module>
 
@@ -67,6 +73,10 @@
   Polymer({
     is: 'ptm-project-linker',
     properties: {
+      show: {
+        type: Boolean,
+        value: false
+      },
       projects: {
         type: Array,
         value: []
@@ -76,33 +86,56 @@
         value: {}
       }
     },
-    openDialog: function(linkingProject) {
-      this.linkingProject = linkingProject;
-      this.$.dialog.open();
+    listeners: {
+      'blur': '_onBlur'
     },
-    createNew: function() {
-      this.$.dialog.close();
-      this.$.create.open();
+    // behaviors: [
+    //   Polymer.IronA11yKeysBehavior
+    // ],
+    // ready: function() {
+    //   this.keyEventTarget = this;
+    //   this.addOwnKeyBinding('esc', '_onBlur');
+    // },
+    openDialog: function(linkingProject) {
+      this.show = true;
+      this.linkingProject = linkingProject;
+    },
+    _create: function(e) {
+      this.show = false;
+      this.fire('create-project', {
+        targetProject: this.linkingProject
+      });
     },
     _link: function(e) {
-      e.stopPropagation();
-      this.linkingProject.associateBookmark(e.model.item.bookmark);
-      this.$.dialog.close();
-      this.fire('show-toast', {
-        text: 'Project linked'
+      // e.stopPropagation();
+      this.show = false;
+      this.fire('link-project', {
+        sourceProject: this.linkingProject,
+        targetProject: e.model.item
       });
-      this.fire('reload');
     },
-    unlink: function(e) {
+    _unlink: function(e) {
+      // e.stopPropagation();
+      this.show = false;
+      this.fire('unlink-project', {
+        targetProject: this.linkingProject,
+      });
+    },
+    _onBlur: function(e) {
       e.stopPropagation();
+      e.preventDefault();
+      this.show = false;
     },
-    _isProjectNotUsed: function(item) {
+    _filterSessions: function(item) {
       return !!item.bookmark;
     },
-    _isAlreadyLinked: function(project) {
+    _isLinked: function(project) {
+      return !!project.session;
+    },
+    _showUnlinkIfLinked: function(project) {
       return !!project.bookmark ? true : false;
     },
-    _isLinkedProject: function(project) {
+    _getLinkedIcon: function(project) {
       return !project.session ? '' : 'check';
     }
   })

@@ -13489,6 +13489,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       PtmProjectBehavior
     ],
     _isNotRemovable: function() {
+      // TODO: Needs this to be correctly reflected
       return this.project && this.project.session && this.project.session.winId ? true : false;
     },
     _onTapRename: function(e) {

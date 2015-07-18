@@ -62,27 +62,14 @@ module.exports = function(grunt) {
       popup: {
         src: [
           'src/js/config.js',
-          'src/js/util.js',
-          'src/bower_components/angular/angular.min.js',
-          'src/bower_components/angular-route/angular-route.min.js',
-          'src/js/ng-app.js',
-          'src/js/ng-services.js',
-          'src/js/ng-filters.js',
-          'src/js/ng-directives.js'
+          'src/js/util.js'
         ],
         dest: 'app/js/popup.js'
       },
       layout: {
         src: [
           'src/js/config.js',
-          'src/js/util.js',
-          'src/bower_components/angular/angular.min.js',
-          'src/js/ng-app.js',
-          'src/js/ng-route.js',
-          'src/js/ng-directives.js',
-          'src/js/ng-services.js',
-          'src/js/ng-summary.js',
-          'src/js/ng-options.js'
+          'src/js/util.js'
         ],
         dest: 'app/js/layout.js'
       },
@@ -104,7 +91,7 @@ module.exports = function(grunt) {
         },
         files: {
           'app/lazy.html': 'src/lazy.html',
-          'app/polymer-layout.html': 'src/polymer-layout.html'
+          'app/app.html': 'src/app.html'
         }
       }
     },

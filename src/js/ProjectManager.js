@@ -36,9 +36,6 @@ var ProjectManager = (function() {
     this.url        = url;
     this.pinned     = tab && tab.pinned || false;
     this.favIconUrl = tab && tab.favIconUrl;
-    // util.getFavicon(url, tab && tab.favIconUrl).then((function(entry) {
-      // this.favIconUrl = entry.blobUrl;
-    // }).bind(this));
   };
 
   /**
@@ -280,6 +277,11 @@ var ProjectManager = (function() {
       title = title || session.title;
 
       bookmarkManager.addFolder(title, (function(folder) {
+        for (var i = 0; i < session.tabs.length; i++) {
+          var title = session.tabs[i].title;
+          var url   = session.tabs[i].url;
+          bookmarkManager.addBookmark(folder.id, title, url);
+        }
         // Create new project
         var new_project = new ProjectEntity(session, folder);
         // Remove non-bound session project

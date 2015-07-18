@@ -8829,22 +8829,7 @@ var PtmProjectBehaviorImpl = {
       type: Array,
       value: []
     },
-    sessionId: {
-      type: String,
-      value: '',
-      reflectToAttribute: true
-    },
     projectId: {
-      type: String,
-      value: '',
-      reflectToAttribute: true
-    },
-    winId: {
-      type: Number,
-      value: undefined,
-      reflectToAttribute: true
-    },
-    sessionTitle: {
       type: String,
       value: '',
       reflectToAttribute: true
@@ -13359,6 +13344,23 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 ;
   Polymer({
     is: 'ptm-session',
+    properties: {
+      sessionId: {
+        type: String,
+        value: '',
+        reflectToAttribute: true
+      },
+      winId: {
+        type: Number,
+        value: undefined,
+        reflectToAttribute: true
+      },
+      sessionTitle: {
+        type: String,
+        value: '',
+        reflectToAttribute: true
+      }
+    },
     behaviors: [
       PtmProjectBehavior
     ],
@@ -13486,6 +13488,9 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     behaviors: [
       PtmProjectBehavior
     ],
+    _isNotRemovable: function() {
+      return this.project && this.project.session && this.project.session.winId ? true : false;
+    },
     _onTapRename: function(e) {
       e.stopPropagation();
       this.fire('rename-clicked');

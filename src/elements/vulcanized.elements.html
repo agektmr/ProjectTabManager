@@ -1548,11 +1548,6 @@
     --paper-menu-background-color: #fff;
     --menu-link-color:             #111111;
 
-    /* paper-input */
-/*    --paper-input-container-color:       rgba(255, 255, 255, 0.64);
-    --paper-input-container-focus-color: rgba(255, 255, 255, 1);
-    --paper-input-container-input-color: #fff;
-*/
     /* paper-icon-button */
     --paper-icon-button: {
       width: 16px;
@@ -2886,18 +2881,24 @@
       white-space: nowrap;
       @apply(--layout-flex);
     }
+    .title[active] {
+      font-weight: bold;
+      color: var(--primary-text-color);
+    }
   </style>
   <template>
     <paper-material elevation="[[_computeElevation(expanded)]]" expanded$="[[expanded]]" animated="">
       <paper-item focused$="{{focused}}">
         <paper-icon-button tabindex="-1" icon="[[_computeFoldIcon(expanded)]]" on-tap="toggle"></paper-icon-button>
-        <div class="title" on-tap="openProject">
+        <div class="title" on-tap="openProject" active$="{{_isNotRemovable()}}">
           
           <span>{{projectTitle}}</span>
         </div>
         <template is="dom-if" if="[[expanded]]">
           <paper-icon-button icon="create" on-tap="_onTapRename"></paper-icon-button>
-          <paper-icon-button icon="delete" on-tap="_onTapRemove"></paper-icon-button>
+          <template is="dom-if" if="[[!_isNotRemovable()]]">
+            <paper-icon-button icon="delete" on-tap="_onTapRemove"></paper-icon-button>
+          </template>
         </template>
       </paper-item>
       <iron-collapse id="collapse" opened="[[expanded]]" tabindex="-1">
@@ -3444,6 +3445,7 @@
   <style>
     paper-header-panel {
       min-height: 400px;
+      overflow-y: hidden;
     }
     paper-input {
       --paper-input-container-color:       rgba(255, 255, 255, 0.64);

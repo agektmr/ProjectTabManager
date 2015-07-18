@@ -33,18 +33,24 @@
       white-space: nowrap;
       @apply(--layout-flex);
     }
+    .title[active] {
+      font-weight: bold;
+      color: var(--primary-text-color);
+    }
   </style>
   <template>
     <paper-material elevation="[[_computeElevation(expanded)]]" expanded$="[[expanded]]" animated>
       <paper-item focused$="{{focused}}">
         <paper-icon-button tabindex="-1" icon="[[_computeFoldIcon(expanded)]]" on-tap="toggle"></paper-icon-button>
-        <div class="title" on-tap="openProject">
+        <div class="title" on-tap="openProject" active$="{{_isNotRemovable()}}">
           <!-- <paper-ripple></paper-ripple> -->
           <span>{{projectTitle}}</span>
         </div>
         <template is="dom-if" if="[[expanded]]">
           <paper-icon-button icon="create" on-tap="_onTapRename"></paper-icon-button>
-          <paper-icon-button icon="delete" on-tap="_onTapRemove"></paper-icon-button>
+          <template is="dom-if" if="[[!_isNotRemovable()]]">
+            <paper-icon-button icon="delete" on-tap="_onTapRemove"></paper-icon-button>
+          </template>
         </template>
       </paper-item>
       <iron-collapse id="collapse" opened="[[expanded]]" tabindex="-1">
@@ -77,6 +83,10 @@
     behaviors: [
       PtmProjectBehavior
     ],
+    _isNotRemovable: function() {
+      // TODO: Needs this to be correctly reflected
+      return this.project && this.project.session && this.project.session.winId ? true : false;
+    },
     _onTapRename: function(e) {
       e.stopPropagation();
       this.fire('rename-clicked');

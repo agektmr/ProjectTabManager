@@ -13,10 +13,7 @@
   "homepage": "http://google.com/+agektmr",
   "private": true,
   "dependencies": {
-    "angular": "1.0.8",
-    "angular-route": "~1.2.6",
-    "bootstrap": "~3.2.0",
-    "idb-node": "*",
+    "idb-node": "^0.5.1",
     "iron-elements": "PolymerElements/iron-elements#~1.0.1",
     "paper-elements": "PolymerElements/paper-elements#~1.0.1"
   }

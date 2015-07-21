@@ -57,7 +57,7 @@
           confirm: 'Update',
           cancel: 'Cancel'
         }).then(function(result) {
-          that.projectManager.renameProject(e.model.item.id, result, function() {
+          that.projectManager.renameProject(e.model.item.id, result).then(function() {
             that.fire('reload');
             that.fire('show-toast', {
               text: 'Project renamed'
@@ -66,7 +66,6 @@
         });
     },
     remove: function(e) {
-      var that = this;
       this.$.meta.byKey('confirm')
         .confirm({
           line1: 'Remove project?',
@@ -74,7 +73,7 @@
           confirm: 'OK',
           cancel: 'Cancel'
         }).then(function() {
-          that.projectManager.removeProject(e.model.item.id, function() {
+          that.projectManager.removeProject(e.model.item.id).then(function() {
             that.fire('reload');
             that.fire('show-toast', {
               text: 'Project removed'

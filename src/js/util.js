@@ -15,6 +15,7 @@ limitations under the License.
 
 Author: Eiji Kitamura (agektmr@gmail.com)
 */
+
 'use strict';
 
 var util = {
@@ -100,82 +101,5 @@ var util = {
     var UTCMidnight = date.getTime();
     var TimezoneOffset = date.getTimezoneOffset() * 60 * 1000;
     return UTCMidnight + TimezoneOffset;
-  },
-
-  /**
-   * [description]
-   * @return {[type]}
-   */
-  getFavicon: (function() {
-    var cache = {};
-    var fetching = {};
-    var fetchFavicon = function(domain, url) {
-      if (!fetching[url]) {
-        fetching[url] = new Promise(function(resolve, reject) {
-          var xhr = new XMLHttpRequest();
-          xhr.open('GET', url);
-          xhr.responseType = 'blob';
-          xhr.onload = function() {
-            if (xhr.status === 200 || xhr.status === 304) {
-              var entry = {domain:domain, blob:xhr.response, url:url};
-              // Store fetched favicon in database
-              db.put(db.FAVICONS, entry);
-              resolve(entry);
-            } else {
-              reject();
-            }
-            delete fetching[url];
-          };
-          xhr.onerror = function() {
-            reject();
-            delete fetching[url];
-          };
-          xhr.send();
-        });
-      }
-      return fetching[url];
-    };
-
-    return function(url, favIconUrl) {
-      return new Promise(function(resolve, reject) {
-        var domain = url.replace(/^.*?\/\/(.*?)\/.*$/, "$1");
-        var entry = {domain:domain, url:url};
-        // domain is not available
-        if (domain === '') {
-          entry.blobUrl = chrome.extension.getURL('/img/favicon.png');
-          resolve(entry);
-        // cache available
-        } else if (cache[domain] && (cache[domain].url === favIconUrl || !favIconUrl)) {
-          resolve(cache[domain]);
-        // requires fetch or database lookup
-        } else {
-          db.get(db.FAVICONS, domain).then(function(entry) {
-            // If this icon was fetched with Google proxy
-            // Overwrite with original
-            if (entry && favIconUrl && entry.url !== favIconUrl) {
-              return fetchFavicon(domain, favIconUrl);
-            } else {
-              // Favicon is in database
-              return entry;
-            }
-          // Not in database
-          }).catch(function () {
-            entry.url = favIconUrl ? favIconUrl : util.FAVICON_URL+encodeURIComponent(domain);
-            // Fetch favicon from internet
-            return fetchFavicon(domain, entry.url);
-          }).then(function(entry) {
-            entry.blobUrl = URL.createObjectURL(entry.blob);
-            // Cache it
-            cache[domain] = entry;
-            // Create Blob URL from resulting favicon blob and resolve
-            resolve(entry);
-          }, function() {
-            entry.blobUrl = chrome.extension.getURL('/img/favicon.png');
-            resolve(entry);
-          });
-        }
-      });
-    };
-  })()
+  }
 };
-

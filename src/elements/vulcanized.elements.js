@@ -1,4 +1,8 @@
-(function () {
+
+window.Polymer = {};
+window.Polymer.dom = 'shadow';
+
+;(function () {
 function resolve() {
 document.body.removeAttribute('unresolved');
 }
@@ -51,7 +55,11 @@ document.registerElement(prototype.is, options);
 return ctor;
 };
 var desugar = function (prototype) {
-prototype = Polymer.Base.chainObject(prototype, Polymer.Base);
+var base = Polymer.Base;
+if (prototype.extends) {
+base = Polymer.Base._getExtendedPrototype(prototype.extends);
+}
+prototype = Polymer.Base.chainObject(prototype, base);
 prototype.registerCallback();
 return prototype.constructor;
 };
@@ -84,6 +92,7 @@ return (document._currentScript || document.currentScript).ownerDocument;
 }
 });
 Polymer.Base = {
+__isPolymerInstance__: true,
 _addFeature: function (feature) {
 this.extend(this, feature);
 },
@@ -153,6 +162,16 @@ object.__proto__ = inherited;
 return object;
 };
 Polymer.Base = Polymer.Base.chainObject(Polymer.Base, HTMLElement.prototype);
+if (window.CustomElements) {
+Polymer.instanceof = CustomElements.instanceof;
+} else {
+Polymer.instanceof = function (obj, ctor) {
+return obj instanceof ctor;
+};
+}
+Polymer.isInstance = function (obj) {
+return Boolean(obj && obj.__isPolymerInstance__);
+};
 Polymer.telemetry.instanceCount = 0;
 (function () {
 var modules = {};
@@ -281,11 +300,6 @@ this._marshalBehavior(this);
 }
 });
 Polymer.Base._addFeature({
-_prepExtends: function () {
-if (this.extends) {
-this.__proto__ = this._getExtendedPrototype(this.extends);
-}
-},
 _getExtendedPrototype: function (tag) {
 return this._getExtendedNativePrototype(tag);
 },
@@ -498,13 +512,12 @@ debouncer.stop();
 }
 }
 });
-Polymer.version = '1.0.6';
+Polymer.version = '1.0.7';
 Polymer.Base._addFeature({
 _registerFeatures: function () {
 this._prepIs();
 this._prepAttributes();
 this._prepBehaviors();
-this._prepExtends();
 this._prepConstructor();
 },
 _prepBehavior: function (b) {
@@ -1263,7 +1276,7 @@ d.appendChild(nc);
 return n;
 },
 importNode: function (externalNode, deep) {
-var doc = this.node instanceof HTMLDocument ? this.node : this.node.ownerDocument;
+var doc = this.node instanceof Document ? this.node : this.node.ownerDocument;
 var n = nativeImportNode.call(doc, externalNode, false);
 if (deep) {
 var c$ = factory(externalNode).childNodes;
@@ -1451,15 +1464,15 @@ DomApi.prototype.cloneNode = function (deep) {
 return this.node.cloneNode(deep);
 };
 DomApi.prototype.importNode = function (externalNode, deep) {
-var doc = this.node instanceof HTMLDocument ? this.node : this.node.ownerDocument;
+var doc = this.node instanceof Document ? this.node : this.node.ownerDocument;
 return doc.importNode(externalNode, deep);
 };
 DomApi.prototype.getDestinationInsertionPoints = function () {
-var n$ = this.node.getDestinationInsertionPoints();
+var n$ = this.node.getDestinationInsertionPoints && this.node.getDestinationInsertionPoints();
 return n$ ? Array.prototype.slice.call(n$) : [];
 };
 DomApi.prototype.getDistributedNodes = function () {
-var n$ = this.node.getDistributedNodes();
+var n$ = this.node.getDistributedNodes && this.node.getDistributedNodes();
 return n$ ? Array.prototype.slice.call(n$) : [];
 };
 DomApi.prototype._distributeParent = function () {
@@ -1917,7 +1930,6 @@ _registerFeatures: function () {
 this._prepIs();
 this._prepAttributes();
 this._prepBehaviors();
-this._prepExtends();
 this._prepConstructor();
 this._prepTemplate();
 this._prepShady();
@@ -1996,6 +2008,14 @@ if (root.firstChild) {
 for (var i = 0, node = root.firstChild; node; node = node.nextSibling, i++) {
 if (node.localName === 'template' && !node.hasAttribute('preserve-content')) {
 this._parseTemplate(node, i, list, annote);
+}
+if (node.nodeType === Node.TEXT_NODE) {
+var n = node.nextSibling;
+while (n && n.nodeType === Node.TEXT_NODE) {
+node.textContent += n.textContent;
+root.removeChild(n);
+n = n.nextSibling;
+}
 }
 var childAnnotation = this._parseNodeAnnotations(node, list, callback);
 if (childAnnotation) {
@@ -2963,7 +2983,8 @@ Polymer.dom(toElement).setAttribute(name, '');
 }
 },
 getContentChildNodes: function (slctr) {
-return Polymer.dom(Polymer.dom(this.root).querySelector(slctr || 'content')).getDistributedNodes();
+var content = Polymer.dom(this.root).querySelector(slctr || 'content');
+return content ? Polymer.dom(content).getDistributedNodes() : [];
 },
 getContentChildren: function (slctr) {
 return this.getContentChildNodes(slctr).filter(function (n) {
@@ -3967,8 +3988,10 @@ this.forEachStyleRule(rules, callback);
 return this.parser.stringify(rules, preserveProperties);
 },
 forRulesInStyles: function (styles, callback) {
+if (styles) {
 for (var i = 0, l = styles.length, s; i < l && (s = styles[i]); i++) {
 this.forEachStyleRule(this.rulesForStyle(s), callback);
+}
 }
 },
 rulesForStyle: function (style) {
@@ -4748,8 +4771,18 @@ if (!this._scopeSelector && this._needsStyleProperties()) {
 this._updateStyleProperties();
 }
 },
+_findStyleHost: function () {
+var e = this, root;
+while (root = Polymer.dom(e).getOwnerRoot()) {
+if (Polymer.isInstance(root.host)) {
+return root.host;
+}
+e = root.host;
+}
+return styleDefaults;
+},
 _updateStyleProperties: function () {
-var info, scope = this.domHost || styleDefaults;
+var info, scope = this._findStyleHost();
 if (!scope._styleCache) {
 scope._styleCache = new Polymer.StyleCache();
 }
@@ -4784,7 +4817,7 @@ styleCache.store(this.is, Object.create(info), this._ownStyleProperties, this._s
 }
 },
 _computeStyleProperties: function (scopeProps) {
-var scope = this.domHost || styleDefaults;
+var scope = this._findStyleHost();
 if (!scope._styleProperties) {
 scope._computeStyleProperties();
 }
@@ -4817,7 +4850,7 @@ return style;
 },
 serializeValueToAttribute: function (value, attribute, node) {
 node = node || this;
-if (attribute === 'class') {
+if (attribute === 'class' && !nativeShadow) {
 var host = node === this ? this.domHost || this.dataHost : this;
 if (host) {
 value = host._scopeElementClass(node, value);
@@ -4873,7 +4906,6 @@ Polymer.Base._addFeature({
 _registerFeatures: function () {
 this._prepIs();
 this._prepAttributes();
-this._prepExtends();
 this._prepConstructor();
 this._prepTemplate();
 this._prepStyles();
@@ -5343,19 +5375,18 @@ delay: Number
 },
 behaviors: [Polymer.Templatizer],
 observers: ['_itemsChanged(items.*)'],
+created: function () {
+this._instances = [];
+},
 detached: function () {
-if (this.rows) {
-for (var i = 0; i < this.rows.length; i++) {
+for (var i = 0; i < this._instances.length; i++) {
 this._detachRow(i);
-}
 }
 },
 attached: function () {
-if (this.rows) {
 var parentNode = Polymer.dom(this).parentNode;
-for (var i = 0; i < this.rows.length; i++) {
-Polymer.dom(parentNode).insertBefore(this.rows[i].root, this);
-}
+for (var i = 0; i < this._instances.length; i++) {
+Polymer.dom(parentNode).insertBefore(this._instances[i].root, this);
 }
 },
 ready: function () {
@@ -5372,7 +5403,7 @@ var sort = this.sort;
 this._sortFn = sort && (typeof sort == 'function' ? sort : function () {
 return dataHost[sort].apply(dataHost, arguments);
 });
-this._fullRefresh = true;
+this._needFullRefresh = true;
 if (this.items) {
 this._debounceTemplate(this._render);
 }
@@ -5383,7 +5414,7 @@ var filter = this.filter;
 this._filterFn = filter && (typeof filter == 'function' ? filter : function () {
 return dataHost[filter].apply(dataHost, arguments);
 });
-this._fullRefresh = true;
+this._needFullRefresh = true;
 if (this.items) {
 this._debounceTemplate(this._render);
 }
@@ -5401,7 +5432,7 @@ this.collection = null;
 this._error(this._logf('dom-repeat', 'expected array for `items`,' + ' found', this.items));
 }
 this._splices = [];
-this._fullRefresh = true;
+this._needFullRefresh = true;
 this._debounceTemplate(this._render);
 } else if (change.path == 'items.splices') {
 this._splices = this._splices.concat(change.value.keySplices);
@@ -5418,7 +5449,7 @@ path = path.substring(path.indexOf('.') + 1);
 var paths = this._observePaths;
 for (var i = 0; i < paths.length; i++) {
 if (path.indexOf(paths[i]) === 0) {
-this._fullRefresh = true;
+this._needFullRefresh = true;
 if (this.delay) {
 this.debounce('render', this._render, this.delay);
 } else {
@@ -5430,102 +5461,111 @@ return;
 }
 },
 render: function () {
-this._fullRefresh = true;
+this._needFullRefresh = true;
 this._debounceTemplate(this._render);
 this._flushTemplates();
 },
 _render: function () {
 var c = this.collection;
-if (!this._fullRefresh) {
+if (this._needFullRefresh) {
+this._applyFullRefresh();
+this._needFullRefresh = false;
+} else {
 if (this._sortFn) {
-this._applySplicesViewSort(this._splices);
+this._applySplicesUserSort(this._splices);
 } else {
 if (this._filterFn) {
-this._fullRefresh = true;
+this._applyFullRefresh();
 } else {
-this._applySplicesArraySort(this._splices);
+this._applySplicesArrayOrder(this._splices);
 }
 }
-}
-if (this._fullRefresh) {
-this._sortAndFilter();
-this._fullRefresh = false;
 }
 this._splices = [];
-var rowForKey = this._rowForKey = {};
-var keys = this._orderedKeys;
-this.rows = this.rows || [];
-for (var i = 0; i < keys.length; i++) {
-var key = keys[i];
-var item = c.getItem(key);
-var row = this.rows[i];
-rowForKey[key] = i;
-if (!row) {
-this.rows.push(row = this._insertRow(i, null, item));
+var keyToIdx = this._keyToInstIdx = {};
+for (var i = 0; i < this._instances.length; i++) {
+var inst = this._instances[i];
+keyToIdx[inst.__key__] = i;
+inst.__setProperty(this.indexAs, i, true);
 }
-row.__setProperty(this.as, item, true);
-row.__setProperty('__key__', key, true);
-row.__setProperty(this.indexAs, i, true);
-}
-for (; i < this.rows.length; i++) {
-this._detachRow(i);
-}
-this.rows.splice(keys.length, this.rows.length - keys.length);
 this.fire('dom-change');
 },
-_sortAndFilter: function () {
+_applyFullRefresh: function () {
 var c = this.collection;
-if (!this._sortFn) {
-this._orderedKeys = [];
+var keys;
+if (this._sortFn) {
+keys = c ? c.getKeys() : [];
+} else {
+keys = [];
 var items = this.items;
 if (items) {
 for (var i = 0; i < items.length; i++) {
-this._orderedKeys.push(c.getKey(items[i]));
+keys.push(c.getKey(items[i]));
 }
 }
-} else {
-this._orderedKeys = c ? c.getKeys() : [];
 }
 if (this._filterFn) {
-this._orderedKeys = this._orderedKeys.filter(function (a) {
+keys = keys.filter(function (a) {
 return this._filterFn(c.getItem(a));
 }, this);
 }
 if (this._sortFn) {
-this._orderedKeys.sort(function (a, b) {
+keys.sort(function (a, b) {
 return this._sortFn(c.getItem(a), c.getItem(b));
 }.bind(this));
 }
+for (var i = 0; i < keys.length; i++) {
+var key = keys[i];
+var inst = this._instances[i];
+if (inst) {
+inst.__setProperty('__key__', key, true);
+inst.__setProperty(this.as, c.getItem(key), true);
+} else {
+this._instances.push(this._insertRow(i, key));
+}
+}
+for (; i < this._instances.length; i++) {
+this._detachRow(i);
+}
+this._instances.splice(keys.length, this._instances.length - keys.length);
 },
 _keySort: function (a, b) {
 return this.collection.getKey(a) - this.collection.getKey(b);
 },
-_applySplicesViewSort: function (splices) {
+_applySplicesUserSort: function (splices) {
 var c = this.collection;
-var keys = this._orderedKeys;
-var rows = this.rows;
-var removedRows = [];
-var addedKeys = [];
+var instances = this._instances;
+var keyMap = {};
 var pool = [];
 var sortFn = this._sortFn || this._keySort.bind(this);
 splices.forEach(function (s) {
 for (var i = 0; i < s.removed.length; i++) {
-var idx = this._rowForKey[s.removed[i]];
-if (idx != null) {
-removedRows.push(idx);
-}
+var key = s.removed[i];
+keyMap[key] = keyMap[key] ? null : -1;
 }
 for (var i = 0; i < s.added.length; i++) {
-addedKeys.push(s.added[i]);
+var key = s.added[i];
+keyMap[key] = keyMap[key] ? null : 1;
 }
 }, this);
-if (removedRows.length) {
-removedRows.sort();
-for (var i = removedRows.length - 1; i >= 0; i--) {
-var idx = removedRows[i];
+var removedIdxs = [];
+var addedKeys = [];
+for (var key in keyMap) {
+if (keyMap[key] === -1) {
+removedIdxs.push(this._keyToInstIdx[key]);
+}
+if (keyMap[key] === 1) {
+addedKeys.push(key);
+}
+}
+if (removedIdxs.length) {
+removedIdxs.sort();
+for (var i = removedIdxs.length - 1; i >= 0; i--) {
+var idx = removedIdxs[i];
+if (idx !== undefined) {
 pool.push(this._detachRow(idx));
-rows.splice(idx, 1);
-keys.splice(idx, 1);
+instances.splice(idx, 1);
+}
 }
 }
 if (addedKeys.length) {
@@ -5539,19 +5579,19 @@ return this._sortFn(c.getItem(a), c.getItem(b));
 }.bind(this));
 var start = 0;
 for (var i = 0; i < addedKeys.length; i++) {
-start = this._insertRowIntoViewSort(start, addedKeys[i], pool);
+start = this._insertRowUserSort(start, addedKeys[i], pool);
 }
 }
 },
-_insertRowIntoViewSort: function (start, key, pool) {
+_insertRowUserSort: function (start, key, pool) {
 var c = this.collection;
 var item = c.getItem(key);
-var end = this.rows.length - 1;
+var end = this._instances.length - 1;
 var idx = -1;
 var sortFn = this._sortFn || this._keySort.bind(this);
 while (start <= end) {
 var mid = start + end >> 1;
-var midKey = this._orderedKeys[mid];
+var midKey = this._instances[mid].__key__;
 var cmp = sortFn(c.getItem(midKey), item);
 if (cmp < 0) {
 start = mid + 1;
@@ -5565,106 +5605,110 @@ break;
 if (idx < 0) {
 idx = end + 1;
 }
-this._orderedKeys.splice(idx, 0, key);
-this.rows.splice(idx, 0, this._insertRow(idx, pool, c.getItem(key)));
+this._instances.splice(idx, 0, this._insertRow(idx, key, pool));
 return idx;
 },
-_applySplicesArraySort: function (splices) {
-var keys = this._orderedKeys;
+_applySplicesArrayOrder: function (splices) {
 var pool = [];
-splices.forEach(function (s) {
-for (var i = 0; i < s.removed.length; i++) {
-pool.push(this._detachRow(s.index + i));
-}
-this.rows.splice(s.index, s.removed.length);
-}, this);
 var c = this.collection;
 splices.forEach(function (s) {
-var args = [
-s.index,
-s.removed.length
-].concat(s.added);
-keys.splice.apply(keys, args);
+for (var i = 0; i < s.removed.length; i++) {
+var inst = this._detachRow(s.index + i);
+if (!inst.isPlaceholder) {
+pool.push(inst);
+}
+}
+this._instances.splice(s.index, s.removed.length);
 for (var i = 0; i < s.added.length; i++) {
-var item = c.getItem(s.added[i]);
-var row = this._insertRow(s.index + i, pool, item);
-this.rows.splice(s.index + i, 0, row);
+var inst = {
+isPlaceholder: true,
+key: s.added[i]
+};
+this._instances.splice(s.index + i, 0, inst);
 }
 }, this);
+for (var i = this._instances.length - 1; i >= 0; i--) {
+var inst = this._instances[i];
+if (inst.isPlaceholder) {
+this._instances[i] = this._insertRow(i, inst.key, pool, true);
+}
+}
 },
 _detachRow: function (idx) {
-var row = this.rows[idx];
+var inst = this._instances[idx];
+if (!inst.isPlaceholder) {
 var parentNode = Polymer.dom(this).parentNode;
-for (var i = 0; i < row._children.length; i++) {
-var el = row._children[i];
-Polymer.dom(row.root).appendChild(el);
+for (var i = 0; i < inst._children.length; i++) {
+var el = inst._children[i];
+Polymer.dom(inst.root).appendChild(el);
 }
-return row;
+}
+return inst;
 },
-_insertRow: function (idx, pool, item) {
-var row = pool && pool.pop() || this._generateRow(idx, item);
-var beforeRow = this.rows[idx];
+_insertRow: function (idx, key, pool, replace) {
+var inst;
+if (inst = pool && pool.pop()) {
+inst.__setProperty(this.as, this.collection.getItem(key), true);
+inst.__setProperty('__key__', key, true);
+} else {
+inst = this._generateRow(idx, key);
+}
+var beforeRow = this._instances[replace ? idx + 1 : idx];
 var beforeNode = beforeRow ? beforeRow._children[0] : this;
 var parentNode = Polymer.dom(this).parentNode;
-Polymer.dom(parentNode).insertBefore(row.root, beforeNode);
-return row;
+Polymer.dom(parentNode).insertBefore(inst.root, beforeNode);
+return inst;
 },
-_generateRow: function (idx, item) {
-var model = { __key__: this.collection.getKey(item) };
-model[this.as] = item;
+_generateRow: function (idx, key) {
+var model = { __key__: key };
+model[this.as] = this.collection.getItem(key);
 model[this.indexAs] = idx;
-var row = this.stamp(model);
-return row;
+var inst = this.stamp(model);
+return inst;
 },
 _showHideChildren: function (hidden) {
-if (this.rows) {
-for (var i = 0; i < this.rows.length; i++) {
-this.rows[i]._showHideChildren(hidden);
-}
+for (var i = 0; i < this._instances.length; i++) {
+this._instances[i]._showHideChildren(hidden);
 }
 },
-_forwardInstanceProp: function (row, prop, value) {
+_forwardInstanceProp: function (inst, prop, value) {
 if (prop == this.as) {
 var idx;
 if (this._sortFn || this._filterFn) {
-idx = this.items.indexOf(this.collection.getItem(row.__key__));
+idx = this.items.indexOf(this.collection.getItem(inst.__key__));
 } else {
-idx = row[this.indexAs];
+idx = inst[this.indexAs];
 }
 this.set('items.' + idx, value);
 }
 },
-_forwardInstancePath: function (row, path, value) {
+_forwardInstancePath: function (inst, path, value) {
 if (path.indexOf(this.as + '.') === 0) {
-this.notifyPath('items.' + row.__key__ + '.' + path.slice(this.as.length + 1), value);
+this.notifyPath('items.' + inst.__key__ + '.' + path.slice(this.as.length + 1), value);
 }
 },
 _forwardParentProp: function (prop, value) {
-if (this.rows) {
-this.rows.forEach(function (row) {
-row.__setProperty(prop, value, true);
+this._instances.forEach(function (inst) {
+inst.__setProperty(prop, value, true);
 }, this);
-}
 },
 _forwardParentPath: function (path, value) {
-if (this.rows) {
-this.rows.forEach(function (row) {
-row.notifyPath(path, value, true);
+this._instances.forEach(function (inst) {
+inst.notifyPath(path, value, true);
 }, this);
-}
 },
 _forwardItemPath: function (path, value) {
-if (this._rowForKey) {
+if (this._keyToInstIdx) {
 var dot = path.indexOf('.');
 var key = path.substring(0, dot < 0 ? path.length : dot);
-var idx = this._rowForKey[key];
-var row = this.rows[idx];
-if (row) {
+var idx = this._keyToInstIdx[key];
+var inst = this._instances[idx];
+if (inst) {
 if (dot >= 0) {
 path = this.as + '.' + path.substring(dot + 1);
-row.notifyPath(path, value, true);
+inst.notifyPath(path, value, true);
 } else {
-row.__setProperty(this.as, value, true);
+inst.__setProperty(this.as, value, true);
 }
 }
 }
@@ -5881,7 +5925,6 @@ created: function () {
 Polymer.ImportStatus.whenLoaded(this._readySelf.bind(this));
 },
 _registerFeatures: function () {
-this._prepExtends();
 this._prepConstructor();
 },
 _insertChildren: function () {
@@ -6199,6 +6242,8 @@ if (!window.Promise) {
 }
 
 ;
+  'use strict'
+
   Polymer({
     is: 'iron-request',
 
@@ -6236,6 +6281,34 @@ if (!window.Promise) {
         value: function() {
          return null;
         }
+      },
+
+      /**
+       * A reference to the status code, if the `xhr` has completely resolved.
+       *
+       * @attribute status
+       * @type short
+       * @default 0
+       */
+      status: {
+        type: Number,
+        notify: true,
+        readOnly: true,
+        value: 0
+      },
+
+      /**
+       * A reference to the status text, if the `xhr` has completely resolved.
+       *
+       * @attribute statusText
+       * @type String
+       * @default ""
+       */
+      statusText: {
+        type: String,
+        notify: true,
+        readOnly: true,
+        value: ''
       },
 
       /**
@@ -6314,7 +6387,7 @@ if (!window.Promise) {
      *   url: string,
      *   method: (string|undefined),
      *   async: (boolean|undefined),
-     *   body: (ArrayBuffer|ArrayBufferView|Blob|Document|FormData|null|string|undefined),
+     *   body: (ArrayBuffer|ArrayBufferView|Blob|Document|FormData|null|string|undefined|Object),
      *   headers: (Object|undefined),
      *   handleAs: (string|undefined),
      *   withCredentials: (boolean|undefined)}} options -
@@ -6337,6 +6410,7 @@ if (!window.Promise) {
 
       xhr.addEventListener('readystatechange', function () {
         if (xhr.readyState === 4 && !this.aborted) {
+          this._updateStatus();
 
           if (!this.succeeded) {
             this.rejectCompletes(new Error('The request failed with status code: ' + this.xhr.status));
@@ -6357,10 +6431,12 @@ if (!window.Promise) {
       }.bind(this))
 
       xhr.addEventListener('error', function (error) {
+        this._updateStatus();
         this.rejectCompletes(error);
       }.bind(this));
 
       xhr.addEventListener('abort', function () {
+        this._updateStatus();
         this.rejectCompletes(new Error('Request aborted.'));
       }.bind(this));
 
@@ -6379,12 +6455,21 @@ if (!window.Promise) {
         }, this);
       }
 
+      var contentType;
+      if (options.headers) {
+        contentType = options.headers['Content-Type'];
+      }
+      var body = this._encodeBodyObject(options.body, contentType);
+
+
       // In IE, `xhr.responseType` is an empty string when the response
       // returns. Hence, caching it as `xhr._responseType`.
       xhr.responseType = xhr._responseType = (options.handleAs || 'text');
       xhr.withCredentials = !!options.withCredentials;
 
-      xhr.send(options.body);
+
+
+      xhr.send(body);
 
       return this.completes;
     },
@@ -6447,10 +6532,69 @@ if (!window.Promise) {
     abort: function () {
       this._setAborted(true);
       this.xhr.abort();
+    },
+
+    /**
+     * @param {*} body The given body of the request to try and encode.
+     * @param {?string} contentType The given content type, to infer an encoding
+     *     from.
+     * @return {?string|*} Either the encoded body as a string, if successful,
+     *     or the unaltered body object if no encoding could be inferred.
+     */
+    _encodeBodyObject: function(body, contentType) {
+      if (typeof body == 'string') {
+        return body;  // Already encoded.
+      }
+      switch(contentType) {
+        case('application/json'):
+          return JSON.stringify(body);
+        case('application/x-www-form-urlencoded'):
+          return this._wwwFormUrlEncode(body);
+      }
+      return body;  // Unknown, make no change.
+    },
+
+    /**
+     * @param {Object} object The object to encode as x-www-form-urlencoded.
+     * @return {string} .
+     */
+    _wwwFormUrlEncode: function(object) {
+      if (!object) {
+        return '';
+      }
+      var pieces = [];
+      Object.keys(object).forEach(function(key) {
+        // TODO(rictic): handle array values here, in a consistent way with
+        //   iron-ajax params.
+        pieces.push(
+            this._wwwFormUrlEncodePiece(key) + '=' +
+            this._wwwFormUrlEncodePiece(object[key]));
+      }, this);
+      return pieces.join('&');
+    },
+
+    /**
+     * @param {*} str A key or value to encode as x-www-form-urlencoded.
+     * @return {string} .
+     */
+    _wwwFormUrlEncodePiece: function(str) {
+      // Spec says to normalize newlines to \r\n and replace %20 spaces with +.
+      // jQuery does this as well, so this is likely to be widely compatible.
+      return encodeURIComponent(str.toString().replace(/\r?\n/g, '\r\n'))
+          .replace(/%20/g, '+');
+    },
+
+    /**
+     * Updates the status code and status text.
+     */
+    _updateStatus: function() {
+      this._setStatus(this.xhr.status);
+      this._setStatusText((this.xhr.statusText === undefined) ? '' : this.xhr.statusText);
     }
   });
 
 ;
+  'use strict';
 
   Polymer({
 
@@ -6514,8 +6658,7 @@ if (!window.Promise) {
        *         auto
        *         url="http://somesite.com"
        *         headers='{"X-Requested-With": "XMLHttpRequest"}'
-       *         handle-as="json"
-       *         last-response-changed="{{handleResponse}}"></iron-ajax>
+       *         handle-as="json"></iron-ajax>
        *
        * Note: setting a `Content-Type` header here will override the value
        * specified by the `contentType` property of this element.
@@ -6534,21 +6677,31 @@ if (!window.Promise) {
        */
       contentType: {
         type: String,
-        value: 'application/x-www-form-urlencoded'
+        value: null
       },
 
       /**
-       * Optional raw body content to send when method === "POST".
+       * Body content to send with the request, typically used with "POST"
+       * requests.
        *
-       * Example:
+       * If body is a string it will be sent unmodified.
        *
-       *     <iron-ajax method="POST" auto url="http://somesite.com"
-       *         body='{"foo":1, "bar":2}'>
-       *     </iron-ajax>
+       * If Content-Type is set to a value listed below, then
+       * the body will be encoded accordingly.
+       *
+       *    * `content-type="application/json"`
+       *      * body is encoded like `{"foo":"bar baz","x":1}`
+       *    * `content-type="application/x-www-form-urlencoded"`
+       *      * body is encoded like `foo=bar+baz&x=1`
+       *
+       * Otherwise the body will be passed to the browser unmodified, and it
+       * will handle any encoding (e.g. for FormData, Blob, ArrayBuffer).
+       *
+       * @type (ArrayBuffer|ArrayBufferView|Blob|Document|FormData|null|string|undefined|Object)
        */
       body: {
-        type: String,
-        value: ''
+        type: Object,
+        value: null
       },
 
       /**
@@ -6562,7 +6715,7 @@ if (!window.Promise) {
 
       /**
        * Specifies what data to store in the `response` property, and
-       * to deliver as `event.response` in `response` events.
+       * to deliver as `event.detail.response` in `response` events.
        *
        * One of:
        *
@@ -6733,9 +6886,14 @@ if (!window.Promise) {
      * @return {Object}
      */
     get requestHeaders() {
-      var headers = {
-        'Content-Type': this.contentType
-      };
+      var headers = {};
+      var contentType = this.contentType;
+      if (contentType == null && (typeof this.body === 'string')) {
+        contentType = 'application/x-www-form-urlencoded';
+      }
+      if (contentType) {
+        headers['Content-Type'] = contentType;
+      }
       var header;
 
       if (this.headers instanceof Object) {
@@ -6755,7 +6913,7 @@ if (!window.Promise) {
      *   url: string,
      *   method: (string|undefined),
      *   async: (boolean|undefined),
-     *   body: (ArrayBuffer|ArrayBufferView|Blob|Document|FormData|null|string|undefined),
+     *   body: (ArrayBuffer|ArrayBufferView|Blob|Document|FormData|null|string|undefined|Object),
      *   headers: (Object|undefined),
      *   handleAs: (string|undefined),
      *   withCredentials: (boolean|undefined)}}
@@ -8922,14 +9080,14 @@ var PtmProjectBehaviorImpl = {
     var field = e.model.item;
     var index = e.model.index;
     if (field.id === undefined || field.id === '') {
-      this.project.addBookmark(field.tabId, function(bookmark) {
+      this.project.addBookmark(field.tabId).then(function(bookmark) {
         that.set('fields.'+index+'.id', bookmark.id);
         that.fire('show-toast', {
           text: 'Bookmark added'
         });
       });
     } else {
-      this.project.removeBookmark(field.id, function() {
+      this.project.removeBookmark(field.id).then(function() {
         that.set('fields.'+index+'.id', '');
         that.fire('show-toast', {
           text: 'Bookmark removed'
@@ -10361,7 +10519,11 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
      * @return {boolean} True if `values` is valid.
      */
     validate: function(values) {
-      var valid = this._validator && this._validator.validate(values);
+      var valid = true;
+      if (this.hasValidator()) {
+        valid = this._validator.validate(values);
+      }
+
       this.invalid = !valid;
       return valid;
     }
@@ -10399,7 +10561,7 @@ It may be desirable to only allow users to enter certain characters. You can use
 is separate from validation, and `allowed-pattern` does not affect how the input is validated.
 
     <!-- only allow characters that match [0-9] -->
-    <input is="iron-input" prevent-invaild-input allowed-pattern="[0-9]">
+    <input is="iron-input" prevent-invalid-input allowed-pattern="[0-9]">
 
 @hero hero.svg
 @demo demo/index.html
@@ -10512,11 +10674,16 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       //   always matches the charCode.
       // None of this makes any sense.
 
-      var nonPrintable =
+      // For these keys, ASCII code == browser keycode.
+      var anyNonPrintable =
         (event.keyCode == 8)   ||  // backspace
+        (event.keyCode == 13)  ||  // enter
+        (event.keyCode == 27);     // escape
+
+      // For these keys, make sure it's a browser keycode and not an ASCII code.
+      var mozNonPrintable =
         (event.keyCode == 19)  ||  // pause
         (event.keyCode == 20)  ||  // caps lock
-        (event.keyCode == 27)  ||  // escape
         (event.keyCode == 45)  ||  // insert
         (event.keyCode == 46)  ||  // delete
         (event.keyCode == 144) ||  // num lock
@@ -10524,7 +10691,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         (event.keyCode > 32 && event.keyCode < 41)   || // page up/down, end, home, arrows
         (event.keyCode > 111 && event.keyCode < 124); // fn keys
 
-      return !(event.charCode == 0 && nonPrintable);
+      return !anyNonPrintable && !(event.charCode == 0 && mozNonPrintable);
     },
 
     _onKeypress: function(event) {
@@ -10632,8 +10799,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       },
 
       /**
-       * Need to keep a reference to the form this element is registered
-       * to, so that it can unregister if detached.
+       * The form that the element is registered to.
        */
       _parentForm: {
         type: Object
@@ -10641,7 +10807,8 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     },
 
     attached: function() {
-      this._parentForm = Polymer.dom(this).parentNode;
+      // Note: the iron-form that this element belongs to will set this
+      // element's _parentForm property when handling this event.
       this.fire('iron-form-element-register');
     },
 
@@ -10874,6 +11041,24 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         type: Number
       },
 
+      // Nonstandard attributes for binding if needed
+
+      /**
+       * Bind this to the `<input is="iron-input">`'s `autocapitalize` property.
+       */
+      autocapitalize: {
+        type: String,
+        value: 'none'
+      },
+
+      /**
+       * Bind this to the `<input is="iron-input">`'s `autocorrect` property.
+       */
+      autocorrect: {
+        type: String,
+        value: 'off'
+      },
+
       _ariaDescribedBy: {
         type: String,
         value: ''
@@ -10884,6 +11069,10 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     listeners: {
       'addon-attached': '_onAddonAttached'
     },
+
+    observers: [
+      '_focusedControlStateChanged(focused)'
+    ],
 
     /**
      * Returns a reference to the input element.
@@ -10949,6 +11138,24 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       return placeholder || alwaysFloatLabel;
     },
 
+    _focusedControlStateChanged: function(focused) {
+      // IronControlState stops the focus and blur events in order to redispatch them on the host
+      // element, but paper-input-container listens to those events. Since there are more
+      // pending work on focus/blur in IronControlState, I'm putting in this hack to get the
+      // input focus state working for now.
+      if (!this.$.container) {
+        this.$.container = Polymer.dom(this.root).querySelector('paper-input-container');
+        if (!this.$.container) {
+          return;
+        }
+      }
+      if (focused) {
+        this.$.container._onFocus();
+      } else {
+        this.$.container._onBlur();
+      }
+    },
+
     _updateAriaLabelledBy: function() {
       var label = Polymer.dom(this.root).querySelector('label');
       if (!label) {
@@ -10967,6 +11174,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
   };
 
+  /** @polymerBehavior */
   Polymer.PaperInputBehavior = [Polymer.IronControlState, Polymer.PaperInputBehaviorImpl];
 
 
@@ -12386,9 +12594,9 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
       _computeBarClassName: function(barJustify) {
         var classObj = {
-          center: true,
-          horizontal: true,
-          layout: true,
+          'center': true,
+          'horizontal': true,
+          'layout': true,
           'toolbar-tools': true
         };
 
@@ -12718,6 +12926,9 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     },
 
     _positionBar: function(width, left) {
+      width = width || 0;
+      left = left || 0;
+
       this._width = width;
       this._left = left;
       this.transform(
@@ -12898,123 +13109,101 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
 ;
 
-    (function() {
+    Polymer({
 
-      'use strict';
+      is: 'paper-spinner',
 
-      function classNames(obj) {
-        var classNames = [];
-        for (var key in obj) {
-          if (obj.hasOwnProperty(key) && obj[key]) {
-            classNames.push(key);
-          }
+      listeners: {
+        'animationend': 'reset',
+        'webkitAnimationEnd': 'reset'
+      },
+
+      properties: {
+
+        /**
+         * Displays the spinner.
+         *
+         * @attribute active
+         * @type boolean
+         * @default false
+         */
+        active: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,
+          observer: '_activeChanged'
+        },
+
+        /**
+         * Alternative text content for accessibility support.
+         * If alt is present, it will add an aria-label whose content matches alt when active.
+         * If alt is not present, it will default to 'loading' as the alt value.
+         *
+         * @attribute alt
+         * @type string
+         * @default 'loading'
+         */
+        alt: {
+          type: String,
+          value: 'loading',
+          observer: '_altChanged'
+        },
+
+        /**
+         * True when the spinner is going from active to inactive. This is represented by a fade
+         * to 0% opacity to the user.
+         */
+        _coolingDown: {
+          type: Boolean,
+          value: false
+        },
+
+        _spinnerContainerClassName: {
+          type: String,
+          computed: '_computeSpinnerContainerClassName(active, _coolingDown)'
         }
 
-        return classNames.join(' ');
+      },
+
+      _computeSpinnerContainerClassName: function(active, coolingDown) {
+        return [
+          active || coolingDown ? 'active' : '',
+          coolingDown ? 'cooldown' : ''
+        ].join(' ');
+      },
+
+      _activeChanged: function(active, old) {
+        this._setAriaHidden(!active);
+        if (!active && old) {
+          this._coolingDown = true;
+        }
+      },
+
+      _altChanged: function(alt) {
+        // user-provided `aria-label` takes precedence over prototype default
+        if (alt === this.getPropertyInfo('alt').value) {
+          this.alt = this.getAttribute('aria-label') || alt;
+        } else {
+          this._setAriaHidden(alt==='');
+          this.setAttribute('aria-label', alt);
+        }
+      },
+
+      _setAriaHidden: function(hidden) {
+        var attr = 'aria-hidden';
+        if (hidden) {
+          this.setAttribute(attr, 'true');
+        } else {
+          this.removeAttribute(attr);
+        }
+      },
+
+      reset: function() {
+        this.active = false;
+        this._coolingDown = false;
       }
 
-      Polymer({
-
-        is: 'paper-spinner',
-
-        listeners: {
-          'animationend': 'reset',
-          'webkitAnimationEnd': 'reset'
-        },
-
-        properties: {
-
-          /**
-           * Displays the spinner.
-           *
-           * @attribute active
-           * @type boolean
-           * @default false
-           */
-          active: {
-            observer: '_activeChanged',
-            type: Boolean,
-            value: false
-          },
-
-          /**
-           * Alternative text content for accessibility support.
-           * If alt is present, it will add an aria-label whose content matches alt when active.
-           * If alt is not present, it will default to 'loading' as the alt value.
-           *
-           * @attribute alt
-           * @type string
-           * @default 'loading'
-           */
-          alt: {
-            observer: '_altChanged',
-            type: String,
-            value: 'loading'
-          },
-
-          /**
-           * True when the spinner is going from active to inactive. This is represented by a fade
-           * to 0% opacity to the user.
-           */
-          _coolingDown: {
-            type: Boolean,
-            value: false
-          },
-
-          _spinnerContainerClassName: {
-            type: String,
-            computed: '_computeSpinnerContainerClassName(active, _coolingDown)'
-          }
-
-        },
-
-        _computeSpinnerContainerClassName: function(active, _coolingDown) {
-          return classNames({
-            active: active || _coolingDown,
-            cooldown: _coolingDown
-          });
-        },
-
-        ready: function() {
-          // Allow user-provided `aria-label` take preference to any other text alternative.
-          if (this.hasAttribute('aria-label')) {
-            this.alt = this.getAttribute('aria-label');
-          } else {
-            this.setAttribute('aria-label', this.alt);
-          }
-
-          if (!this.active) {
-            this.setAttribute('aria-hidden', 'true');
-          }
-        },
-
-        _activeChanged: function() {
-          if (this.active) {
-            this.removeAttribute('aria-hidden');
-          } else {
-            this._coolingDown = true;
-            this.setAttribute('aria-hidden', 'true');
-          }
-        },
-
-        _altChanged: function() {
-          if (this.alt === '') {
-            this.setAttribute('aria-hidden', 'true');
-          } else {
-            this.removeAttribute('aria-hidden');
-          }
-
-          this.setAttribute('aria-label', this.alt);
-        },
-
-        reset: function() {
-          this.active = false;
-          this._coolingDown = false;
-        }
-
-      });
-
-    }());
+    });
 
   
 ;
@@ -13227,8 +13416,8 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       }
     },
     open: function(e) {
-      e.stopPropagation();
       var that = this;
+      e.stopPropagation();
       // If tab id is not assigned
       if (!this.tabId) {
         // Open new project entry
@@ -13318,7 +13507,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
               domain: domain,
               url: that.favIconUrl
             }
-          })
+          });
         // Renew cache with new favicon
         } else if (cache[domain].url == DEFAULT_FAVICON_URL) {
           cache[domain].url = this.favIconUrl;
@@ -13375,6 +13564,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
   });
 
 ;
+  'use strict'
   Polymer({
     is: 'ptm-session-list',
     behaviors: [
@@ -13455,7 +13645,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
           cancel: 'Cancel'
         }).then(function(result) {
           e.detail.targetProject.deassociateBookmark();
-          that.projectManager.createProject(e.detail.targetProject.id, result, function() {
+          that.projectManager.createProject(e.detail.targetProject.id, result).then(function() {
             that.fire('reload');
             that.fire('show-toast', {
               text: 'Project created'
@@ -13472,7 +13662,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
           confirm: 'OK',
           cancel: 'Cancel'
         }).then(function() {
-          that.projectManager.removeSession(e.model.item.id, function() {
+          that.projectManager.removeSession(e.model.item.id).then(function() {
             that.fire('reload');
             that.fire('show-toast', {
               text: 'Session removed'
@@ -13535,7 +13725,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
           confirm: 'Update',
           cancel: 'Cancel'
         }).then(function(result) {
-          that.projectManager.renameProject(e.model.item.id, result, function() {
+          that.projectManager.renameProject(e.model.item.id, result).then(function() {
             that.fire('reload');
             that.fire('show-toast', {
               text: 'Project renamed'
@@ -13544,7 +13734,6 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         });
     },
     remove: function(e) {
-      var that = this;
       this.$.meta.byKey('confirm')
         .confirm({
           line1: 'Remove project?',
@@ -13552,7 +13741,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
           confirm: 'OK',
           cancel: 'Cancel'
         }).then(function() {
-          that.projectManager.removeProject(e.model.item.id, function() {
+          that.projectManager.removeProject(e.model.item.id).then(function() {
             that.fire('reload');
             that.fire('show-toast', {
               text: 'Project removed'
@@ -14057,10 +14246,6 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       Polymer.PaperInputAddonBehavior
     ],
 
-    hostAttributes: {
-      'role': 'alert'
-    },
-
     properties: {
 
       /**
@@ -14134,6 +14319,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     is: 'paper-input',
 
     behaviors: [
+      Polymer.IronFormElementBehavior,
       Polymer.PaperInputBehavior,
       Polymer.IronControlState
     ]
@@ -14330,10 +14516,16 @@ is separate from validation, and `allowed-pattern` does not affect how the input
             text: 'Reload'
           },
           {
+            text: 'BookmarkManager'
+          },
+          {
             text: 'History'
           },
           {
             text: 'Options'
+          },
+          {
+            text: 'Help'
           }
         ]
       }

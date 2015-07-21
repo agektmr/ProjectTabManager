@@ -35,9 +35,11 @@ chrome.runtime.onInstalled.addListener(function(details) {
 });
 
 var config = new Config(function() {
-  bookmarkManager = new BookmarkManager(config, function() {
+  bookmarkManager = new BookmarkManager(config);
+  bookmarkManager.load().then(function() {
     db = new idb(config);
-    sessionManager = new SessionManager(config, function() {
+    sessionManager = new SessionManager(config);
+    sessionManager.resumeSessions().then(function() {
       projectManager = new ProjectManager(config);
       projectManager.update(true);
     });

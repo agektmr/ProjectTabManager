@@ -105,14 +105,14 @@ var PtmProjectBehaviorImpl = {
     var field = e.model.item;
     var index = e.model.index;
     if (field.id === undefined || field.id === '') {
-      this.project.addBookmark(field.tabId, function(bookmark) {
+      this.project.addBookmark(field.tabId).then(function(bookmark) {
         that.set('fields.'+index+'.id', bookmark.id);
         that.fire('show-toast', {
           text: 'Bookmark added'
         });
       });
     } else {
-      this.project.removeBookmark(field.id, function() {
+      this.project.removeBookmark(field.id).then(function() {
         that.set('fields.'+index+'.id', '');
         that.fire('show-toast', {
           text: 'Bookmark removed'

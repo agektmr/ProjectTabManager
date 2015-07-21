@@ -47,12 +47,6 @@ module.exports = function(grunt) {
         ],
         dest: 'app/js/background.js'
       },
-      polymer: {
-        src: [
-          'src/js/polymer-app.js'
-        ],
-        dest: 'app/js/polymer-app.js'
-      },
       shadowdom: {
         src: [
           'src/js/shadowdom.js'

@@ -38,6 +38,7 @@
 </dom-module>
 
 <script>
+  'use strict'
   Polymer({
     is: 'ptm-session-list',
     behaviors: [
@@ -118,7 +119,7 @@
           cancel: 'Cancel'
         }).then(function(result) {
           e.detail.targetProject.deassociateBookmark();
-          that.projectManager.createProject(e.detail.targetProject.id, result, function() {
+          that.projectManager.createProject(e.detail.targetProject.id, result).then(function() {
             that.fire('reload');
             that.fire('show-toast', {
               text: 'Project created'
@@ -135,7 +136,7 @@
           confirm: 'OK',
           cancel: 'Cancel'
         }).then(function() {
-          that.projectManager.removeSession(e.model.item.id, function() {
+          that.projectManager.removeSession(e.model.item.id).then(function() {
             that.fire('reload');
             that.fire('show-toast', {
               text: 'Session removed'

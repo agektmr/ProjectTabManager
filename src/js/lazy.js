@@ -36,8 +36,8 @@ if (params.favIconUrl) {
   link.setAttribute('type', 'image/x-icon');
   document.querySelector('head').appendChild(link);
 }
-document.addEventListener('webkitvisibilitychange', function(e) {
-  if (e.target.webkitVisibilityState == 'visible') {
+document.addEventListener('visibilitychange', function(e) {
+  if (e.target.visibilityState == 'visible') {
     if (params.url) {
       chrome.tabs.getCurrent(function(tab) {
         chrome.tabs.update(tab.id, {url: params.url});

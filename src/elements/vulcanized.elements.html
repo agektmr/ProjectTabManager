@@ -1291,7 +1291,8 @@
   }
 
 </style>
-<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700">
 <style is="custom-style">
 
   :root {
@@ -1308,7 +1309,7 @@
     };
 
     --paper-font-common-code: {
-      font-family: 'Inconsolata', 'Consolas', 'Source Code Pro', 'Monaco', 'Menlo', monospace;
+      font-family: 'Roboto Mono', 'Consolas', 'Menlo', monospace;
       -webkit-font-smoothing: antialiased;
     };
 
@@ -1496,7 +1497,7 @@
 
     --paper-font-code2: {
       /* @apply(--paper-font-common-code); */
-      font-family: 'Inconsolata', 'Consolas', 'Source Code Pro', 'Monaco', 'Menlo', monospace;
+      font-family: 'Roboto Mono', 'Consolas', 'Menlo', monospace;
       -webkit-font-smoothing: antialiased;
 
       font-size: 14px;
@@ -1506,7 +1507,7 @@
 
     --paper-font-code1: {
       /* @apply(--paper-font-common-code); */
-      font-family: 'Inconsolata', 'Consolas', 'Source Code Pro', 'Monaco', 'Menlo', monospace;
+      font-family: 'Roboto Mono', 'Consolas', 'Menlo', monospace;
       -webkit-font-smoothing: antialiased;
 
       font-size: 14px;
@@ -1523,6 +1524,18 @@
 
 
 <style is="custom-style">
+  * {
+    font-family: 'Roboto';
+  }
+
+  body {
+    width: 300px;
+  }
+
+  /*paper-item > *:not(:first-child):not(:last-child) {
+    margin-right: 0;
+  }*/
+
   :root {
     --default-background-color: #FFFFFF;
     --dark-primary-color:       #0288D1;
@@ -1626,7 +1639,8 @@
       height: 42px;
     };
   }
-</style></head><body><div hidden="" by-vulcanize=""><dom-module id="idb-node" assetpath="../bower_components/idb-node/">
+</style>
+</head><body><div hidden="" by-vulcanize=""><dom-module id="idb-node" assetpath="../bower_components/idb-node/">
   <style>
     :host {
       display: none;
@@ -1759,6 +1773,7 @@
       position: relative;
       padding: 8px;
       outline: none;
+      -webkit-tap-highlight-color: rgba(0,0,0,0);
       -webkit-user-select: none;
       -moz-user-select: none;
       -ms-user-select: none;
@@ -2051,6 +2066,17 @@
     .toolbar-tools > ::content[select=".bottom"] paper-icon-button + .title {
       margin-left: 0;
     }
+
+    .toolbar-tools > ::content > .fit {
+      position: absolute;
+      top: auto;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      width: auto;
+      margin: 0;
+    }
+
   </style>
 
   <template>
@@ -3122,6 +3148,8 @@
       transform: scale3d(0,1,1);
 
       background: var(--paper-input-container-focus-color, --default-primary-color);
+
+      @apply(--paper-input-container-underline-focus);
     }
 
     .underline.is-highlighted .focused-line {
@@ -3147,12 +3175,16 @@
     .unfocused-line {
       height: 1px;
       background: var(--paper-input-container-color, --secondary-text-color);
+
+      @apply(--paper-input-container-underline);
     }
 
     :host([disabled]) .unfocused-line {
       border-bottom: 1px dashed;
       border-color: var(--paper-input-container-color, --secondary-text-color);
       background: transparent;
+
+      @apply(--paper-input-container-underline-disabled);
     }
 
     .input-content {
@@ -3187,6 +3219,8 @@
     .input-content.label-is-highlighted ::content label,
     .input-content.label-is-highlighted ::content .paper-input-label {
       color: var(--paper-input-container-focus-color, --default-primary-color);
+
+      @apply(--paper-input-container-label-focus);
     }
 
     .input-content.is-invalid ::content label,
@@ -3263,8 +3297,8 @@
   <style>
 
     :host {
-      /* need to use display: none for role="alert" */
-      display: none;
+      display: inline-block;
+      visibility: hidden;
       float: left;
 
       color: var(--paper-input-container-invalid-color, --google-red-500);
@@ -3274,7 +3308,7 @@
     }
 
     :host([invalid]) {
-      display: inline-block;
+      visibility: visible;
     };
 
   </style>
@@ -3341,7 +3375,7 @@
 
       <label hidden$="[[!label]]">[[label]]</label>
 
-      <input is="iron-input" id="input" aria-labelledby$="[[_ariaLabelledBy]]" aria-describedby$="[[_ariaDescribedBy]]" disabled$="[[disabled]]" bind-value="{{value}}" invalid="{{invalid}}" prevent-invalid-input="[[preventInvalidInput]]" allowed-pattern="[[allowedPattern]]" validator="[[validator]]" type$="[[type]]" pattern$="[[pattern]]" maxlength$="[[maxlength]]" required$="[[required]]" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" minlength$="[[minlength]]" name$="[[name]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" list$="[[list]]" size$="[[size]]">
+      <input is="iron-input" id="input" aria-labelledby$="[[_ariaLabelledBy]]" aria-describedby$="[[_ariaDescribedBy]]" disabled$="[[disabled]]" bind-value="{{value}}" invalid="{{invalid}}" prevent-invalid-input="[[preventInvalidInput]]" allowed-pattern="[[allowedPattern]]" validator="[[validator]]" type$="[[type]]" pattern$="[[pattern]]" maxlength$="[[maxlength]]" required$="[[required]]" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" minlength$="[[minlength]]" name$="[[name]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" list$="[[list]]" size$="[[size]]" autocapitalize$="[[autocapitalize]]" autocorrect$="[[autocorrect]]">
 
       <template is="dom-if" if="[[errorMessage]]">
         <paper-input-error>[[errorMessage]]</paper-input-error>

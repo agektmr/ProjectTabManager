@@ -107,8 +107,8 @@ entry {
       }
     },
     open: function(e) {
-      e.stopPropagation();
       var that = this;
+      e.stopPropagation();
       // If tab id is not assigned
       if (!this.tabId) {
         // Open new project entry
@@ -198,7 +198,7 @@ entry {
               domain: domain,
               url: that.favIconUrl
             }
-          })
+          });
         // Renew cache with new favicon
         } else if (cache[domain].url == DEFAULT_FAVICON_URL) {
           cache[domain].url = this.favIconUrl;

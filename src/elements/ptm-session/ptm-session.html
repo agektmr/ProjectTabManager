@@ -44,9 +44,12 @@
           <span>[[projectTitle]]</span>
         </div>
         <template is="dom-if" if="[[!_computeProjectLinked(projectId)]]" restamp>
-          <paper-icon-button icon="icons:link" on-tap="_onTapLink" tabindex="-1"></paper-icon-button>
+          <template is="dom-if" if="[[!expanded]]" restamp>
+            <paper-icon-button icon="icons:link" on-tap="_onTapLink" tabindex="-1"></paper-icon-button>
+          </template>
         </template>
         <template is="dom-if" if="[[expanded]]" restamp>
+          <paper-icon-button icon="icons:link" on-tap="_onTapLink" tabindex="-1"></paper-icon-button>
           <template is="dom-if" if="[[!_computeActive(winId)]]">
             <paper-icon-button icon="icons:delete" on-tap="_onTapRemove" tabindex="-1"></paper-icon-button>
           </template>

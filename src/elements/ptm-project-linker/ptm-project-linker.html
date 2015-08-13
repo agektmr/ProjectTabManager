@@ -17,6 +17,11 @@
       padding: 0 24px;
       box-sizing: border-box;
     }
+    iron-icon {
+      width: 16px;
+      height: 16px;
+      padding: 2px 4px 4px 4px;
+    }
     paper-material {
       display: none;
       background-color: var(--default-background-color);
@@ -36,6 +41,9 @@
       cursor: auto;
       color: var(--disabled-text-color);
     }
+    paper-item:not([disabled]):hover {
+      background-color: var(--primary-background-color);
+    }
     paper-ripple {
       color: var(--default-primary-color);
     }
@@ -46,7 +54,7 @@
     }
   </style>
   <template>
-    <paper-material id="dialog" elevation="3" show$="{{show}}" animated>
+    <paper-material id="dialog" elevation="4" show$="{{show}}" animated>
       <paper-item on-tap="_create">
         <!-- <paper-ripple></paper-ripple> -->
         <span class="flex title">Create a new project</span>
@@ -56,7 +64,7 @@
         <paper-item on-tap="_link" disabled$="[[_isLinked(item)]]">
           <!-- <paper-ripple></paper-ripple> -->
           <span class="flex title">[[item.title]]</span>
-          <paper-icon-button icon$="[[_getLinkedIcon(item)]]"></paper-icon-button>
+          <iron-icon icon$="[[_getLinkedIcon(item)]]"></iron-icon>
         </paper-item>
       </template>
       <div class="buttons">
@@ -108,6 +116,7 @@
     },
     _link: function(e) {
       // e.stopPropagation();
+      if (this._isLinked(e.model.item)) return;
       this.show = false;
       this.fire('link-project', {
         sourceProject: this.linkingProject,

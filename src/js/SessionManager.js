@@ -541,7 +541,7 @@ var SessionManager = (function() {
             }
           }
           // Create new session
-          session = new SessionEntity(win);
+          let session = new SessionEntity(win);
           this.sessions.unshift(session);
           this.setActiveSession(win.id, session);
         }
@@ -699,7 +699,14 @@ var SessionManager = (function() {
      * @return {[type]} [description]
      */
     getCurrentWindowId() {
-      return this.activeInfo.windowId || null;
+      var winId = this.activeInfo.windowId;
+console.log('active window id:', winId);
+      if (!winId) {
+        chrome.windows.getCurrent(function(win) {
+console.log('current window id:', win.id);
+        });
+      }
+      return winId || null;
     }
 
     /**

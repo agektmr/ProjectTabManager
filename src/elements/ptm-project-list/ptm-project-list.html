@@ -66,6 +66,7 @@
         });
     },
     remove: function(e) {
+      var that = this;
       this.$.meta.byKey('confirm')
         .confirm({
           line1: 'Remove project?',

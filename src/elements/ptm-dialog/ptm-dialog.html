@@ -14,7 +14,7 @@
     }
   </style>
   <template>
-    <paper-dialog id="dialog">
+    <paper-dialog id="dialog" entry-animation="scale-up-animation" exit-animation="scale-down-animation" modal>
       <h2>{{line1}}</h2>
       <template is="dom-if" if="{{line2}}">
         <p>{{line2}}</p>

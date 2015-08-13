@@ -42,7 +42,7 @@
     <paper-material elevation="[[_computeElevation(expanded)]]" expanded$="[[expanded]]" animated>
       <paper-item focused$="{{focused}}">
         <paper-icon-button tabindex="-1" icon="[[_computeFoldIcon(expanded)]]" on-tap="toggle"></paper-icon-button>
-        <div class="title" on-tap="openProject" active$="{{_isNotRemovable()}}">
+        <div class="title" on-tap="openProject" active$="[[_isNotRemovable(projectId)]]">
           <!-- <paper-ripple></paper-ripple> -->
           <span>{{projectTitle}}</span>
         </div>

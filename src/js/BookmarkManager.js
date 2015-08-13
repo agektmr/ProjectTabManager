@@ -139,7 +139,7 @@ var BookmarkManager = (function() {
           if (archiveFolder) {
             chrome.bookmarks.move(bookmarkId, {parentId: archiveFolder.id}, bookmark => {
               if (config_.debug) console.log('[BookmarkManager] archived a bookmark', bookmark);
-              this.load(() => resolve(bookmark), reject);
+              this.load().then(() => resolve(bookmark), reject);
             });
           }
         }, reject);
@@ -151,7 +151,7 @@ var BookmarkManager = (function() {
      * @param  {[type]} bookmarkId [description]
      */
     openEditWindow(bookmarkId) {
-      chrome.tabs.create({url:'chrome://bookmarks#'+(bookmarkId||this.rootId)});
+      chrome.tabs.create({url:'chrome://bookmarks#' + (bookmarkId || this.rootId)});
     }
 
     /**

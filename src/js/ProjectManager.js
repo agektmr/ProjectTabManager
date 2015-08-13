@@ -172,39 +172,37 @@ var ProjectManager = (function() {
      * @param {Integer}         tabId
      */
     addBookmark(tabId) {
-      return new Promise((resolve, reject) => {
-        let mergeBookmark = function(callback, bookmark) {
-          return new Promise((resolve, reject) => {
-            this.bookmark = bookmarkManager.getFolder(bookmark.parentId);
-            this.load(this.session.tabs, this.bookmark.children);
-            resolve(bookmark);
-          });
-        };
+      let mergeBookmark = bookmark => {
+        return new Promise((resolve, reject) => {
+          this.bookmark = bookmarkManager.getFolder(bookmark.parentId);
+          this.load(this.session.tabs, this.bookmark.children);
+          resolve(bookmark);
+        });
+      };
 
-        let url = '', title = '';
-        for (let i = 0; i < this.fields.length; i++) {
-          if (this.fields[i].tabId === tabId) {
-            title = this.fields[i].title;
-            url   = this.fields[i].url;
-            break;
+      let url = '', title = '';
+      for (let i = 0; i < this.fields.length; i++) {
+        if (this.fields[i].tabId === tabId) {
+          title = this.fields[i].title;
+          url   = this.fields[i].url;
+          break;
+        }
+      }
+      if (url === '') {
+        throw "Unsync session. Adding bookmark failed because relevant tab counld't be found";
+      }
+      if (!this.bookmark) {
+        bookmarkManager.addFolder(this.title).then(folder => {
+          this.id       = folder.id;
+          this.bookmark = folder;
+          if (this.session) {
+            this.session.setId(folder.id);
           }
-        }
-        if (url === '') {
-          throw "Unsync session. Adding bookmark failed because relevant tab counld't be found";
-        }
-        if (!this.bookmark) {
-          bookmarkManager.addFolder(this.title).then(folder => {
-            this.id       = folder.id;
-            this.bookmark = folder;
-            if (this.session) {
-              this.session.setId(folder.id);
-            }
-            return bookmarkManager.addBookmark(this.id, title, url).then(mergeBookmark);
-          });
-        } else {
           return bookmarkManager.addBookmark(this.id, title, url).then(mergeBookmark);
-        }
-      });
+        });
+      } else {
+        return bookmarkManager.addBookmark(this.id, title, url).then(mergeBookmark);
+      }
     }
 
     /**

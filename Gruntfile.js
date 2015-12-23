@@ -47,12 +47,6 @@ module.exports = function(grunt) {
         ],
         dest: 'app/js/background.js'
       },
-      shadowdom: {
-        src: [
-          'src/js/shadowdom.js'
-        ],
-        dest: 'app/js/shadowdom.js'
-      },
       popup: {
         src: [
           'src/js/config.js',

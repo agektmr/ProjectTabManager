@@ -5,7 +5,7 @@
 <link rel="import" href="../../bower_components/iron-meta/iron-meta.html">
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
-
+<link rel="import" href="../chrome-i18n/chrome-i18n.html">
 
 <dom-module id="ptm-dialog">
   <style>
@@ -14,17 +14,17 @@
     }
   </style>
   <template>
-    <paper-dialog id="dialog" entry-animation="scale-up-animation" exit-animation="scale-down-animation" modal>
+    <paper-dialog id="dialog" modal>
       <h2>{{line1}}</h2>
       <template is="dom-if" if="{{line2}}">
         <p>{{line2}}</p>
       </template>
       <template is="dom-if" if="{{_isPrompt}}">
-        <paper-input id="input" value="{{answer}}" placeholder="{{placeholder}}"></paper-input>
+        <paper-input id="input" value="{{answer}}" placeholder="{{placeholder}}" autofocus></paper-input>
       </template>
       <div class="buttons">
-        <paper-button class="accent" raised on-tap="_onConfirmed">{{okay}}</paper-button>
         <paper-button raised on-tap="_onCanceled">{{cancel}}</paper-button>
+        <paper-button class="accent" raised on-tap="_onConfirmed">{{okay}}</paper-button>
       </div>
     </paper-dialog>
   </template>
@@ -67,17 +67,20 @@
         value: function() {}
       }
     },
+    behaviors: [
+      ChromeI18n
+    ],
     ready: function() {
       new Polymer.IronMeta({type: 'dialog', key: 'confirm', value: this});
     },
     prompt: function(qs) {
       var that = this;
       this.line1 = qs.line1 || '';
-      this.line2 = qs.line2 || 'This operation can\'t be undone.';
+      this.line2 = qs.line2 || this._l10n('undonable_operation');
       this.answer = qs.answer || '';
       this.placeholder = qs.placeholder || 'Enter value';
       this.okay = qs.confirm || 'OK';
-      this.cancel = qs.cancel || 'Cancel';
+      this.cancel = qs.cancel || this._l10n('cancel');
       this._isPrompt = true;
       this.$.dialog.open();
       return new Promise(function(resolve, reject) {
@@ -87,10 +90,10 @@
     },
     confirm: function(qs) {
       var that = this;
-      this.line1 = qs.line1 || 'Are you sure?';
-      this.line2 = qs.line2 || 'This operation can\'t be undone.';
+      this.line1 = qs.line1 || this._l10n('are_you_sure?');
+      this.line2 = qs.line2 || this._l10n('undonable_operation');
       this.okay = qs.confirm || 'OK';
-      this.cancel = qs.cancel || 'Cancel';
+      this.cancel = qs.cancel || this._l10n('cancel');
       this._isPrompt = false;
       this.$.dialog.open();
       return new Promise(function(resolve, reject) {

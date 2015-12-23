@@ -13,6 +13,9 @@
     :host {
       display: block;
     }
+    *:focus {
+      outline: none;
+    }
     :host:focus {
       outline: none;
     }
@@ -39,17 +42,17 @@
     }
   </style>
   <template>
-    <paper-material elevation="[[_computeElevation(expanded)]]" expanded$="[[expanded]]" animated>
-      <paper-item focused$="{{focused}}">
-        <paper-icon-button tabindex="-1" icon="[[_computeFoldIcon(expanded)]]" on-tap="toggle"></paper-icon-button>
+    <paper-material elevation="[[_elevation]]" expanded$="[[expanded]]" animated>
+      <paper-item focused$="{{focused}}" tabindex="-1">
+        <paper-icon-button tabindex="-1" icon="[[_foldIcon]]" on-tap="toggle"></paper-icon-button>
         <div class="title" on-tap="openProject" active$="[[_isNotRemovable(projectId)]]">
           <!-- <paper-ripple></paper-ripple> -->
           <span>{{projectTitle}}</span>
         </div>
         <template is="dom-if" if="[[expanded]]">
-          <paper-icon-button icon="create" on-tap="_onTapRename"></paper-icon-button>
+          <paper-icon-button icon="create" on-tap="_onTapRename" tabindex="-1"></paper-icon-button>
           <template is="dom-if" if="[[!_isNotRemovable()]]">
-            <paper-icon-button icon="delete" on-tap="_onTapRemove"></paper-icon-button>
+            <paper-icon-button icon="delete" on-tap="_onTapRemove" tabindex="-1"></paper-icon-button>
           </template>
         </template>
       </paper-item>
@@ -57,20 +60,18 @@
         <template is="dom-if" if="[[!fields.length]]">
           <paper-item class="layout">
             <paper-icon-button icon="icons:warning"></paper-icon-button>
-            <span on-tap="open" class="title">No bookmarks</span>
+            <span class="title">{{_l10n('no_bookmarks')}}</span>
           </paper-item>
         </template>
-        <template is="dom-if" if="[[expanded]]">
-          <template id="repeat" is="dom-repeat" items="[[fields]]" filter="filter">
-            <ptm-bookmark
-              url="[[item.url]]"
-              fav-icon-url="{{item.favIconUrl}}"
-              bookmark-id="[[item.id]]"
-              tab-id="[[item.tabId]]"
-              title="[[item.title]]"
-              project-linked="[[_computeProjectLinked(projectId)]]"
-              on-toggle-bookmark="_onToggleBookmark"></ptm-bookmark>
-          </template>
+        <template id="repeat" is="dom-repeat" items="[[fields]]">
+          <ptm-bookmark
+            url="[[item.url]]"
+            fav-icon-url="{{item.favIconUrl}}"
+            bookmark-id="[[item.id]]"
+            tab-id="[[item.tabId]]"
+            title="[[item.title]]"
+            project-id="[[projectId]]"
+            on-toggle-bookmark="_toggleBookmark"></ptm-bookmark>
         </template>
       </iron-collapse>
     </paper-material>
@@ -89,11 +90,15 @@
     },
     _onTapRename: function(e) {
       e.stopPropagation();
-      this.fire('rename-clicked');
+      this.fire('rename-clicked', {
+        id: this.projectId
+      });
     },
     _onTapRemove: function(e) {
       e.stopPropagation();
-      this.fire('remove-clicked');
+      this.fire('remove-clicked', {
+        id: this.projectId
+      });
     }
   });
 </script>

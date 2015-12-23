@@ -16,5 +16,8 @@
     "idb-node": "^0.5.1",
     "iron-elements": "PolymerElements/iron-elements#~1.0.1",
     "paper-elements": "PolymerElements/paper-elements#~1.0.1"
+  },
+  "resolutions": {
+    "polymer": "^1.2.1"
   }
 }

@@ -1,20 +1,22 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-meta/iron-meta.html">
 <link rel="import" href="../ptm-list-behavior/ptm-list-behavior.html">
 <link rel="import" href="../ptm-project/ptm-project.html">
 
-<dom-module id="ptm-project-list">
+<dom-module id="ptm-search-list">
   <style>
     *:focus {
       outline: none;
     }
   </style>
   <template>
-    <template id="repeat" is="dom-repeat" items="[[projects]]" filter="filter">
+    <template id="repeat" is="dom-repeat" items="[[projects]]">
       <ptm-project
         project="{{item}}"
         project-id="[[item.id]]"
         project-title="[[item.title]]"
-        fields="[[item.fields]]">
+        fields="[[item.fields]]"
+        expanded="true">
       </ptm-project>
     </template>
   </template>
@@ -22,12 +24,9 @@
 
 <script>
   Polymer({
-    is: 'ptm-project-list',
+    is: 'ptm-search-list',
     behaviors: [
       PtmListBehavior
-    ],
-    filter: function(item) {
-      return !!item.bookmark;
-    }
+    ]
   });
 </script>

@@ -20,6 +20,12 @@
   "save": {
     "message": "Save"
   },
+  "cancel": {
+    "message": "Cancel"
+  },
+  "unlink": {
+    "message": "Unlink"
+  },
   "add": {
     "message": "Add to Project"
   },
@@ -41,14 +47,35 @@
   "bookmark": {
     "message": "Toggle bookmark"
   },
-  "no_bookmarks_found": {
-    "message": "No Bookmarks Found"
+  "no_bookmarks": {
+    "message": "No bookmarks"
+  },
+  "no_tabs": {
+    "message": "No tabs"
   },
   "todays_project_summary": {
     "message": "Summary of Project Usage"
   },
-  "options": {
-    "message": "Options"
+  "sessions": {
+    "message": "Sessions"
+  },
+  "projects": {
+    "message": "Projects"
+  },
+  "reload": {
+    "message": "Reload"
+  },
+  "manage_bookmarks": {
+    "message": "Manage Bookmarks"
+  },
+  "history": {
+    "message": "History"
+  },
+  "settings": {
+    "message": "Settings"
+  },
+  "help": {
+    "message": "Help"
   },
   "project_name": {
     "message": "New Project Name"
@@ -72,7 +99,7 @@
     "message": "Root Folder Location:"
   },
   "root_folder_location_help": {
-    "message": "Specify location of Projects Root Folder in Bookmarks."
+    "message": "Projects are stored as bookmarks. Determine root folder and its name."
   },
   "root_folder_name": {
     "message": "Root Folder Name:"
@@ -85,5 +112,74 @@
   },
   "disable_lazy_load_help": {
     "message": "Lazy load prevents simultaneous load of multiple tabs when opening a project."
+  },
+  "link_session_to_a_project": {
+    "message": "Link session to a project"
+  },
+  "create_a_new_project": {
+    "message": "Create a new project"
+  },
+  "project_linked": {
+    "message": "Project linked"
+  },
+  "project_unlinked": {
+    "message": "Project unlinked"
+  },
+  "project_to_link_not_found": {
+    "message": "The project to link could not be found."
+  },
+  "failed_linking": {
+    "message": "Failed linking a project"
+  },
+  "failed_unlinking": {
+    "message": "Failed unlinking a project"
+  },
+  "failed_opening": {
+    "message": "Failed opening a project"
+  },
+  "save_project_notice": {
+    "message": "By saving this session as a project, all open tabs will be saved as bookmarks and synced across same Chrome profile."
+  },
+  "new_project_name": {
+    "message": "New project name"
+  },
+  "project_created": {
+    "message": "Project created"
+  },
+  "remove_a_session": {
+    "message": "Remove a session?"
+  },
+  "remove_session_notice": {
+    "message": "This won't delete linked project."
+  },
+  "session_removed": {
+    "message": "Session removed"
+  },
+  "rename_a_project": {
+    "message": "Rename a project"
+  },
+  "change_project_name_notice": {
+    "message": "Change project name. This will affect the name of the project bookmark folder as well."
+  },
+  "update": {
+    "message": "Update"
+  },
+  "project_renamed": {
+    "message": "Project renamed"
+  },
+  "remove_a_project": {
+    "message": "Remove a project?"
+  },
+  "remove_project_notice": {
+    "message": "This will move the project to __Archive__ folder in your bookmark."
+  },
+  "project_removed": {
+    "message": "Project removed"
+  },
+  "are_you_sure": {
+    "message": "Are you sure?"
+  },
+  "undonable_operation": {
+    "message": "This operation can't be undone."
   }
 }

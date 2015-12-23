@@ -1,20 +1,29 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
-<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-header-panel/paper-header-panel.html">
 <link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../ptm-project-linker/ptm-project-linker.html">
 <link rel="import" href="../ptm-session-list/ptm-session-list.html">
 <link rel="import" href="../ptm-project-list/ptm-project-list.html">
-<link rel="import" href="../ptm-project-linker/ptm-project-linker.html">
+<link rel="import" href="../ptm-search-list/ptm-search-list.html">
 <link rel="import" href="../ptm-dialog/ptm-dialog.html">
+<link rel="import" href="../ptm-options/ptm-options.html">
+<link rel="import" href="../chrome-i18n/chrome-i18n.html">
 
 <dom-module id="ptm-app">
   <style>
+    *:focus {
+      outline: none;
+    }
     paper-header-panel {
       min-height: 400px;
       overflow-y: hidden;
@@ -24,21 +33,28 @@
       --paper-input-container-focus-color: rgba(255, 255, 255, 1);
       --paper-input-container-input-color: var(--default-background-color);
     }
-    .paper-header {
-      background-color: var(--default-primary-color);
+    paper-menu {
+      width: 130px;
+      padding: 8px 0;
+    }
+    paper-material paper-item {
+      cursor: pointer;
+      padding: 0 10px;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
     }
     .toolbar-header {
       @apply(--layout-horizontal);
       @apply(--layout-center);
       margin: 0 4px -8px 16px;
     }
-    .paper-header paper-icon-button {
+    .paper-header {
+      background-color: var(--default-primary-color);
+    }
+    paper-menu-button paper-icon-button {
       color: var(--text-primary-color);
       margin-left: 4px;
-    }
-    .paper-header .bottom {
-      @apply(--layout-horizontal);
-      @apply(--layout-center);
     }
     .loading {
       @apply(--layout-horizontal);
@@ -54,34 +70,53 @@
     <ptm-dialog></ptm-dialog>
     <paper-header-panel>
       <div class="paper-header">
-        <div class="toolbar-header">
+        <div class="toolbar-header" class="layout">
           <paper-input placeholder="Project Tab Manager" class="flex" value="{{query}}"></paper-input>
-          <paper-icon-button icon="icons:more-vert" tabindex="-1"></paper-icon-button>
-<!--           <iron-selector id="menu" hidden>
-            <template is="dom-repeat" items="{{menuItems}}">
-              <paper-item>
-                <div class="flex">{{item.text}}</div>
-              </paper-item>
-            </template>
-          </iron-selector>
- -->        </div>
+          <paper-menu-button id="menu" horizontal-align="right" vertical-offset="2">
+            <paper-icon-button icon="icons:more-vert" class="dropdown-trigger" tabindex="-1"></paper-icon-button>
+            <paper-material class="dropdown-content">
+              <paper-item on-tap="reload">{{_l10n('reload')}}</paper-item>
+              <paper-item on-tap="manageBookmarks">{{_l10n('manage_bookmarks')}}</paper-item>
+              <paper-item on-tap="openHistory">{{_l10n('history')}}</paper-item>
+              <paper-item on-tap="openSettings">{{_l10n('settings')}}</paper-item>
+              <paper-item on-tap="openHelp">{{_l10n('help')}}</paper-item>
+            </paper-material>
+          </paper-menu-button>
+        </div>
         <paper-tabs class="flex" selected="{{selected}}" tabindex="-1">
-          <paper-tab tabindex="-1">Sessions</paper-tab>
-          <paper-tab tabindex="-1">Projects</paper-tab>
+          <paper-tab tabindex="-1">{{_l10n('sessions')}}</paper-tab>
+          <paper-tab tabindex="-1">{{_l10n('projects')}}</paper-tab>
         </paper-tabs>
       </div>
+      <iron-meta id="meta" type="dialog"></iron-meta>
+      <ptm-project-linker id="linker"
+        projects="[[projectManager.projects]]"
+        on-create-project="_createProject"
+        on-link-project="_linkProject"
+        on-unlink-project="_unlinkProject"></ptm-project-linker>
+      <ptm-options id="options"></ptm-options>
       <iron-pages id="pages" selected="[[selected]]">
         <ptm-session-list
-          query="[[query]]"
-          project-manager="[[projectManager]]">
+          projects="[[projectManager.projects]]"
+          project-manager="[[projectManager]]"
+          on-open-clicked="_openProject"
+          on-remove-clicked="_removeSession">
         </ptm-session-list>
         <ptm-project-list
-          query="[[query]]"
-          project-manager="[[projectManager]]">
+          projects="[[projectManager.projects]]"
+          project-manager="[[projectManager]]"
+          on-open-clicked="_openProject"
+          on-rename-clicked="_renameProject"
+          on-remove-clicked="_removeProject">
         </ptm-project-list>
         <div class="fit loading">
           <paper-spinner active></paper-spinner>
         </div>
+        <ptm-search-list
+          projects="[[searchResults]]"
+          project-manager="[[projectManager]]"
+          on-open-clicked="_openProject">
+        </ptm-search-list>
       </iron-pages>
       <paper-toast id="toast" duration="3000" text="{{toastText}}"></paper-toast>
     </paper-header-panel>
@@ -94,7 +129,9 @@
     properties: {
       projectManager: {
         type: Object,
-        value: {}
+        value: function() {
+          return {};
+        }
       },
       selected: {
         type: Number,
@@ -106,30 +143,25 @@
       },
       query: {
         type: String,
-        value: ''
+        value: '',
+        observer: '_queryChanged'
       },
-      menuItems: {
-        type: Array,
-        value: [
-          {
-            text: 'Reload'
-          },
-          {
-            text: 'BookmarkManager'
-          },
-          {
-            text: 'History'
-          },
-          {
-            text: 'Options'
-          },
-          {
-            text: 'Help'
-          }
-        ]
+      previousPage: {
+        type: Number,
+        value: 0
+      },
+      searchResults: {
+        type: Object,
+        value: function() {
+          return []
+        }
       }
     },
+    behaviors: [
+      ChromeI18n
+    ],
     listeners: {
+      'link-clicked': '_openLinker',
       'show-toast': '_showToast',
       'reload': 'reload'
     },
@@ -137,21 +169,195 @@
       this.toastText = e.detail.text;
       this.$.toast.show();
     },
+    ready: function() {
+      this.fire('reload', {
+        forceReload: false
+      });
+    },
     reload: function(e) {
-      var that = this;
       this.$.pages.selected = 2;
       chrome.runtime.sendMessage({
         command: 'update',
         forceReload: e.detail.forceReload || true
-      }, function() {
-        that.projectManager = chrome.extension.getBackgroundPage().projectManager;
-        that.set('projectManager.projects', that.projectManager.projects);
-        that.$.pages.selected = that.selected;
+      }, () => {
+        this.projectManager =
+          chrome.extension.getBackgroundPage().projectManager;
+        this.set('projectManager.projects', this.projectManager.projects);
+        this.$.pages.selected = this.selected;
       });
+      this.$.menu.close();
     },
-    ready: function() {
-      this.fire('reload', {
-        forceReload: false
+    manageBookmarks: function() {
+      this.projectManager.openBookmarkEditWindow();
+    },
+    openHistory: function() {
+
+    },
+    openSettings: function() {
+      this.$.options.open();
+      this.$.menu.close();
+    },
+    openHelp: function() {
+
+    },
+    _queryChanged: function(newValue, oldValue) {
+      if (oldValue != newValue) {
+        if (newValue.length === 0) {
+          this.$.pages.selected = this.previousPage;
+        } else {
+          if (this.$.pages.selected != 3) {
+            this.previousPage = this.$.pages.selected;
+            this.$.pages.selected = 3;
+          }
+          this.debounce('search', this.search.bind(this), 150);
+        }
+      }
+    },
+    _openLinker: function(e) {
+      var project = this.projectManager.getProjectFromId(e.detail.id);
+      if (project) {
+        this.$.linker.open(project);
+      } else {
+        this.fire('show-toast', {
+          text: this._l10n('project_to_link_not_found.')
+        });
+      }
+    },
+    _linkProject: function(e) {
+      if (e.detail.sourceProject && e.detail.targetProject) {
+        var targetProject = e.detail.targetProject;
+        var sourceProject = e.detail.sourceProject;
+        sourceProject.associateBookmark(targetProject.bookmark);
+
+        this.fire('reload');
+        this.fire('show-toast', {
+          text: this._l10n('project_linked')
+        });
+        this.$.linker.close();
+      } else {
+        this.fire('show-toast', {
+          text: this._l10n('failed_linking')
+        });
+      }
+    },
+    _unlinkProject: function(e) {
+      if (e.detail.targetProject) {
+        var targetProject = e.detail.targetProject;
+        targetProject.deassociateBookmark();
+
+        this.fire('reload');
+        this.fire('show-toast', {
+          text: this._l10n('project_unlinked')
+        });
+        this.$.linker.close();
+      } else {
+        this.fire('show-toast', {
+          text: this._l10n('failed_unlinking')
+        });
+      }
+    },
+    _openProject: function(e) {
+      var project = this.projectManager.getProjectFromId(e.detail.id);
+      if (project) {
+        project.open();
+      } else {
+        this.fire('show-toast', {
+          text: this._l10n('failed_opening')
+        });
+      }
+    },
+    _createProject: function(e) {
+      this.$.linker.close();
+      this.$.meta.byKey('confirm')
+      .prompt({
+        line1: this._l10n('new_project'),
+        line2: this._l10n('save_project_notice'),
+        answer: '',
+        placeholder: this._l10n('new_project_name'),
+        confirm: this._l10n('save'),
+        cancel: this._l10n('cancel')
+      }).then(result => {
+        e.detail.targetProject.deassociateBookmark();
+        this.projectManager.createProject(e.detail.targetProject.id, result).then(() => {
+          this.fire('reload');
+          this.fire('show-toast', {
+            text: this._l10n('project_created')
+          });
+        });
+      }).catch(() => { return; });
+    },
+    _removeSession: function(e) {
+      this.$.meta.byKey('confirm')
+      .confirm({
+        line1: this._l10n('remove_a_session'),
+        line2: this._l10n('remove_session_notice'),
+        confirm: 'OK',
+        cancel: this._l10n('cancel')
+      }).then(() => {
+        this.projectManager.removeSession(e.detail.id).then(() => {
+          this.fire('reload');
+          this.fire('show-toast', {
+            text: this._l10n('session_removed')
+          });
+        });
+      }).catch(() => { return; });
+    },
+    _renameProject: function(e) {
+      var project = this.projectManager.getProjectFromId(e.detail.id);
+      if (project) {
+        this.$.meta.byKey('confirm')
+        .prompt({
+          line1: this._l10n('rename_a_project'),
+          line2: this._l10n('change_project_name_notice'),
+          answer: project.title,
+          placeholder: this._l10n('new_project_name'),
+          confirm: this._l10n('update'),
+          cancel: this._l10n('cancel')
+        }).then(result => {
+          this.projectManager.renameProject(project.id, result).then(() => {
+            this.fire('reload');
+            this.fire('show-toast', {
+              text: this._l10n('project_renamed')
+            });
+          });
+        }).catch(() => { return; });
+      }
+    },
+    _removeProject: function(e) {
+      this.$.meta.byKey('confirm')
+      .confirm({
+        line1: this._l10n('remove_a_project'),
+        line2: this._l10n('remove_project_notice'),
+        confirm: 'OK',
+        cancel: this._l10n('cancel')
+      }).then(() => {
+        this.projectManager.removeProject(e.detail.id).then(() => {
+          this.fire('reload');
+          this.fire('show-toast', {
+            text: this._l10n('project_removed')
+          });
+        });
+      }).catch(() => { return; });
+    },
+    search: function() {
+      util.deepCopy(this.projectManager.projects).then((projects) => {
+        for (var i = 0; i < projects.length; i++) {
+          var project = projects[i];
+          for (var j = 0; j < project.fields.length; j++) {
+            var field = project.fields[j];
+            if (field.title.toLowerCase().indexOf(this.query.toLowerCase()) === -1) {
+              project.fields.splice(j, 1);
+              j--;
+            }
+          }
+          if (project.fields.length === 0) {
+            if (project.title.toLowerCase().indexOf(this.query.toLowerCase()) === -1) {
+              projects.splice(i, 1);
+              i--;
+            }
+          }
+        }
+        this.searchResults = projects;
       });
     }
   });

@@ -1,337 +1,103 @@
-<html><head><meta charset="UTF-8"><script src="../bower_components/promise-polyfill/Promise.js"></script>
-<style>
-  /* IE 10 support for HTML5 hidden attr */
-  [hidden] {
-    display: none !important;
-  }
-</style>
-
-<style is="custom-style">
-  :root {
-
-    --layout: {
-      display: -ms-flexbox;
-      display: -webkit-flex;
-      display: flex;
-    };
-
-    --layout-inline: {
-      display: -ms-inline-flexbox;
-      display: -webkit-inline-flex;
-      display: inline-flex;
-    };
-
-    --layout-horizontal: {
-      /* @apply(--layout); */
-      display: -ms-flexbox;
-      display: -webkit-flex;
-      display: flex;
-
-      -ms-flex-direction: row;
-      -webkit-flex-direction: row;
-      flex-direction: row;
-    };
-
-    --layout-horizontal-reverse: {
-      -ms-flex-direction: row-reverse;
-      -webkit-flex-direction: row-reverse;
-      flex-direction: row-reverse;
-    };
-
-    --layout-vertical: {
-      /* @apply(--layout); */
-      display: -ms-flexbox;
-      display: -webkit-flex;
-      display: flex;
-
-      -ms-flex-direction: column;
-      -webkit-flex-direction: column;
-      flex-direction: column;
-    };
-
-    --layout-vertical-reverse: {
-      -ms-flex-direction: column-reverse;
-      -webkit-flex-direction: column-reverse;
-      flex-direction: column-reverse;
-    };
-
-    --layout-wrap: {
-      -ms-flex-wrap: wrap;
-      -webkit-flex-wrap: wrap;
-      flex-wrap: wrap;
-    };
-
-    --layout-wrap-reverse: {
-      -ms-flex-wrap: wrap-reverse;
-      -webkit-flex-wrap: wrap-reverse;
-      flex-wrap: wrap-reverse;
-    };
-
-    --layout-flex-auto: {
-      -ms-flex: 1 1 auto;
-      -webkit-flex: 1 1 auto;
-      flex: 1 1 auto;
-    };
-
-    --layout-flex-none: {
-      -ms-flex: none;
-      -webkit-flex: none;
-      flex: none;
-    };
-
-    --layout-flex: {
-      -ms-flex: 1 1 0.000000001px;
-      -webkit-flex: 1;
-      flex: 1;
-      -webkit-flex-basis: 0.000000001px;
-      flex-basis: 0.000000001px;
-    };
-
-    --layout-flex-2: {
-      -ms-flex: 2;
-      -webkit-flex: 2;
-      flex: 2;
-    };
-
-    --layout-flex-3: {
-      -ms-flex: 3;
-      -webkit-flex: 3;
-      flex: 3;
-    };
-
-    --layout-flex-4: {
-      -ms-flex: 4;
-      -webkit-flex: 4;
-      flex: 4;
-    };
-
-    --layout-flex-5: {
-      -ms-flex: 5;
-      -webkit-flex: 5;
-      flex: 5;
-    };
-
-    --layout-flex-6: {
-      -ms-flex: 6;
-      -webkit-flex: 6;
-      flex: 6;
-    };
-
-    --layout-flex-7: {
-      -ms-flex: 7;
-      -webkit-flex: 7;
-      flex: 7;
-    };
-
-    --layout-flex-8: {
-      -ms-flex: 8;
-      -webkit-flex: 8;
-      flex: 8;
-    };
-
-    --layout-flex-9: {
-      -ms-flex: 9;
-      -webkit-flex: 9;
-      flex: 9;
-    };
-
-    --layout-flex-10: {
-      -ms-flex: 10;
-      -webkit-flex: 10;
-      flex: 10;
-    };
-
-    --layout-flex-11: {
-      -ms-flex: 11;
-      -webkit-flex: 11;
-      flex: 11;
-    };
-
-    --layout-flex-12: {
-      -ms-flex: 12;
-      -webkit-flex: 12;
-      flex: 12;
-    };
-
-    /* alignment in cross axis */
-
-    --layout-start: {
-      -ms-flex-align: start;
-      -webkit-align-items: flex-start;
-      align-items: flex-start;
-    };
-
-    --layout-center: {
-      -ms-flex-align: center;
-      -webkit-align-items: center;
-      align-items: center;
-    };
-
-    --layout-end: {
-      -ms-flex-align: end;
-      -webkit-align-items: flex-end;
-      align-items: flex-end;
-    };
-
-    /* alignment in main axis */
-
-    --layout-start-justified: {
-      -ms-flex-pack: start;
-      -webkit-justify-content: flex-start;
-      justify-content: flex-start;
-    };
-
-    --layout-center-justified: {
-      -ms-flex-pack: center;
-      -webkit-justify-content: center;
-      justify-content: center;
-    };
-
-    --layout-end-justified: {
-      -ms-flex-pack: end;
-      -webkit-justify-content: flex-end;
-      justify-content: flex-end;
-    };
-
-    --layout-around-justified: {
-      -ms-flex-pack: around;
-      -webkit-justify-content: space-around;
-      justify-content: space-around;
-    };
-
-    --layout-justified: {
-      -ms-flex-pack: justify;
-      -webkit-justify-content: space-between;
-      justify-content: space-between;
-    };
-
-    --layout-center-center: {
-      /* @apply(--layout-center --layout-center-justified); */
-      -ms-flex-align: center;
-      -webkit-align-items: center;
-      align-items: center;
-      -ms-flex-pack: center;
-      -webkit-justify-content: center;
-      justify-content: center;
-    };
-
-    /* self alignment */
-
-    --layout-self-start: {
-      -ms-align-self: flex-start;
-      -webkit-align-self: flex-start;
-      align-self: flex-start;
-    };
-
-    --layout-self-center: {
-      -ms-align-self: center;
-      -webkit-align-self: center;
-      align-self: center;
-    };
-
-    --layout-self-end: {
-      -ms-align-self: flex-end;
-      -webkit-align-self: flex-end;
-      align-self: flex-end;
-    };
-
-    --layout-self-stretch: {
-      -ms-align-self: stretch;
-      -webkit-align-self: stretch;
-      align-self: stretch;
-    };
-
-    /*******************************
-              Other Layout
-    *******************************/
-
-    --layout-block: {
-      display: block;
-    };
-
-    --layout-invisible: {
-      visibility: hidden !important;
-    };
-
-    --layout-relative: {
-      position: relative;
-    };
-
-    --layout-fit: {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-    };
-
-    --layout-scroll: {
-      -webkit-overflow-scrolling: touch;
-      overflow: auto;
-    };
-
-    /* fixed position */
-
-    --layout-fixed-top: {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-    };
-
-    --layout-fixed-right: {
-      position: fixed;
-      top: 0;
-      right: 0;
-      bottom: 0;
-    };
-
-    --layout-fixed-bottom: {
-      position: fixed;
-      right: 0;
-      bottom: 0;
-      left: 0;
-    };
-
-    --layout-fixed-left: {
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      left: 0;
-    };
-
-  }
-
-</style>
-
-
-<style is="custom-style">
-
-  :root {
-
-    --dark-primary-color: #303f9f;
-
-    --default-primary-color: #3f51b5;
-
-    --light-primary-color: #c5cae9;
-
-    --text-primary-color: #ffffff;
-
-    --accent-color: #ff4081;
-
-    --primary-background-color: #ffffff;
-
-    --primary-text-color: #212121;
-
-    --secondary-text-color: #757575;
-
-    --disabled-text-color: #bdbdbd;
-
-    --divider-color: #e0e0e0;
-
-  }
-
-</style>
+<html><head><meta charset="UTF-8"><!--
+`iron-meta` is a generic element you can use for sharing information across the DOM tree.
+It uses [monostate pattern](http://c2.com/cgi/wiki?MonostatePattern) such that any
+instance of iron-meta has access to the shared
+information. You can use `iron-meta` to share whatever you want (or create an extension
+[like x-meta] for enhancements).
+
+The `iron-meta` instances containing your actual data can be loaded in an import,
+or constructed in any way you see fit. The only requirement is that you create them
+before you try to access them.
+
+Examples:
+
+If I create an instance like this:
+
+    <iron-meta key="info" value="foo/bar"></iron-meta>
+
+Note that value="foo/bar" is the metadata I've defined. I could define more
+attributes or use child nodes to define additional metadata.
+
+Now I can access that element (and it's metadata) from any iron-meta instance
+via the byKey method, e.g.
+
+    meta.byKey('info').getAttribute('value').
+
+Pure imperative form would be like:
+
+    document.createElement('iron-meta').byKey('info').getAttribute('value');
+
+Or, in a Polymer element, you can include a meta in your template:
+
+    <iron-meta id="meta"></iron-meta>
+    ...
+    this.$.meta.byKey('info').getAttribute('value');
+
+@group Iron Elements
+@demo demo/index.html
+@hero hero.svg
+@element iron-meta
+-->
+
+<script src="../bower_components/promise-polyfill/Promise.js"></script>
+<!--
+iron-request can be used to perform XMLHttpRequests.
+
+    <iron-request id="xhr"></iron-request>
+    ...
+    this.$.xhr.send({url: url, params: params});
+-->
+<!--
+The `iron-ajax` element exposes network request functionality.
+
+    <iron-ajax
+        auto
+        url="http://gdata.youtube.com/feeds/api/videos/"
+        params='{"alt":"json", "q":"chrome"}'
+        handle-as="json"
+        on-response="handleResponse"
+        debounce-duration="300"></iron-ajax>
+
+With `auto` set to `true`, the element performs a request whenever
+its `url`, `params` or `body` properties are changed. Automatically generated
+requests will be debounced in the case that multiple attributes are changed
+sequentially.
+
+Note: The `params` attribute must be double quoted JSON.
+
+You can trigger a request explicitly by calling `generateRequest` on the
+element.
+
+@demo demo/index.html
+@hero hero.svg
+-->
+
+<!--
+`iron-pages` is used to select one of its children to show. One use is to cycle through a list of
+children "pages".
+
+Example:
+
+    <iron-pages selected="0">
+      <div>One</div>
+      <div>Two</div>
+      <div>Three</div>
+    </iron-pages>
+
+    <script>
+      document.addEventListener('click', function(e) {
+        var pages = document.querySelector('iron-pages');
+        pages.selectNext();
+      });
+    </script>
+
+@group Iron Elements
+@class iron-pages
+@hero hero.svg
+@demo demo/index.html
+@extends iron-selector
+-->
+
 <style>
 
   /*******************************
@@ -609,7 +375,7 @@
   html /deep/ .fixed-right {
     top: 0;
     right: 0;
-    botttom: 0;
+    bottom: 0;
   }
 
   html /deep/ .fixed-bottom {
@@ -620,7 +386,7 @@
 
   html /deep/ .fixed-left {
     top: 0;
-    botttom: 0;
+    bottom: 0;
     left: 0;
   }
 
@@ -920,6 +686,912 @@
   }
 
 </style>
+<!--
+The `<iron-flex-layout>` component provides simple ways to use [CSS flexible box layout](https://developer.mozilla.org/en-US/docs/Web/Guide/CSS/Flexible_boxes), also known as flexbox. This component provides two different ways to use flexbox:
+
+1. [Layout classes](https://github.com/PolymerElements/iron-flex-layout/tree/master/classes). The layout class stylesheet provides a simple set of class-based flexbox rules. Layout classes let you specify layout properties directly in markup.
+
+2. [Custom CSS mixins](https://github.com/PolymerElements/iron-flex-layout/blob/master/iron-flex-layout.html). The mixin stylesheet includes custom CSS mixins that can be applied inside a CSS rule using the `@apply` function.
+
+A complete [guide](https://elements.polymer-project.org/guides/flex-layout) to `<iron-flex-layout>` is available.
+
+@group Iron Elements
+@pseudoElement iron-flex-layout
+@demo demo/index.html
+-->
+
+<style>
+  /* IE 10 support for HTML5 hidden attr */
+  [hidden] {
+    display: none !important;
+  }
+</style>
+
+<style is="custom-style">
+  :root {
+
+    --layout: {
+      display: -ms-flexbox;
+      display: -webkit-flex;
+      display: flex;
+    };
+
+    --layout-inline: {
+      display: -ms-inline-flexbox;
+      display: -webkit-inline-flex;
+      display: inline-flex;
+    };
+
+    --layout-horizontal: {
+      @apply(--layout);
+
+      -ms-flex-direction: row;
+      -webkit-flex-direction: row;
+      flex-direction: row;
+    };
+
+    --layout-horizontal-reverse: {
+      @apply(--layout);
+
+      -ms-flex-direction: row-reverse;
+      -webkit-flex-direction: row-reverse;
+      flex-direction: row-reverse;
+    };
+
+    --layout-vertical: {
+      @apply(--layout);
+
+      -ms-flex-direction: column;
+      -webkit-flex-direction: column;
+      flex-direction: column;
+    };
+
+    --layout-vertical-reverse: {
+      @apply(--layout);
+
+      -ms-flex-direction: column-reverse;
+      -webkit-flex-direction: column-reverse;
+      flex-direction: column-reverse;
+    };
+
+    --layout-wrap: {
+      -ms-flex-wrap: wrap;
+      -webkit-flex-wrap: wrap;
+      flex-wrap: wrap;
+    };
+
+    --layout-wrap-reverse: {
+      -ms-flex-wrap: wrap-reverse;
+      -webkit-flex-wrap: wrap-reverse;
+      flex-wrap: wrap-reverse;
+    };
+
+    --layout-flex-auto: {
+      -ms-flex: 1 1 auto;
+      -webkit-flex: 1 1 auto;
+      flex: 1 1 auto;
+    };
+
+    --layout-flex-none: {
+      -ms-flex: none;
+      -webkit-flex: none;
+      flex: none;
+    };
+
+    --layout-flex: {
+      -ms-flex: 1 1 0.000000001px;
+      -webkit-flex: 1;
+      flex: 1;
+      -webkit-flex-basis: 0.000000001px;
+      flex-basis: 0.000000001px;
+    };
+
+    --layout-flex-2: {
+      -ms-flex: 2;
+      -webkit-flex: 2;
+      flex: 2;
+    };
+
+    --layout-flex-3: {
+      -ms-flex: 3;
+      -webkit-flex: 3;
+      flex: 3;
+    };
+
+    --layout-flex-4: {
+      -ms-flex: 4;
+      -webkit-flex: 4;
+      flex: 4;
+    };
+
+    --layout-flex-5: {
+      -ms-flex: 5;
+      -webkit-flex: 5;
+      flex: 5;
+    };
+
+    --layout-flex-6: {
+      -ms-flex: 6;
+      -webkit-flex: 6;
+      flex: 6;
+    };
+
+    --layout-flex-7: {
+      -ms-flex: 7;
+      -webkit-flex: 7;
+      flex: 7;
+    };
+
+    --layout-flex-8: {
+      -ms-flex: 8;
+      -webkit-flex: 8;
+      flex: 8;
+    };
+
+    --layout-flex-9: {
+      -ms-flex: 9;
+      -webkit-flex: 9;
+      flex: 9;
+    };
+
+    --layout-flex-10: {
+      -ms-flex: 10;
+      -webkit-flex: 10;
+      flex: 10;
+    };
+
+    --layout-flex-11: {
+      -ms-flex: 11;
+      -webkit-flex: 11;
+      flex: 11;
+    };
+
+    --layout-flex-12: {
+      -ms-flex: 12;
+      -webkit-flex: 12;
+      flex: 12;
+    };
+
+    /* alignment in cross axis */
+
+    --layout-start: {
+      -ms-flex-align: start;
+      -webkit-align-items: flex-start;
+      align-items: flex-start;
+    };
+
+    --layout-center: {
+      -ms-flex-align: center;
+      -webkit-align-items: center;
+      align-items: center;
+    };
+
+    --layout-end: {
+      -ms-flex-align: end;
+      -webkit-align-items: flex-end;
+      align-items: flex-end;
+    };
+
+    /* alignment in main axis */
+
+    --layout-start-justified: {
+      -ms-flex-pack: start;
+      -webkit-justify-content: flex-start;
+      justify-content: flex-start;
+    };
+
+    --layout-center-justified: {
+      -ms-flex-pack: center;
+      -webkit-justify-content: center;
+      justify-content: center;
+    };
+
+    --layout-end-justified: {
+      -ms-flex-pack: end;
+      -webkit-justify-content: flex-end;
+      justify-content: flex-end;
+    };
+
+    --layout-around-justified: {
+      -ms-flex-pack: around;
+      -webkit-justify-content: space-around;
+      justify-content: space-around;
+    };
+
+    --layout-justified: {
+      -ms-flex-pack: justify;
+      -webkit-justify-content: space-between;
+      justify-content: space-between;
+    };
+
+    --layout-center-center: {
+      @apply(--layout-center);
+      @apply(--layout-center-justified);
+    };
+
+    /* self alignment */
+
+    --layout-self-start: {
+      -ms-align-self: flex-start;
+      -webkit-align-self: flex-start;
+      align-self: flex-start;
+    };
+
+    --layout-self-center: {
+      -ms-align-self: center;
+      -webkit-align-self: center;
+      align-self: center;
+    };
+
+    --layout-self-end: {
+      -ms-align-self: flex-end;
+      -webkit-align-self: flex-end;
+      align-self: flex-end;
+    };
+
+    --layout-self-stretch: {
+      -ms-align-self: stretch;
+      -webkit-align-self: stretch;
+      align-self: stretch;
+    };
+
+    /*******************************
+              Other Layout
+    *******************************/
+
+    --layout-block: {
+      display: block;
+    };
+
+    --layout-invisible: {
+      visibility: hidden !important;
+    };
+
+    --layout-relative: {
+      position: relative;
+    };
+
+    --layout-fit: {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+    };
+
+    --layout-scroll: {
+      -webkit-overflow-scrolling: touch;
+      overflow: auto;
+    };
+
+    --layout-fullbleed: {
+      margin: 0;
+      height: 100vh;
+    };
+
+    /* fixed position */
+
+    --layout-fixed-top: {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+    };
+
+    --layout-fixed-right: {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+    };
+
+    --layout-fixed-bottom: {
+      position: fixed;
+      right: 0;
+      bottom: 0;
+      left: 0;
+    };
+
+    --layout-fixed-left: {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+    };
+
+  }
+
+</style>
+<!--
+
+The `iron-icon` element displays an icon. By default an icon renders as a 24px square.
+
+Example using src:
+
+    <iron-icon src="star.png"></iron-icon>
+
+Example setting size to 32px x 32px:
+
+    <iron-icon class="big" src="big_star.png"></iron-icon>
+
+    <style is="custom-style">
+      .big {
+        --iron-icon-height: 32px;
+        --iron-icon-width: 32px;
+      }
+    </style>
+
+The iron elements include several sets of icons.
+To use the default set of icons, import `iron-icons.html` and use the `icon` attribute to specify an icon:
+
+    <link rel="import" href="/components/iron-icons/iron-icons.html">
+
+    <iron-icon icon="menu"></iron-icon>
+
+To use a different built-in set of icons, import the specific `iron-icons/<iconset>-icons.html`, and
+specify the icon as `<iconset>:<icon>`. For example, to use a communication icon, you would
+use:
+
+    <link rel="import" href="/components/iron-icons/communication-icons.html">
+
+    <iron-icon icon="communication:email"></iron-icon>
+
+You can also create custom icon sets of bitmap or SVG icons.
+
+Example of using an icon named `cherry` from a custom iconset with the ID `fruit`:
+
+    <iron-icon icon="fruit:cherry"></iron-icon>
+
+See [iron-iconset](iron-iconset) and [iron-iconset-svg](iron-iconset-svg) for more information about
+how to create a custom iconset.
+
+See the [iron-icons demo](iron-icons?view=demo:demo/index.html) to see the icons available
+in the various iconsets.
+
+
+### Styling
+
+The following custom properties are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--iron-icon-width` | Width of the icon | `24px`
+`--iron-icon-height` | Height of the icon | `24px`
+`--iron-icon-fill-color` | Fill color of the svg icon | `currentcolor`
+`--iron-icon-stroke-color` | Stroke color of the svg icon | none
+
+@group Iron Elements
+@element iron-icon
+@demo demo/index.html
+@hero hero.svg
+@homepage polymer.github.io
+-->
+
+<!-- Taken from https://www.google.com/design/spec/style/color.html#color-ui-color-application -->
+
+<style is="custom-style">
+
+  :root {
+    /*
+     * Light background theme
+     */
+    --light-theme-background-color: #ffffff;
+    --light-theme-base-color: #000000;
+    --light-theme-text-color: #212121;
+    --light-theme-secondary-color: #737373;  /* for secondary text and icons */
+    --light-theme-disabled-color: #9b9b9b;  /* disabled/hint text */
+    --light-theme-divider-color: #dbdbdb;
+
+    /*
+     * Dark background theme
+     */
+    --dark-theme-background-color: #212121;
+    --dark-theme-base-color: #ffffff;
+    --dark-theme-text-color: #ffffff;
+    --dark-theme-secondary-color: #bcbcbc;  /* for secondary text and icons */
+    --dark-theme-disabled-color: #646464;  /* disabled/hint text */
+    --dark-theme-divider-color: #3c3c3c;
+
+    /*
+     * Primary and accent colors. Also see color.html for more colors.
+     */
+    --primary-color: #3f51b5;  /* --paper-indigo-500 */
+    --light-primary-color: #c5cae9;  /* --paper-indigo-100 */
+    --dark-primary-color: #303f9f;  /* --paper-indigo-700 */
+
+    --accent-color: #ff4081;  /* --paper-pink-a200 */
+    --light-accent-color: #ff80ab;  /* --paper-pink-a100 */
+    --dark-accent-color: #f50057;  /* --paper-pink-a400 */
+
+    /*
+     * Deprecated values because of their confusing names.
+     */
+    --primary-text-color: var(--light-theme-text-color);
+    --text-primary-color: var(--dark-theme-text-color);
+    --primary-background-color: var(--light-theme-background-color);
+    --secondary-text-color: var(--light-theme-secondary-color);
+    --disabled-text-color:var(--light-theme-disabled-color);
+    --divider-color: var(--light-theme-divider-color);
+    --default-primary-color: var(--primary-color);
+  }
+
+</style>
+<!--
+Material design: [Surface reaction](https://www.google.com/design/spec/animation/responsive-interaction.html#responsive-interaction-surface-reaction)
+
+`paper-ripple` provides a visual effect that other paper elements can
+use to simulate a rippling effect emanating from the point of contact.  The
+effect can be visualized as a concentric circle with motion.
+
+Example:
+
+    <div style="position:relative">
+      <paper-ripple></paper-ripple>
+    </div>
+
+Note, it's important that the parent container of the ripple be relative position, otherwise
+the ripple will emanate outside of the desired container.
+
+`paper-ripple` listens to "mousedown" and "mouseup" events so it would display ripple
+effect when touches on it.  You can also defeat the default behavior and
+manually route the down and up actions to the ripple element.  Note that it is
+important if you call `downAction()` you will have to make sure to call
+`upAction()` so that `paper-ripple` would end the animation loop.
+
+Example:
+
+    <paper-ripple id="ripple" style="pointer-events: none;"></paper-ripple>
+    ...
+    downAction: function(e) {
+      this.$.ripple.downAction({x: e.x, y: e.y});
+    },
+    upAction: function(e) {
+      this.$.ripple.upAction();
+    }
+
+Styling ripple effect:
+
+  Use CSS color property to style the ripple:
+
+    paper-ripple {
+      color: #4285f4;
+    }
+
+  Note that CSS color property is inherited so it is not required to set it on
+  the `paper-ripple` element directly.
+
+By default, the ripple is centered on the point of contact.  Apply the `recenters`
+attribute to have the ripple grow toward the center of its container.
+
+    <paper-ripple recenters></paper-ripple>
+
+You can also  center the ripple inside its container from the start.
+
+    <paper-ripple center></paper-ripple>
+
+Apply `circle` class to make the rippling effect within a circle.
+
+    <paper-ripple class="circle"></paper-ripple>
+
+@group Paper Elements
+@element paper-ripple
+@hero hero.svg
+@demo demo/index.html
+-->
+
+<!--
+Material design: [Icon toggles](https://www.google.com/design/spec/components/buttons.html#buttons-toggle-buttons)
+
+`paper-icon-button` is a button with an image placed at the center. When the user touches
+the button, a ripple effect emanates from the center of the button.
+
+`paper-icon-button` includes a default icon set.  Use `icon` to specify which icon
+from the icon set to use.
+
+    <paper-icon-button icon="menu"></paper-icon-button>
+
+See [`iron-iconset`](#iron-iconset) for more information about
+how to use a custom icon set.
+
+Example:
+
+    <link href="path/to/iron-icons/iron-icons.html" rel="import">
+
+    <paper-icon-button icon="favorite"></paper-icon-button>
+    <paper-icon-button src="star.png"></paper-icon-button>
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element. If you are using the icons
+provided by `iron-icons`, they will inherit the foreground color of the button.
+
+    /* make a red "favorite" button */
+    <paper-icon-button icon="favorite" style="color: red;"></paper-icon-button>
+
+By default, the ripple is the same color as the foreground at 25% opacity. You may
+customize the color using the `--paper-icon-button-ink-color` custom property.
+
+The following custom properties and mixins are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-icon-button-disabled-text` | The color of the disabled button | `--disabled-text-color`
+`--paper-icon-button-ink-color` | Selected/focus ripple color | `--primary-text-color`
+`--paper-icon-button` | Mixin for a button | `{}`
+`--paper-icon-button-disabled` | Mixin for a disabled button | `{}`
+`--paper-icon-button-hover` | Mixin for button on hover | `{}`
+
+@group Paper Elements
+@element paper-icon-button
+@demo demo/index.html
+-->
+
+<!--
+`paper-header-panel` contains a header section and a content panel section.
+
+__Important:__ The `paper-header-panel` will not display if its parent does not have a height.
+
+Using layout classes, you can make the `paper-header-panel` fill the screen
+
+    <body class="fullbleed layout vertical">
+      <paper-header-panel class="flex">
+        <paper-toolbar>
+          <div>Hello World!</div>
+        </paper-toolbar>
+      </paper-header-panel>
+    </body>
+
+Special support is provided for scrolling modes when one uses a paper-toolbar or equivalent for the
+header section.
+
+Example:
+
+    <paper-header-panel>
+      <paper-toolbar>Header</paper-toolbar>
+      <div>Content goes here...</div>
+    </paper-header-panel>
+
+If you want to use other than `paper-toolbar` for the header, add `paper-header` class to that
+element.
+
+Example:
+
+    <paper-header-panel>
+      <div class="paper-header">Header</div>
+      <div>Content goes here...</div>
+    </paper-header-panel>
+
+To have the content fit to the main area, use the `fit` class.
+
+    <paper-header-panel>
+      <div class="paper-header">standard</div>
+      <div class="fit">content fits 100% below the header</div>
+    </paper-header-panel>
+
+### Modes
+
+Controls header and scrolling behavior. Options are `standard`, `seamed`, `waterfall`, `waterfall-tall`, `scroll` and
+`cover`. Default is `standard`.
+
+Mode | Description
+----------------|-------------
+`standard` | The header is a step above the panel. The header will consume the panel at the point of entry, preventing it from passing through to the opposite side.
+`seamed` | The header is presented as seamed with the panel.
+`waterfall` | Similar to standard mode, but header is initially presented as seamed with panel, but then separates to form the step.
+`waterfall-tall` | The header is initially taller (`tall` class is added to the header). As the user scrolls, the header separates (forming an edge) while condensing (`tall` class is removed from the header).
+`scroll` | The header keeps its seam with the panel, and is pushed off screen.
+`cover` | The panel covers the whole `paper-header-panel` including the header. This allows user to style the panel in such a way that the panel is partially covering the header.
+
+Example:
+
+    <paper-header-panel mode="waterfall">
+      <div class="paper-header">standard</div>
+      <div class="content fit">content fits 100% below the header</div>
+    </paper-header-panel>
+
+
+### Styling
+
+To change the shadow that shows up underneath the header:
+
+    paper-header-panel {
+      --paper-header-panel-shadow: {
+          height: 6px;
+          bottom: -6px;
+          box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.4);
+      };
+    }
+
+To change the panel container in different modes:
+
+    paper-header-panel {
+      --paper-header-panel-standard-container: {
+        border: 1px solid gray;
+      };
+
+      --paper-header-panel-seamed-container: {
+        border: 1px solid gray;
+      };
+
+      --paper-header-panel-waterfall-container: {
+        border: 1px solid gray;
+      };
+
+      --paper-header-panel-waterfall-tall-container: {
+        border: 1px solid gray;
+      };
+
+      --paper-header-panel-scroll-container: {
+        border: 1px solid gray;
+      };
+
+      --paper-header-panel-cover-container: {
+        border: 1px solid gray;
+      };
+    }
+
+The following custom properties and mixins are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-header-panel` | Mixin applied to the element | `{}`
+`--paper-header-panel-body` | Mixin applied to the element's body (i.e. everything below the toolbar) | `{}`
+`--paper-header-panel-scroll-container` | Mixin applied to the container when in scroll mode | `{}`
+`--paper-header-panel-cover-container` | Mixin applied to the container when in cover mode | `{}`
+`--paper-header-panel-standard-container` | Mixin applied to the container when in standard mode | `{}`
+`--paper-header-panel-seamed-container` | Mixin applied to the container when in seamed mode | `{}`
+`--paper-header-panel-waterfall-container` | Mixin applied to the container when in waterfall mode | `{}`
+`--paper-header-panel-waterfall-tall-container` | Mixin applied to the container when in tall waterfall mode | `{}`
+
+@group Paper Elements
+@element paper-header-panel
+@demo demo/index.html
+@hero hero.svg
+-->
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700">
+<style is="custom-style">
+
+  :root {
+
+    /* Shared Styles */
+    --paper-font-common-base: {
+      font-family: 'Roboto', 'Noto', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    };
+
+    --paper-font-common-code: {
+      font-family: 'Roboto Mono', 'Consolas', 'Menlo', monospace;
+      -webkit-font-smoothing: antialiased;
+    };
+
+    --paper-font-common-expensive-kerning: {
+      text-rendering: optimizeLegibility;
+    };
+
+    --paper-font-common-nowrap: {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    };
+
+    /* Material Font Styles */
+
+    --paper-font-display4: {
+      @apply(--paper-font-common-base);
+      @apply(--paper-font-common-nowrap);
+
+      font-size: 112px;
+      font-weight: 300;
+      letter-spacing: -.044em;
+      line-height: 120px;
+    };
+
+    --paper-font-display3: {
+      @apply(--paper-font-common-base);
+      @apply(--paper-font-common-nowrap);
+
+      font-size: 56px;
+      font-weight: 400;
+      letter-spacing: -.026em;
+      line-height: 60px;
+    };
+
+    --paper-font-display2: {
+      @apply(--paper-font-common-base);
+
+      font-size: 45px;
+      font-weight: 400;
+      letter-spacing: -.018em;
+      line-height: 48px;
+    };
+
+    --paper-font-display1: {
+      @apply(--paper-font-common-base);
+
+      font-size: 34px;
+      font-weight: 400;
+      letter-spacing: -.01em;
+      line-height: 40px;
+    };
+
+    --paper-font-headline: {
+      @apply(--paper-font-common-base);
+
+      font-size: 24px;
+      font-weight: 400;
+      letter-spacing: -.012em;
+      line-height: 32px;
+    };
+
+    --paper-font-title: {
+      @apply(--paper-font-common-base);
+      @apply(--paper-font-common-nowrap);
+
+      font-size: 20px;
+      font-weight: 500;
+      line-height: 28px;
+    };
+
+    --paper-font-subhead: {
+      @apply(--paper-font-common-base);
+
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 24px;
+    };
+
+    --paper-font-body2: {
+      @apply(--paper-font-common-base);
+
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 24px;
+    };
+
+    --paper-font-body1: {
+      @apply(--paper-font-common-base);
+
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 20px;
+    };
+
+    --paper-font-caption: {
+      @apply(--paper-font-common-base);
+      @apply(--paper-font-common-nowrap);
+
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.011em;
+      line-height: 20px;
+    };
+
+    --paper-font-menu: {
+      @apply(--paper-font-common-base);
+      @apply(--paper-font-common-nowrap);
+
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 24px;
+    };
+
+    --paper-font-button: {
+      @apply(--paper-font-common-base);
+      @apply(--paper-font-common-nowrap);
+
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.018em;
+      line-height: 24px;
+      text-transform: uppercase;
+    };
+
+    --paper-font-code2: {
+      @apply(--paper-font-common-code);
+
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 20px;
+    };
+
+    --paper-font-code1: {
+      @apply(--paper-font-common-code);
+
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 20px;
+    };
+
+  }
+
+</style>
+<!--
+Material design: [Toolbars](https://www.google.com/design/spec/components/toolbars.html)
+
+`paper-toolbar` is a horizontal bar containing items that can be used for
+label, navigation, search and actions.  The items placed inside the
+`paper-toolbar` are projected into a `class="horizontal center layout"` container inside of
+`paper-toolbar`'s Shadow DOM.  You can use flex attributes to control the items'
+sizing.
+
+Example:
+
+```html
+<paper-toolbar>
+  <paper-icon-button icon="menu" on-tap="menuAction"></paper-icon-button>
+  <div class="title">Title</div>
+  <paper-icon-button icon="more-vert" on-tap="moreAction"></paper-icon-button>
+</paper-toolbar>
+```
+
+`paper-toolbar` has a standard height, but can made be taller by setting `tall`
+class on the `paper-toolbar`.  This will make the toolbar 3x the normal height.
+
+```html
+<paper-toolbar class="tall">
+  <paper-icon-button icon="menu"></paper-icon-button>
+</paper-toolbar>
+```
+
+Apply `medium-tall` class to make the toolbar medium tall.  This will make the
+toolbar 2x the normal height.
+
+```html
+<paper-toolbar class="medium-tall">
+  <paper-icon-button icon="menu"></paper-icon-button>
+</paper-toolbar>
+```
+
+When `tall`, items can pin to either the top (default), middle or bottom.  Use
+`middle` class for middle content and `bottom` class for bottom content.
+
+```html
+<paper-toolbar class="tall">
+  <paper-icon-button icon="menu"></paper-icon-button>
+  <div class="middle title">Middle Title</div>
+  <div class="bottom title">Bottom Title</div>
+</paper-toolbar>
+```
+
+For `medium-tall` toolbar, the middle and bottom contents overlap and are
+pinned to the bottom.  But `middleJustify` and `bottomJustify` attributes are
+still honored separately.
+
+To make an element completely fit at the bottom of the toolbar, use `fit` along
+with `bottom`.
+
+```html
+<paper-toolbar class="tall">
+  <div id="progressBar" class="bottom fit"></div>
+</paper-toolbar>
+```
+
+### Styling
+
+The following custom properties and mixins are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-toolbar-title`      | Mixin applied to the title of the toolbar | `{}`
+`--paper-toolbar-background` | Toolbar background color     | `--default-primary-color`
+`--paper-toolbar-color`      | Toolbar foreground color     | `--text-primary-color`
+`--paper-toolbar-height`     | Custom height for toolbar    | `64px`
+`--paper-toolbar-sm-height`  | Custom height for small screen toolbar | `56px`
+`--paper-toolbar`            | Mixin applied to the toolbar | `{}`
+`--paper-toolbar-content`    | Mixin applied to the content section of the toolbar | `{}`
+`--paper-toolbar-medium`     | Mixin applied to medium height toolbar | `{}`
+`--paper-toolbar-tall`       | Mixin applied to tall height toolbar | `{}`
+
+### Accessibility
+
+`<paper-toolbar>` has `role="toolbar"` by default. Any elements with the class `title` will
+be used as the label of the toolbar via `aria-labelledby`.
+
+@demo demo/index.html
+-->
+
 <style is="custom-style">
 
   :root {
@@ -1228,19 +1900,299 @@
 
     /* opacity for dark text on a light background */
     --dark-divider-opacity: 0.12;
-    --dark-disabled-opacity: 0.26; /* or hint text */
-    --dark-secondary-opacity: 0.54; /* or icon */
+    --dark-disabled-opacity: 0.38; /* or hint text or icon */
+    --dark-secondary-opacity: 0.54;
     --dark-primary-opacity: 0.87;
 
     /* opacity for light text on a dark background */
     --light-divider-opacity: 0.12;
-    --light-disabled-opacity: 0.3; /* or hint text */
-    --light-secondary-opacity: 0.7; /* or icon */
+    --light-disabled-opacity: 0.3; /* or hint text or icon */
+    --light-secondary-opacity: 0.7;
     --light-primary-opacity: 1.0;
 
   }
 
 </style>
+<!--
+`paper-tab` is styled to look like a tab.  It should be used in conjunction with
+`paper-tabs`.
+
+Example:
+
+    <paper-tabs selected="0">
+      <paper-tab>TAB 1</paper-tab>
+      <paper-tab>TAB 2</paper-tab>
+      <paper-tab>TAB 3</paper-tab>
+    </paper-tabs>
+
+### Styling
+
+The following custom properties and mixins are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-tab-ink` | Ink color | `--paper-yellow-a100`
+`--paper-tab` | Mixin applied to the tab | `{}`
+`--paper-tab-content` | Mixin applied to the tab content | `{}`
+`--paper-tab-content-unselected` | Mixin applied to the tab content when the tab is not selected | `{}`
+
+-->
+
+<!--
+Material design: [Tabs](https://www.google.com/design/spec/components/tabs.html)
+
+`paper-tabs` makes it easy to explore and switch between different views or functional aspects of
+an app, or to browse categorized data sets.
+
+Use `selected` property to get or set the selected tab.
+
+Example:
+
+    <paper-tabs selected="0">
+      <paper-tab>TAB 1</paper-tab>
+      <paper-tab>TAB 2</paper-tab>
+      <paper-tab>TAB 3</paper-tab>
+    </paper-tabs>
+
+See <a href="#paper-tab">paper-tab</a> for more information about
+`paper-tab`.
+
+A common usage for `paper-tabs` is to use it along with `iron-pages` to switch
+between different views.
+
+    <paper-tabs selected="{{selected}}">
+      <paper-tab>Tab 1</paper-tab>
+      <paper-tab>Tab 2</paper-tab>
+      <paper-tab>Tab 3</paper-tab>
+    </paper-tabs>
+
+    <iron-pages selected="{{selected}}">
+      <div>Page 1</div>
+      <div>Page 2</div>
+      <div>Page 3</div>
+    </iron-pages>
+
+
+To use links in tabs, add `link` attribute to `paper-tab` and put an `<a>`
+element in `paper-tab`.
+
+Example:
+
+    <style is="custom-style">
+      .link {
+        @apply(--layout-horizontal);
+        @apply(--layout-center-center);
+      }
+    }
+    </style>
+
+    <paper-tabs selected="0">
+      <paper-tab link>
+        <a href="#link1" class="link">TAB ONE</a>
+      </paper-tab>
+      <paper-tab link>
+        <a href="#link2" class="link">TAB TWO</a>
+      </paper-tab>
+      <paper-tab link>
+        <a href="#link3" class="link">TAB THREE</a>
+      </paper-tab>
+    </paper-tabs>
+
+### Styling
+
+The following custom properties and mixins are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-tabs-selection-bar-color` | Color for the selection bar | `--paper-yellow-a100`
+`--paper-tabs` | Mixin applied to the tabs | `{}`
+
+@hero hero.svg
+@demo demo/index.html
+-->
+
+<!--
+`iron-a11y-announcer` is a singleton element that is intended to add a11y
+to features that require on-demand announcement from screen readers. In
+order to make use of the announcer, it is best to request its availability
+in the announcing element.
+
+Example:
+
+    Polymer({
+
+      is: 'x-chatty',
+
+      attached: function() {
+        // This will create the singleton element if it has not
+        // been created yet:
+        Polymer.IronA11yAnnouncer.requestAvailability();
+      }
+    });
+
+After the `iron-a11y-announcer` has been made available, elements can
+make announces by firing bubbling `iron-announce` events.
+
+Example:
+
+    this.fire('iron-announce', {
+      text: 'This is an announcement!'
+    }, { bubbles: true });
+
+Note: announcements are only audible if you have a screen reader enabled.
+
+@group Iron Elements
+@demo demo/index.html
+-->
+
+<!--
+`iron-overlay-backdrop` is a backdrop used by `Polymer.IronOverlayBehavior`. It should be a
+singleton.
+
+### Styling
+
+The following custom properties and mixins are available for styling.
+
+Custom property | Description | Default
+-------------------------------------------|------------------------|---------
+`--iron-overlay-backdrop-background-color` | Backdrop background color                                     | #000
+`--iron-overlay-backdrop-opacity`          | Backdrop opacity                                              | 0.6
+`--iron-overlay-backdrop`                  | Mixin applied to `iron-overlay-backdrop`.                      | {}
+`--iron-overlay-backdrop-opened`           | Mixin applied to `iron-overlay-backdrop` when it is displayed | {}
+-->
+
+<!--
+Material design: [Snackbards & toasts](https://www.google.com/design/spec/components/snackbars-toasts.html)
+
+`paper-toast` provides a subtle notification toast. Only one `paper-toast` will
+be visible on screen.
+
+Use `opened` to show the toast:
+
+Example:
+
+    <paper-toast text="Hello world!" opened></paper-toast>
+
+Also `open()` or `show()` can be used to show the toast:
+
+Example:
+
+    <paper-toast id="toast0" text="Welcome back!"></paper-toast>
+    <button onclick="document.querySelector('#toast0').open()">Login</button>
+
+Set `duration` to 0, a negative number or Infinity to persist the toast on screen:
+
+Example:
+
+    <paper-toast text="Terms and conditions" opened duration="0">
+      <a href="#">Show more</a>
+    </paper-toast>
+
+
+### Styling
+The following custom properties and mixins are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-toast-background-color` | The paper-toast background-color | `#323232`
+`--paper-toast-color` | The paper-toast color | `#f1f1f1`
+
+@group Paper Elements
+@element paper-toast
+@demo demo/index.html
+@hero hero.svg
+-->
+
+<!--
+Material design: [Progress & activity](https://www.google.com/design/spec/components/progress-activity.html)
+
+Element providing a multiple color material design circular spinner.
+
+    <paper-spinner active></paper-spinner>
+
+The default spinner cycles between four layers of colors; by default they are
+blue, red, yellow and green. It can be customized to cycle between four different
+colors. Use <paper-spinner-lite> for single color spinners.
+
+### Accessibility
+
+Alt attribute should be set to provide adequate context for accessibility. If not provided,
+it defaults to 'loading'.
+Empty alt can be provided to mark the element as decorative if alternative content is provided
+in another form (e.g. a text block following the spinner).
+
+    <paper-spinner alt="Loading contacts list" active></paper-spinner>
+
+### Styling
+
+The following custom properties and mixins are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-spinner-layer-1-color` | Color of the first spinner rotation | `--google-blue-500`
+`--paper-spinner-layer-2-color` | Color of the second spinner rotation | `--google-red-500`
+`--paper-spinner-layer-3-color` | Color of the third spinner rotation | `--google-yellow-500`
+`--paper-spinner-layer-4-color` | Color of the fourth spinner rotation | `--google-green-500`
+
+@group Paper Elements
+@element paper-spinner
+@hero hero.svg
+@demo demo/index.html
+-->
+
+<!--
+Material design: [Menus](https://www.google.com/design/spec/components/menus.html)
+
+`<paper-menu>` implements an accessible menu control with Material Design styling. The focused item
+is highlighted, and the selected item has bolded text.
+
+    <paper-menu>
+      <paper-item>Item 1</paper-item>
+      <paper-item>Item 2</paper-item>
+    </paper-menu>
+
+An initial selection can be specified with the `selected` attribute.
+
+    <paper-menu selected="0">
+      <paper-item>Item 1</paper-item>
+      <paper-item>Item 2</paper-item>
+    </paper-menu>
+
+Make a multi-select menu with the `multi` attribute. Items in a multi-select menu can be deselected,
+and multiple items can be selected.
+
+    <paper-menu multi>
+      <paper-item>Item 1</paper-item>
+      <paper-item>Item 2</paper-item>
+    </paper-menu>
+
+### Styling
+
+The following custom properties and mixins are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-menu-background-color`   | Menu background color                                            | `--primary-background-color`
+`--paper-menu-color`              | Menu foreground color                                            | `--primary-text-color`
+`--paper-menu-disabled-color`     | Foreground color for a disabled item                             | `--disabled-text-color`
+`--paper-menu`                    | Mixin applied to the menu                                        | `{}`
+`--paper-menu-selected-item`      | Mixin applied to the selected item                               | `{}`
+`--paper-menu-focused-item`       | Mixin applied to the focused item                                | `{}`
+`--paper-menu-focused-item-after` | Mixin applied to the ::after pseudo-element for the focused item | `{}`
+
+### Accessibility
+
+`<paper-menu>` has `role="menu"` by default. A multi-select menu will also have
+`aria-multiselectable` set. It implements key bindings to navigate through the menu with the up and
+down arrow keys, esc to exit the menu, and enter to activate a menu item. Typing the first letter
+of a menu item will also focus it.
+
+@group Paper Elements
+@element paper-menu
+@hero hero.svg
+@demo demo/index.html
+-->
+
 <style is="custom-style">
 
   :root {
@@ -1294,237 +2246,665 @@
   }
 
 </style>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700">
-<style is="custom-style">
+<!--
+Material design: [Cards](https://www.google.com/design/spec/components/cards.html)
 
-  :root {
+`paper-material` is a container that renders two shadows on top of each other to
+create the effect of a lifted piece of paper.
 
-    /* Shared Styles */
+Example:
 
-    /*
-    Unfortunately, we can't use nested rules
-    See https://github.com/Polymer/polymer/issues/1399
-    */
-    --paper-font-common-base: {
-      font-family: 'Roboto', 'Noto', sans-serif;
-      -webkit-font-smoothing: antialiased;
-    };
+    <paper-material elevation="1">
+      ... content ...
+    </paper-material>
 
-    --paper-font-common-code: {
-      font-family: 'Roboto Mono', 'Consolas', 'Menlo', monospace;
-      -webkit-font-smoothing: antialiased;
-    };
-
-    --paper-font-common-expensive-kerning: {
-      text-rendering: optimizeLegibility;
-    };
-
-    --paper-font-common-nowrap: {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    };
-
-    /* Material Font Styles */
-
-    --paper-font-display4: {
-      /* @apply(--paper-font-common-base) */
-      font-family: 'Roboto', 'Noto', sans-serif;
-      -webkit-font-smoothing: antialiased;
-      /* @apply(--paper-font-common-expensive-kerning); */
-      text-rendering: optimizeLegibility;
-      /* @apply(--paper-font-common-nowrap); */
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-
-      font-size: 112px;
-      font-weight: 300;
-      letter-spacing: -.044em;
-      line-height: 120px;
-    };
-
-    --paper-font-display3: {
-      /* @apply(--paper-font-common-base) */
-      font-family: 'Roboto', 'Noto', sans-serif;
-      -webkit-font-smoothing: antialiased;
-      /* @apply(--paper-font-common-expensive-kerning); */
-      text-rendering: optimizeLegibility;
-      /* @apply(--paper-font-common-nowrap); */
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-
-      font-size: 56px;
-      font-weight: 400;
-      letter-spacing: -.026em;
-      line-height: 60px;
-    };
-
-    --paper-font-display2: {
-      /* @apply(--paper-font-common-base) */
-      font-family: 'Roboto', 'Noto', sans-serif;
-      -webkit-font-smoothing: antialiased;
-      /* @apply(--paper-font-common-expensive-kerning); */
-      text-rendering: optimizeLegibility;
-
-      font-size: 45px;
-      font-weight: 400;
-      letter-spacing: -.018em;
-      line-height: 48px;
-    };
-
-    --paper-font-display1: {
-      /* @apply(--paper-font-common-base) */
-      font-family: 'Roboto', 'Noto', sans-serif;
-      -webkit-font-smoothing: antialiased;
-      /* @apply(--paper-font-common-expensive-kerning); */
-      text-rendering: optimizeLegibility;
-
-      font-size: 34px;
-      font-weight: 400;
-      letter-spacing: -.01em;
-      line-height: 40px;
-    };
-
-    --paper-font-headline: {
-      /* @apply(--paper-font-common-base) */
-      font-family: 'Roboto', 'Noto', sans-serif;
-      -webkit-font-smoothing: antialiased;
-      /* @apply(--paper-font-common-expensive-kerning); */
-      text-rendering: optimizeLegibility;
-
-      font-size: 24px;
-      font-weight: 400;
-      letter-spacing: -.012em;
-      line-height: 32px;
-    };
-
-    --paper-font-title: {
-      /* @apply(--paper-font-common-base) */
-      font-family: 'Roboto', 'Noto', sans-serif;
-      -webkit-font-smoothing: antialiased;
-      /* @apply(--paper-font-common-expensive-kerning); */
-      text-rendering: optimizeLegibility;
-      /* @apply(--paper-font-common-nowrap); */
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-
-      font-size: 20px;
-      font-weight: 500;
-      line-height: 28px;
-    };
-
-    --paper-font-subhead: {
-      /* @apply(--paper-font-common-base) */
-      font-family: 'Roboto', 'Noto', sans-serif;
-      -webkit-font-smoothing: antialiased;
-      /* @apply(--paper-font-common-expensive-kerning); */
-      text-rendering: optimizeLegibility;
-
-      font-size: 16px;
-      font-weight: 400;
-      line-height: 24px;
-    };
-
-    --paper-font-body2: {
-      /* @apply(--paper-font-common-base) */
-      font-family: 'Roboto', 'Noto', sans-serif;
-      -webkit-font-smoothing: antialiased;
-
-      font-size: 14px;
-      font-weight: 500;
-      line-height: 24px;
-    };
-
-    --paper-font-body1: {
-      /* @apply(--paper-font-common-base) */
-      font-family: 'Roboto', 'Noto', sans-serif;
-      -webkit-font-smoothing: antialiased;
-
-      font-size: 14px;
-      font-weight: 400;
-      line-height: 20px;
-    };
-
-    --paper-font-caption: {
-      /* @apply(--paper-font-common-base) */
-      font-family: 'Roboto', 'Noto', sans-serif;
-      -webkit-font-smoothing: antialiased;
-      /* @apply(--paper-font-common-nowrap); */
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-
-      font-size: 12px;
-      font-weight: 400;
-      letter-spacing: 0.011em;
-      line-height: 20px;
-    };
-
-    --paper-font-menu: {
-      /* @apply(--paper-font-common-base) */
-      font-family: 'Roboto', 'Noto', sans-serif;
-      -webkit-font-smoothing: antialiased;
-      /* @apply(--paper-font-common-expensive-kerning); */
-      text-rendering: optimizeLegibility;
-      /* @apply(--paper-font-common-nowrap); */
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-
-      font-size: 13px;
-      font-weight: 500;
-      line-height: 24px;
-    };
-
-    --paper-font-button: {
-      /* @apply(--paper-font-common-base) */
-      font-family: 'Roboto', 'Noto', sans-serif;
-      -webkit-font-smoothing: antialiased;
-      /* @apply(--paper-font-common-expensive-kerning); */
-      text-rendering: optimizeLegibility;
-      /* @apply(--paper-font-common-nowrap); */
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-
-      font-size: 14px;
-      font-weight: 500;
-      letter-spacing: 0.018em;
-      line-height: 24px;
-      text-transform: uppercase;
-    };
-
-    --paper-font-code2: {
-      /* @apply(--paper-font-common-code); */
-      font-family: 'Roboto Mono', 'Consolas', 'Menlo', monospace;
-      -webkit-font-smoothing: antialiased;
-
-      font-size: 14px;
-      font-weight: 700;
-      line-height: 20px;
-    };
-
-    --paper-font-code1: {
-      /* @apply(--paper-font-common-code); */
-      font-family: 'Roboto Mono', 'Consolas', 'Menlo', monospace;
-      -webkit-font-smoothing: antialiased;
-
-      font-size: 14px;
-      font-weight: 500;
-      line-height: 20px;
-    };
-
-  }
-
-</style>
-
+@group Paper Elements
+@demo demo/index.html
+-->
 
 <script src="../bower_components/web-animations-js/web-animations-next-lite.min.js"></script>
+<!--
+`<opaque-animation>` makes an element `opacity:1` for the duration of the animation. Used to prevent
+webkit/safari from drawing a frame before an animation for elements that animate from display:none.
+-->
 
+<!--
+`<iron-dropdown>` is a generalized element that is useful when you have
+hidden content (`.dropdown-content`) that is revealed due to some change in
+state that should cause it to do so.
+
+Note that this is a low-level element intended to be used as part of other
+composite elements that cause dropdowns to be revealed.
+
+Examples of elements that might be implemented using an `iron-dropdown`
+include comboboxes, menubuttons, selects. The list goes on.
+
+The `<iron-dropdown>` element exposes attributes that allow the position
+of the `.dropdown-content` relative to the `.dropdown-trigger` to be
+configured.
+
+    <iron-dropdown horizontal-align="right" vertical-align="top">
+      <div class="dropdown-content">Hello!</div>
+    </iron-dropdown>
+
+In the above example, the `<div>` with class `.dropdown-content` will be
+hidden until the dropdown element has `opened` set to true, or when the `open`
+method is called on the element.
+
+@demo demo/index.html
+-->
+
+<!--
+`<fade-in-animation>` animates the opacity of an element from 0 to 1.
+
+Configuration:
+```
+{
+  name: 'fade-in-animation',
+  node: <node>
+  timing: <animation-timing>
+}
+```
+-->
+
+<!--
+`<fade-out-animation>` animates the opacity of an element from 1 to 0.
+
+Configuration:
+```
+{
+  name: 'fade-out-animation',
+  node: <node>
+  timing: <animation-timing>
+}
+```
+-->
+
+<!--
+Material design: [Dropdown buttons](https://www.google.com/design/spec/components/buttons.html#buttons-dropdown-buttons)
+
+`paper-menu-button` allows one to compose a designated "trigger" element with
+another element that represents "content", to create a dropdown menu that
+displays the "content" when the "trigger" is clicked.
+
+The child element with the class `dropdown-trigger` will be used as the
+"trigger" element. The child element with the class `dropdown-content` will be
+used as the "content" element.
+
+The `paper-menu-button` is sensitive to its content's `iron-select` events. If
+the "content" element triggers an `iron-select` event, the `paper-menu-button`
+will close automatically.
+
+Example:
+
+    <paper-menu-button>
+      <paper-icon-button icon="menu" class="dropdown-trigger"></paper-icon-button>
+      <paper-menu class="dropdown-content">
+        <paper-item>Share</paper-item>
+        <paper-item>Settings</paper-item>
+        <paper-item>Help</paper-item>
+      </paper-menu>
+    </paper-menu-button>
+
+### Styling
+
+The following custom properties and mixins are also available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-menu-button-dropdown-background` | Background color of the paper-menu-button dropdown | `#fff`
+`--paper-menu-button` | Mixin applied to the paper-menu-button | `{}`
+`--paper-menu-button-disabled` | Mixin applied to the paper-menu-button when disabled | `{}`
+`--paper-menu-button-dropdown` | Mixin applied to the paper-menu-button dropdown | `{}`
+`--paper-menu-button-content` | Mixin applied to the paper-menu-button content | `{}`
+
+@hero hero.svg
+@demo demo/index.html
+-->
+
+<!--
+Material design: [Dialogs](https://www.google.com/design/spec/components/dialogs.html)
+
+`<paper-dialog>` is a dialog with Material Design styling and optional animations when it is
+opened or closed. It provides styles for a header, content area, and an action area for buttons.
+You can use the `<paper-dialog-scrollable>` element (in its own repository) if you need a scrolling
+content area. See `Polymer.PaperDialogBehavior` for specifics.
+
+For example, the following code implements a dialog with a header, scrolling content area and
+buttons.
+
+    <paper-dialog>
+      <h2>Header</h2>
+      <paper-dialog-scrollable>
+        Lorem ipsum...
+      </paper-dialog-scrollable>
+      <div class="buttons">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button dialog-confirm>Accept</paper-button>
+      </div>
+    </paper-dialog>
+
+### Styling
+
+See the docs for `Polymer.PaperDialogBehavior` for the custom properties available for styling
+this element.
+
+### Animations
+
+Set the `entry-animation` and/or `exit-animation` attributes to add an animation when the dialog
+is opened or closed. See the documentation in
+[PolymerElements/neon-animation](https://github.com/PolymerElements/neon-animation) for more info.
+
+For example:
+
+    <link rel="import" href="components/neon-animation/animations/scale-up-animation.html">
+    <link rel="import" href="components/neon-animation/animations/fade-out-animation.html">
+
+    <paper-dialog entry-animation="scale-up-animation"
+                  exit-animation="fade-out-animation">
+      <h2>Header</h2>
+      <div>Dialog body</div>
+    </paper-dialog>
+
+### Accessibility
+
+See the docs for `Polymer.PaperDialogBehavior` for accessibility features implemented by this
+element.
+
+@group Paper Elements
+@element paper-dialog
+@hero hero.svg
+@demo demo/index.html
+-->
+
+<!--
+Material design: [Dialogs](https://www.google.com/design/spec/components/dialogs.html)
+
+`paper-dialog-scrollable` implements a scrolling area used in a Material Design dialog. It shows
+a divider at the top and/or bottom indicating more content, depending on scroll position. Use this
+together with elements implementing `Polymer.PaperDialogBehavior`.
+
+    <paper-dialog-impl>
+      <h2>Header</h2>
+      <paper-dialog-scrollable>
+        Lorem ipsum...
+      </paper-dialog-scrollable>
+      <div class="buttons">
+        <paper-button>OK</paper-button>
+      </div>
+    </paper-dialog-impl>
+
+It shows a top divider after scrolling if it is not the first child in its parent container,
+indicating there is more content above. It shows a bottom divider if it is scrollable and it is not
+the last child in its parent container, indicating there is more content below. The bottom divider
+is hidden if it is scrolled to the bottom.
+
+@group Paper Elements
+@element paper-dialog-scrollable
+@demo demo/index.html
+@hero hero.svg
+-->
+
+<!--
+Material design: [Buttons](https://www.google.com/design/spec/components/buttons.html)
+
+`paper-button` is a button. When the user touches the button, a ripple effect emanates
+from the point of contact. It may be flat or raised. A raised button is styled with a
+shadow.
+
+Example:
+
+    <paper-button>Flat button</paper-button>
+    <paper-button raised>Raised button</paper-button>
+    <paper-button noink>No ripple effect</paper-button>
+    <paper-button toggles>Toggle-able button</paper-button>
+
+A button that has `toggles` true will remain `active` after being clicked (and
+will have an `active` attribute set). For more information, see the `Polymer.IronButtonState`
+behavior.
+
+You may use custom DOM in the button body to create a variety of buttons. For example, to
+create a button with an icon and some text:
+
+    <paper-button>
+      <iron-icon icon="favorite"></iron-icon>
+      custom button content
+    </paper-button>
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+    paper-button.fancy {
+      background: green;
+      color: yellow;
+    }
+
+    paper-button.fancy:hover {
+      background: lime;
+    }
+
+    paper-button[disabled],
+    paper-button[toggles][active] {
+      background: red;
+    }
+
+By default, the ripple is the same color as the foreground at 25% opacity. You may
+customize the color using the `--paper-button-ink-color` custom property.
+
+The following custom properties and mixins are also available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-button-ink-color` | Background color of the ripple | `Based on the button's color`
+`--paper-button` | Mixin applied to the button | `{}`
+`--paper-button-disabled` | Mixin applied to the disabled button. Note that you can also use the `paper-button[disabled]` selector | `{}`
+`--paper-button-flat-keyboard-focus` | Mixin applied to a flat button after it's been focused using the keyboard | `{}`
+`--paper-button-raised-keyboard-focus` | Mixin applied to a raised button after it's been focused using the keyboard | `{}`
+
+@demo demo/index.html
+-->
+
+<!--
+`<paper-input-char-counter>` is a character counter for use with `<paper-input-container>`. It
+shows the number of characters entered in the input and the max length if it is specified.
+
+    <paper-input-container>
+      <input is="iron-input" maxlength="20">
+      <paper-input-char-counter></paper-input-char-counter>
+    </paper-input-container>
+
+### Styling
+
+The following mixin is available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-input-char-counter` | Mixin applied to the element | `{}`
+-->
+
+<!--
+`<paper-input-container>` is a container for a `<label>`, an `<input is="iron-input">` or
+`<iron-autogrow-textarea>` and optional add-on elements such as an error message or character
+counter, used to implement Material Design text fields.
+
+For example:
+
+    <paper-input-container>
+      <label>Your name</label>
+      <input is="iron-input">
+    </paper-input-container>
+
+### Listening for input changes
+
+By default, it listens for changes on the `bind-value` attribute on its children nodes and perform
+tasks such as auto-validating and label styling when the `bind-value` changes. You can configure
+the attribute it listens to with the `attr-for-value` attribute.
+
+### Using a custom input element
+
+You can use a custom input element in a `<paper-input-container>`, for example to implement a
+compound input field like a social security number input. The custom input element should have the
+`paper-input-input` class, have a `notify:true` value property and optionally implements
+`Polymer.IronValidatableBehavior` if it is validatable.
+
+    <paper-input-container attr-for-value="ssn-value">
+      <label>Social security number</label>
+      <ssn-input class="paper-input-input"></ssn-input>
+    </paper-input-container>
+
+### Validation
+
+If the `auto-validate` attribute is set, the input container will validate the input and update
+the container styling when the input value changes.
+
+### Add-ons
+
+Add-ons are child elements of a `<paper-input-container>` with the `add-on` attribute and
+implements the `Polymer.PaperInputAddonBehavior` behavior. They are notified when the input value
+or validity changes, and may implement functionality such as error messages or character counters.
+They appear at the bottom of the input.
+
+### Prefixes and suffixes
+These are child elements of a `<paper-input-container>` with the `prefix`
+or `suffix` attribute, and are displayed inline with the input, before or after.
+
+    <paper-input-container>
+      <div prefix>$</div>
+      <label>Total</label>
+      <input is="iron-input">
+      <paper-icon-button suffix icon="clear"></paper-icon-button>
+    </paper-input-container>
+
+### Styling
+
+The following custom properties and mixins are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-input-container-color` | Label and underline color when the input is not focused | `--secondary-text-color`
+`--paper-input-container-focus-color` | Label and underline color when the input is focused | `--default-primary-color`
+`--paper-input-container-invalid-color` | Label and underline color when the input is is invalid | `--google-red-500`
+`--paper-input-container-input-color` | Input foreground color | `--primary-text-color`
+`--paper-input-container` | Mixin applied to the container | `{}`
+`--paper-input-container-disabled` | Mixin applied to the container when it's disabled | `{}`
+`--paper-input-container-label` | Mixin applied to the label | `{}`
+`--paper-input-container-label-focus` | Mixin applied to the label when the input is focused | `{}`
+`--paper-input-container-label-floating` | Mixin applied to the label when floating | `{}`
+`--paper-input-container-input` | Mixin applied to the input | `{}`
+`--paper-input-container-underline` | Mixin applied to the underline | `{}`
+`--paper-input-container-underline-focus` | Mixin applied to the underline when the input is focused | `{}`
+`--paper-input-container-underline-disabled` | Mixin applied to the underline when the input is disabled | `{}`
+`--paper-input-prefix` | Mixin applied to the input prefix | `{}`
+`--paper-input-suffix` | Mixin applied to the input suffix | `{}`
+
+This element is `display:block` by default, but you can set the `inline` attribute to make it
+`display:inline-block`.
+-->
+
+<!--
+`<paper-input-error>` is an error message for use with `<paper-input-container>`. The error is
+displayed when the `<paper-input-container>` is `invalid`.
+
+    <paper-input-container>
+      <input is="iron-input" pattern="[0-9]*">
+      <paper-input-error>Only numbers are allowed!</paper-input-error>
+    </paper-input-container>
+
+### Styling
+
+The following custom properties and mixins are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-input-container-invalid-color` | The foreground color of the error | `--google-red-500`
+`--paper-input-error`                   | Mixin applied to the error        | `{}`
+-->
+
+<!--
+Material design: [Text fields](https://www.google.com/design/spec/components/text-fields.html)
+
+`<paper-input>` is a single-line text field with Material Design styling.
+
+    <paper-input label="Input label"></paper-input>
+
+It may include an optional error message or character counter.
+
+    <paper-input error-message="Invalid input!" label="Input label"></paper-input>
+    <paper-input char-counter label="Input label"></paper-input>
+
+It can also include custom prefix or suffix elements, which are displayed
+before or after the text input itself. In order for an element to be
+considered as a prefix, it must have the `prefix` attribute (and similarly
+for `suffix`).
+
+    <paper-input label="total">
+      <div prefix>$</div>
+      <paper-icon-button suffix icon="clear"></paper-icon-button>
+    </paper-input>
+
+A `paper-input` can use the native `type=search` or `type=file` features.
+However, since we can't control the native styling of the input, in these cases
+it's recommended to use a placeholder text, or `always-float-label`,
+as to not overlap the native UI (search icon, file button, etc.).
+
+    <paper-input label="search!" type="search"
+        placeholder="search for cats" autosave="test" results="5">
+    </paper-input>
+
+See `Polymer.PaperInputBehavior` for more API docs.
+
+### Focus
+
+To focus a paper-input, you can call the native `focus()` method as long as the
+paper input has a tab index.
+
+### Styling
+
+See `Polymer.PaperInputContainer` for a list of custom properties used to
+style this element.
+
+
+@group Paper Elements
+@element paper-input
+@hero hero.svg
+@demo demo/index.html
+-->
+
+<!-- <link rel="import" href="../../bower_components/iron-a11y-keys-behavior/iron-a11y-keys-behavior.html"> -->
+
+<!--
+`PaperItemBehavior` is a convenience behavior shared by <paper-item> and
+<paper-icon-item> that manages the shared control states and attributes of
+the items.
+-->
+
+<!--
+Material design: [Lists](https://www.google.com/design/spec/components/lists.html)
+
+`<paper-item>` is an interactive list item. By default, it is a horizontal flexbox.
+
+    <paper-item>Item</paper-item>
+
+Use this element with `<paper-item-body>` to make Material Design styled two-line and three-line
+items.
+
+    <paper-item>
+      <paper-item-body two-line>
+        <div>Show your status</div>
+        <div secondary>Your status is visible to everyone</div>
+      </paper-item-body>
+      <iron-icon icon="warning"></iron-icon>
+    </paper-item>
+
+### Styling
+
+The following custom properties and mixins are available for styling:
+
+Custom property               | Description                                  | Default
+------------------------------|----------------------------------------------|----------
+`--paper-item-min-height`     | Minimum height of the item                   | `48px`
+`--paper-item`                | Mixin applied to the item                    | `{}`
+`--paper-item-selected-weight`| The font weight of a selected item           | `bold`
+`--paper-item-selected`       | Mixin applied to selected paper-items        | `{}`
+`--paper-item-disabled-color` | The color for disabled paper-items           | `--disabled-text-color`
+`--paper-item-disabled`       | Mixin applied to disabled paper-items        | `{}`
+`--paper-item-focused`        | Mixin applied to focused paper-items         | `{}`
+`--paper-item-focused-before` | Mixin applied to :before focused paper-items | `{}`
+
+### Accessibility
+
+This element has `role="listitem"` by default. Depending on usage, it may be more appropriate to set
+`role="menuitem"`, `role="menuitemcheckbox"` or `role="menuitemradio"`.
+
+    <paper-item role="menuitemcheckbox">
+      <paper-item-body>
+        Show your status
+      </paper-item-body>
+      <paper-checkbox></paper-checkbox>
+    </paper-item>
+
+@group Paper Elements
+@element paper-item
+@demo demo/index.html
+-->
+
+<!--
+`iron-collapse` creates a collapsible block of content.  By default, the content
+will be collapsed.  Use `opened` or `toggle()` to show/hide the content.
+
+    <button on-click="toggle">toggle collapse</button>
+
+    <iron-collapse id="collapse">
+      <div>Content goes here...</div>
+    </iron-collapse>
+
+    ...
+
+    toggle: function() {
+      this.$.collapse.toggle();
+    }
+
+`iron-collapse` adjusts the height/width of the collapsible element to show/hide
+the content.  So avoid putting padding/margin/border on the collapsible directly,
+and instead put a div inside and style that.
+
+    <style>
+      .collapse-content {
+        padding: 15px;
+        border: 1px solid #dedede;
+      }
+    </style>
+
+    <iron-collapse>
+      <div class="collapse-content">
+        <div>Content goes here...</div>
+      </div>
+    </iron-collapse>
+
+@group Iron Elements
+@hero hero.svg
+@demo demo/index.html
+@element iron-collapse
+-->
+
+<!--
+Material design: [Tooltips](https://www.google.com/design/spec/components/tooltips.html)
+
+`<paper-tooltip>` is a label that appears on hover and focus when the user
+hovers over an element with the cursor or with the keyboard. It will be centered
+to an anchor element specified in the `for` attribute, or, if that doesn't exist,
+centered to the parent node containing it.
+
+Example:
+
+    <div style="display:inline-block">
+      <button>Click me!</button>
+      <paper-tooltip>Tooltip text</paper-tooltip>
+    </div>
+
+    <div>
+      <button id="btn">Click me!</button>
+      <paper-tooltip for="btn">Tooltip text</paper-tooltip>
+    </div>
+
+The tooltip can be positioned on the top|bottom|left|right of the anchor using
+the `position` attribute. The default position is bottom.
+
+    <paper-tooltip for="btn" position="left">Tooltip text</paper-tooltip>
+    <paper-tooltip for="btn" position="top">Tooltip text</paper-tooltip>
+
+### Styling
+
+The following custom properties and mixins are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-tooltip-background` | The background color of the tooltip | `#616161`
+`--paper-tooltip-opacity` | The opacity of the tooltip | `0.9`
+`--paper-tooltip-text-color` | The text color of the tooltip | `white`
+`--paper-tooltip` | Mixin applied to the tooltip | `{}`
+
+@group Paper Elements
+@element paper-tooltip
+@demo demo/index.html
+-->
+
+<!--
+entry {
+  id         : bookmark id if bookmarked
+  tabId      : tabId of the page if open
+  title      : title of the page
+  url        : url of the bookmark
+  pinned     : pinned flag
+  favIconUrl : favicon Url
+}
+-->
+<!--
+Material design: [Dropdown menus](https://www.google.com/design/spec/components/buttons.html#buttons-dropdown-buttons)
+
+`paper-dropdown-menu` is similar to a native browser select element.
+`paper-dropdown-menu` works with selectable content. The currently selected
+item is displayed in the control. If no item is selected, the `label` is
+displayed instead.
+
+The child element with the class `dropdown-content` will be used as the dropdown
+menu. It could be a `paper-menu` or element that triggers `iron-select` when
+selecting its children.
+
+Example:
+
+    <paper-dropdown-menu label="Your favourite pastry">
+      <paper-menu class="dropdown-content">
+        <paper-item>Croissant</paper-item>
+        <paper-item>Donut</paper-item>
+        <paper-item>Financier</paper-item>
+        <paper-item>Madeleine</paper-item>
+      </paper-menu>
+    </paper-dropdown-menu>
+
+This example renders a dropdown menu with 4 options.
+
+Similarly to using `iron-select`, `iron-deselect` events will cause the
+current selection of the `paper-dropdown-menu` to be cleared.
+
+### Styling
+
+The following custom properties and mixins are also available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-dropdown-menu` | A mixin that is applied to the element host | `{}`
+`--paper-dropdown-menu-disabled` | A mixin that is applied to the element host when disabled | `{}`
+`--paper-dropdown-menu-ripple` | A mixin that is applied to the internal ripple | `{}`
+`--paper-dropdown-menu-button` | A mixin that is applied to the internal menu button | `{}`
+`--paper-dropdown-menu-input` | A mixin that is applied to the internal paper input | `{}`
+`--paper-dropdown-menu-icon` | A mixin that is applied to the internal icon | `{}`
+
+You can also use any of the `paper-input-container` and `paper-menu-button`
+style mixins and custom properties to style the internal input and menu button
+respectively.
+
+@group Paper Elements
+@element paper-dropdown-menu
+@hero hero.svg
+@demo demo/index.html
+-->
+
+<!--
+Material design: [Switch](https://www.google.com/design/spec/components/selection-controls.html#selection-controls-switch)
+
+`paper-toggle-button` provides a ON/OFF switch that user can toggle the state
+by tapping or by dragging the switch.
+
+Example:
+
+    <paper-toggle-button></paper-toggle-button>
+
+### Styling
+
+The following custom properties and mixins are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-toggle-button-unchecked-bar-color` | Slider color when the input is not checked | `#000000`
+`--paper-toggle-button-unchecked-button-color` | Button color when the input is not checked | `--paper-grey-50`
+`--paper-toggle-button-unchecked-ink-color` | Selected/focus ripple color when the input is not checked | `--dark-primary-color`
+`--paper-toggle-button-checked-bar-color` | Slider button color when the input is checked | `--default-primary-color`
+`--paper-toggle-button-checked-button-color` | Button color when the input is checked | `--default-primary-color`
+`--paper-toggle-button-checked-ink-color` | Selected/focus ripple color when the input is checked | `--default-primary-color`
+`--paper-toggle-button-unchecked-bar` | Mixin applied to the slider when the input is not checked | `{}`
+`--paper-toggle-button-unchecked-button` | Mixin applied to the slider button when the input is not checked | `{}`
+`--paper-toggle-button-checked-bar` | Mixin applied to the slider when the input is checked | `{}`
+`--paper-toggle-button-checked-button` | Mixin applied to the slider button when the input is checked | `{}`
+`--paper-toggle-button-label-color` | Label color | `--primary-text-color`
+`--paper-toggle-button-label-spacing` | Spacing between the label and the button | `8px`
+
+@group Paper Elements
+@element paper-toggle-button
+@hero hero.svg
+@demo demo/index.html
+-->
 
 <style is="custom-style">
   * {
@@ -1566,8 +2946,8 @@
 
     /* paper-icon-button */
     --paper-icon-button: {
-      width: 16px;
-      height: 16px;
+      width: 24px;
+      height: 24px;
       padding: 2px 4px 4px 4px;
     };
 
@@ -1597,6 +2977,7 @@
     --paper-dialog: {
       font-size: 1.0em;
       margin: 0 20px;
+      max-width: none;
     };
     --paper-dialog-background-color: var(--default-background-color);
     --paper-dialog-button-color: var(--default-background-color);
@@ -1608,7 +2989,13 @@
 
     --paper-dialog-scrollable: {
       margin-top: 10px;
+      padding: 0 24px;
     };
+
+    --paper-dropdown-menu-icon: {
+      width: 24px;
+      height: 24px;
+    }
 
     --paper-button: {
       color: var(--text-primary-color);
@@ -1682,7 +3069,8 @@
 
       vertical-align: middle;
 
-      fill: currentcolor;
+      fill: var(--iron-icon-fill-color, currentcolor);
+      stroke: var(--iron-icon-stroke-color, none);
 
       width: var(--iron-icon-width, 24px);
       height: var(--iron-icon-height, 24px);
@@ -1690,125 +3078,261 @@
   </style>
 
   <template>
-    <iron-meta id="meta" type="iconset"></iron-meta>
   </template>
 
   </dom-module>
 <dom-module id="paper-ripple" assetpath="../bower_components/paper-ripple/">
 
-  
+  <!--
+  Fired when the animation finishes. This is useful if you want to wait until the ripple
+  animation finishes to perform some action.
 
-  <style>
-    :host {
-      display: block;
-      position: absolute;
-      border-radius: inherit;
-      overflow: hidden;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-    }
+  @event transitionend
+  @param {Object} detail
+  @param {Object} detail.node The animated node
+  -->
 
-    :host([animating]) {
-      /* This resolves a rendering issue in Chrome (as of 40) where the
-         ripple is not properly clipped by its parent (which may have
-         rounded corners). See: http://jsbin.com/temexa/4
-
-         Note: We only apply this style conditionally. Otherwise, the browser
-         will create a new compositing layer for every ripple element on the
-         page, and that would be bad. */
-      -webkit-transform: translate(0, 0);
-      transform: translate3d(0, 0, 0);
-    }
-
-    :host([noink]) {
-      pointer-events: none;
-    }
-
-    #background,
-    #waves,
-    .wave-container,
-    .wave {
-      pointer-events: none;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    }
-
-    #background,
-    .wave {
-      opacity: 0;
-    }
-
-    #waves,
-    .wave {
-      overflow: hidden;
-    }
-
-    .wave-container,
-    .wave {
-      border-radius: 50%;
-    }
-
-    :host(.circle) #background,
-    :host(.circle) #waves {
-      border-radius: 50%;
-    }
-
-    :host(.circle) .wave-container {
-      overflow: hidden;
-    }
-
-  </style>
   <template>
+    <style>
+      :host {
+        display: block;
+        position: absolute;
+        border-radius: inherit;
+        overflow: hidden;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        /* See PolymerElements/paper-behaviors/issues/34. On non-Chrome browsers,
+         * creating a node (with a position:absolute) in the middle of an event
+         * handler "interrupts" that event handler (which happens when the
+         * ripple is created on demand) */
+        pointer-events: none;
+      }
+
+      :host([animating]) {
+        /* This resolves a rendering issue in Chrome (as of 40) where the
+           ripple is not properly clipped by its parent (which may have
+           rounded corners). See: http://jsbin.com/temexa/4
+
+           Note: We only apply this style conditionally. Otherwise, the browser
+           will create a new compositing layer for every ripple element on the
+           page, and that would be bad. */
+        -webkit-transform: translate(0, 0);
+        transform: translate3d(0, 0, 0);
+      }
+
+      #background,
+      #waves,
+      .wave-container,
+      .wave {
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      #background,
+      .wave {
+        opacity: 0;
+      }
+
+      #waves,
+      .wave {
+        overflow: hidden;
+      }
+
+      .wave-container,
+      .wave {
+        border-radius: 50%;
+      }
+
+      :host(.circle) #background,
+      :host(.circle) #waves {
+        border-radius: 50%;
+      }
+
+      :host(.circle) .wave-container {
+        overflow: hidden;
+      }
+    </style>
+
     <div id="background"></div>
     <div id="waves"></div>
   </template>
 </dom-module>
 <dom-module id="paper-icon-button" assetpath="../bower_components/paper-icon-button/">
-  <style>
+  <template strip-whitespace="">
+    <style>
+      :host {
+        display: inline-block;
+        position: relative;
+        padding: 8px;
+        outline: none;
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        cursor: pointer;
+        z-index: 0;
+        line-height: 1;
+        
+        width: 40px;
+        height: 40px;
 
-    :host {
-      display: inline-block;
-      position: relative;
-      padding: 8px;
-      outline: none;
-      -webkit-tap-highlight-color: rgba(0,0,0,0);
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-      cursor: pointer;
-      z-index: 0;
+        /* Because of polymer/2558, this style has lower specificity than * */
+        box-sizing: border-box !important;
+        @apply(--paper-icon-button);
+      }
 
-      @apply(--paper-icon-button);
-    }
+      :host #ink {
+        color: var(--paper-icon-button-ink-color, --primary-text-color);
+        opacity: 0.6;
+      }
 
-    :host #ink {
-      color: var(--paper-icon-button-ink-color, --primary-text-color);
-      opacity: 0.6;
-    }
+      :host([disabled]) {
+        color: var(--paper-icon-button-disabled-text, --disabled-text-color);
+        pointer-events: none;
+        cursor: auto;
+        @apply(--paper-icon-button-disabled);
+      }
+      
+      :host(:hover) { 
+        @apply(--paper-icon-button-hover);
+      }
 
-    :host([disabled]) {
-      color: var(--paper-icon-button-disabled-text, --disabled-text-color);
-      pointer-events: none;
-      cursor: auto;
-      @apply(--paper-icon-button-disabled);
-    }
-  </style>
-  <template>
-    <paper-ripple id="ink" class="circle" center=""></paper-ripple>
+      iron-icon {
+        --iron-icon-width: 100%;
+        --iron-icon-height: 100%;
+      }
+    </style>
     <iron-icon id="icon" src="[[src]]" icon="[[icon]]" alt$="[[alt]]"></iron-icon>
   </template>
-</dom-module>
+
+  </dom-module>
 <dom-module id="paper-header-panel" assetpath="../bower_components/paper-header-panel/">
-
-  <link rel="import" type="css" href="../bower_components/paper-header-panel/paper-header-panel.css">
-
   <template>
+    <style>
+      :host {
+        --paper-header-panel-shadow: {
+          height: 6px;
+          bottom: -6px;
+          box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.4);
+        };
+
+        @apply(--layout-vertical);
+
+        position: relative;
+        height: 100%;
+
+        @apply(--paper-header-panel);
+      }
+
+      #mainContainer {
+        @apply(--layout-flex);
+
+        position: relative;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      #mainPanel {
+        @apply(--layout-vertical);
+        @apply(--layout-flex);
+
+        position: relative;
+        min-height: 0;
+
+        @apply(--paper-header-panel-body);
+      }
+
+      /*
+       * mode: scroll
+       */
+      :host([mode=scroll]) #mainContainer {
+        @apply(--paper-header-panel-scroll-container);
+
+        overflow: visible;
+      }
+
+      :host([mode=scroll]) {
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /*
+       * mode: cover
+       */
+      :host([mode=cover]) #mainContainer {
+        @apply(--paper-header-panel-cover-container);
+
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+      }
+
+      :host([mode=cover]) #mainPanel {
+        position: static;
+      }
+
+      /*
+       * mode: standard
+       */
+      :host([mode=standard]) #mainContainer {
+        @apply(--paper-header-panel-standard-container);
+      }
+
+      /*
+       * mode: seamed
+       */
+      :host([mode=seamed]) #mainContainer {
+        @apply(--paper-header-panel-seamed-container);
+      }
+
+
+      /*
+       * mode: waterfall
+       */
+      :host([mode=waterfall]) #mainContainer {
+        @apply(--paper-header-panel-waterfall-container);
+      }
+
+      /*
+       * mode: waterfall-tall
+       */
+      :host([mode=waterfall-tall]) #mainContainer {
+        @apply(--paper-header-panel-waterfall-tall-container);
+      }
+
+      #dropShadow {
+        @apply(--paper-header-panel-shadow);
+
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        pointer-events: none;
+
+        -webkit-transition: opacity 0.5s;
+        transition: opacity 0.5s;
+
+        opacity: 0;
+      }
+
+      #dropShadow.has-shadow {
+        opacity: 1;
+      }
+    </style>
+
     <content id="headerContent" select="paper-toolbar, .paper-header"></content>
 
     <div id="mainPanel">
@@ -1819,175 +3343,193 @@
     </div>
   </template>
 
-</dom-module>
-
+  </dom-module>
 <dom-module id="paper-toolbar" assetpath="../bower_components/paper-toolbar/">
-
-  <style>
-    :host {
-      /* technical */
-      display: block;
-      position: relative;
-      box-sizing: border-box;
-      -moz-box-sizing: border-box;
-
-      /* size */
-      height: 64px;
-
-      background: var(--paper-toolbar-background, --default-primary-color);
-      color: var(--paper-toolbar-color, --text-primary-color);
-
-      @apply(--paper-toolbar);
-    }
-
-    :host(.animate) {
-      /* transition */
-      transition: height 0.18s ease-in;
-    }
-
-    :host(.medium-tall) {
-      height: 128px;
-    }
-
-    :host(.tall) {
-      height: 192px;
-    }
-
-    .toolbar-tools {
-      position: relative;
-      height: 64px;
-      padding: 0 16px;
-      pointer-events: none;
-    }
-
-    /*
-     * TODO: Where should media query breakpoints live so they can be shared between elements?
-     */
-
-    @media (max-width: 639px) {
+  <template>
+    <style>
       :host {
-        height: 56px;
+        /* technical */
+        display: block;
+        position: relative;
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+
+        /* size */
+        height: var(--paper-toolbar-height, 64px);
+
+        background: var(--paper-toolbar-background, --default-primary-color);
+        color: var(--paper-toolbar-color, --text-primary-color);
+
+        @apply(--paper-toolbar);
+      }
+
+      :host(.animate) {
+        /* transition */
+        transition: height 0.18s ease-in;
       }
 
       :host(.medium-tall) {
-        height: 112px;
+        height: calc(var(--paper-toolbar-height, 64px) * 2);
+        @apply(--paper-toolbar-medium);
       }
 
       :host(.tall) {
-        height: 168px;
+        height: calc(var(--paper-toolbar-height, 64px) * 3);
+        @apply(--paper-toolbar-tall);
       }
 
       .toolbar-tools {
-        height: 56px;
+        position: relative;
+        height: var(--paper-toolbar-height, 64px);
+        padding: 0 16px;
+        pointer-events: none;
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+        @apply(--paper-toolbar-content);
       }
-    }
-
-    #topBar {
-      position: relative;
-    }
-
-    /* middle bar */
-    #middleBar {
-      position: absolute;
-      top: 0;
-      right: 0;
-      left: 0;
-    }
-
-    :host(.tall) #middleBar,
-    :host(.medium-tall) #middleBar {
-      -webkit-transform: translateY(100%);
-      transform: translateY(100%);
-    }
-
-    /* bottom bar */
-    #bottomBar {
-      position: absolute;
-      right: 0;
-      bottom: 0;
-      left: 0;
-    }
-
-    /*
-     * make elements (e.g. buttons) respond to mouse/touch events
-     *
-     * `.toolbar-tools` disables touch events so multiple toolbars can stack and not
-     * absorb events. All children must have pointer events re-enabled to work as
-     * expected.
-     */
-    .toolbar-tools > ::content > *:not([disabled]) {
-      pointer-events: auto;
-    }
-
-    .toolbar-tools > ::content .title {
-      @apply(--paper-font-title);
-      @apply(--layout-flex);
-
-      pointer-events: none;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      overflow: hidden;
 
       /*
-       * Polymer/polymer/issues/1525
-       * --paper-font-title defines a `font-weight`
-       * let's override its value, but we need `important!`
-       * because all mixins are resolved in rule's selector that has higher precedence
-       * than the current selector.
+       * TODO: Where should media query breakpoints live so they can be shared between elements?
        */
-      font-weight: 400 !important;
-    }
 
-    /**
-     * TODO: Refactor these selectors
-     * Work in progress.
-     */
-    .toolbar-tools > ::content paper-icon-button[icon=menu] {
-      margin-right: 24px;
-    }
+      @media (max-width: 600px) {
+        :host {
+          height: var(--paper-toolbar-sm-height, 56px);
+        }
 
-    .toolbar-tools > ::content > .title,
-    .toolbar-tools > ::content[select=".middle"] > .title,
-    .toolbar-tools > ::content[select=".bottom"] > .title {
-      margin-left: 56px;
-    }
+        :host(.medium-tall) {
+          height: calc(var(--paper-toolbar-sm-height, 56px) * 2);
+        }
 
-    .toolbar-tools > ::content > paper-icon-button + .title,
-    .toolbar-tools > ::content[select=".middle"] paper-icon-button + .title,
-    .toolbar-tools > ::content[select=".bottom"] paper-icon-button + .title {
-      margin-left: 0;
-    }
+        :host(.tall) {
+          height: calc(var(--paper-toolbar-sm-height, 56px) * 3);
+        }
 
-    .toolbar-tools > ::content > .fit {
-      position: absolute;
-      top: auto;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      width: auto;
-      margin: 0;
-    }
+        .toolbar-tools {
+          height: var(--paper-toolbar-sm-height, 56px);
+        }
+      }
 
-  </style>
+      #topBar {
+        position: relative;
+      }
 
-  <template>
+      /* middle bar */
+      #middleBar {
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+      }
 
-    <div id="topBar" class$="[[_computeBarClassName(justify)]]">
+      :host(.tall) #middleBar,
+      :host(.medium-tall) #middleBar {
+        -webkit-transform: translateY(100%);
+        transform: translateY(100%);
+      }
+
+      /* bottom bar */
+      #bottomBar {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+      }
+
+      /*
+       * make elements (e.g. buttons) respond to mouse/touch events
+       *
+       * `.toolbar-tools` disables touch events so multiple toolbars can stack and not
+       * absorb events. All children must have pointer events re-enabled to work as
+       * expected.
+       */
+      .toolbar-tools > ::content > *:not([disabled]) {
+        pointer-events: auto;
+      }
+
+      .toolbar-tools > ::content .title {
+        @apply(--paper-font-common-base);
+
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 20px;
+        font-weight: 400;
+        line-height: 1;
+        pointer-events: none;
+
+        @apply(--layout-flex);
+        @apply(--paper-toolbar-title);
+      }
+
+      /**
+       * TODO: Refactor these selectors
+       * Work in progress.
+       */
+      .toolbar-tools > ::content paper-icon-button[icon=menu] {
+        margin-right: 24px;
+      }
+
+      .toolbar-tools > ::content > .title,
+      .toolbar-tools > ::content[select=".middle"] > .title,
+      .toolbar-tools > ::content[select=".bottom"] > .title {
+        margin-left: 56px;
+      }
+
+      .toolbar-tools > ::content > paper-icon-button + .title,
+      .toolbar-tools > ::content[select=".middle"] paper-icon-button + .title,
+      .toolbar-tools > ::content[select=".bottom"] paper-icon-button + .title {
+        margin-left: 0;
+      }
+
+      .toolbar-tools > ::content > .fit {
+        position: absolute;
+        top: auto;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: auto;
+        margin: 0;
+      }
+
+      /* TODO(noms): Until we have a better solution for classes that don't use
+       * /deep/ create our own.
+       */
+      .start-justified {
+        @apply(--layout-start-justified);
+      }
+
+      .center-justified {
+        @apply(--layout-center-justified);
+      }
+
+      .end-justified {
+        @apply(--layout-end-justified);
+      }
+
+      .around-justified {
+        @apply(--layout-around-justified);
+      }
+
+      .justified {
+        @apply(--layout-justified);
+      }
+    </style>
+
+    <div id="topBar" class$="toolbar-tools [[_computeBarExtraClasses(justify)]]">
       <content select=":not(.middle):not(.bottom)"></content>
     </div>
 
-    <div id="middleBar" class$="[[_computeBarClassName(middleJustify)]]">
+    <div id="middleBar" class$="toolbar-tools [[_computeBarExtraClasses(middleJustify)]]">
       <content select=".middle"></content>
     </div>
 
-    <div id="bottomBar" class$="[[_computeBarClassName(bottomJustify)]]">
+    <div id="bottomBar" class$="toolbar-tools [[_computeBarExtraClasses(bottomJustify)]]">
       <content select=".bottom"></content>
     </div>
-
   </template>
 
-</dom-module>
-
+  </dom-module>
 <iron-iconset-svg name="paper-tabs" size="24">
 <svg><defs>
 <g id="chevron-left"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path></g>
@@ -1995,190 +3537,181 @@
 </defs></svg>
 </iron-iconset-svg>
 <dom-module id="paper-tab" assetpath="../bower_components/paper-tabs/">
-
-  <style>
-
-    :host {
-      @apply(--layout-inline);
-      @apply(--layout-center);
-      @apply(--layout-center-justified);
-      @apply(--layout-flex);
-
-      position: relative;
-      padding: 0 12px;
-      overflow: hidden;
-      cursor: pointer;
-
-      @apply(--paper-tab);
-    }
-
-    :host(:focus) {
-      outline: none;
-    }
-
-    :host([link]) {
-      padding: 0;
-    }
-
-    .tab-content {
-      height: 100%;
-      -webkit-transform: translateZ(0);
-      transform: translateZ(0);
-      transition: opacity 0.1s cubic-bezier(0.4, 0.0, 1, 1);
-
-      @apply(--paper-tab-content);
-    }
-
-    :host(:not(.iron-selected)) > .tab-content {
-      opacity: 0.8;
-    }
-
-    :host(:focus) .tab-content {
-      opacity: 1;
-      font-weight: 700;
-    }
-
-    #ink {
-      color: var(--paper-tab-ink, --paper-yellow-a100);
-      pointer-events: none;
-    }
-
-    .tab-content > ::content > a {
-      height: 100%;
-      /* flex */
-      -ms-flex: 1 1 0.000000001px;
-      -webkit-flex: 1;
-      flex: 1;
-      -webkit-flex-basis: 0.000000001px;
-      flex-basis: 0.000000001px;
-    }
-
-  </style>
-
   <template>
+    <style>
+      :host {
+        @apply(--layout-inline);
+        @apply(--layout-center);
+        @apply(--layout-center-justified);
+        @apply(--layout-flex);
 
-    <div class="tab-content flex-auto center-center horizontal layout">
+        position: relative;
+        padding: 0 12px;
+        overflow: hidden;
+        cursor: pointer;
+
+        @apply(--paper-tab);
+      }
+
+      :host(:focus) {
+        outline: none;
+      }
+
+      :host([link]) {
+        padding: 0;
+      }
+
+      .tab-content {
+        height: 100%;
+        transform: translateZ(0);
+          -webkit-transform: translateZ(0);
+        transition: opacity 0.1s cubic-bezier(0.4, 0.0, 1, 1);
+        @apply(--layout-horizontal);
+        @apply(--layout-center-center);
+        @apply(--layout-flex-auto);
+        @apply(--paper-tab-content);
+      }
+
+      :host(:not(.iron-selected)) > .tab-content {
+        opacity: 0.8;
+
+        @apply(--paper-tab-content-unselected);
+      }
+
+      :host(:focus) .tab-content {
+        opacity: 1;
+        font-weight: 700;
+      }
+
+      paper-ripple {
+        color: var(--paper-tab-ink, --paper-yellow-a100);
+      }
+
+      .tab-content > ::content > a {
+        @apply(--layout-flex)
+
+        height: 100%;
+      }
+    </style>
+
+    <div class="tab-content">
       <content></content>
     </div>
-
-    <template is="dom-if" if="[[!noink]]">
-      <paper-ripple id="ink" initial-opacity="0.95" opacity-decay-velocity="0.98"></paper-ripple>
-    </template>
-
   </template>
 
-</dom-module>
-
+  </dom-module>
 <dom-module id="paper-tabs" assetpath="../bower_components/paper-tabs/">
-
-  <style>
-
-    :host {
-      @apply(--layout);
-      @apply(--layout-center);
-
-      height: 48px;
-      font-size: 14px;
-      font-weight: 500;
-      overflow: hidden;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-      -webkit-tap-highlight-color: rgba(0,0,0,0);
-
-      @apply(--paper-tabs);
-    }
-
-    #tabsContainer {
-      position: relative;
-      height: 100%;
-      white-space: nowrap;
-      overflow: hidden;
-    }
-
-    #tabsContent {
-      height: 100%;
-    }
-
-    #tabsContent.scrollable {
-      position: absolute;
-      white-space: nowrap;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .not-visible {
-      opacity: 0;
-    }
-
-    paper-icon-button {
-      width: 24px;
-      padding: 16px;
-    }
-
-    #selectionBar {
-      position: absolute;
-      height: 2px;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background-color: var(--paper-tabs-selection-bar-color, --paper-yellow-a100);
-      -webkit-transform-origin: left center;
-      transform-origin: left center;
-      -webkit-transform: scale(0);
-      transform: scale(0);
-      transition: -webkit-transform;
-      transition: transform;
-
-      @apply(--paper-tabs-selection-bar);
-    }
-
-    #selectionBar.align-bottom {
-      top: 0;
-      bottom: auto;
-    }
-
-    #selectionBar.expand {
-      transition-duration: 0.15s;
-      transition-timing-function: cubic-bezier(0.4, 0.0, 1, 1);
-    }
-
-    #selectionBar.contract {
-      transition-duration: 0.18s;
-      transition-timing-function: cubic-bezier(0.0, 0.0, 0.2, 1);
-    }
-
-    #tabsContent > ::content > *:not(#selectionBar) {
-      height: 100%;
-    }
-
-  </style>
-
   <template>
+    <style>
+      :host {
+        @apply(--layout);
+        @apply(--layout-center);
 
-    <paper-icon-button icon="paper-tabs:chevron-left" class$="[[_computeScrollButtonClass(_leftHidden, scrollable, hideScrollButtons)]]" on-up="_onScrollButtonUp" on-down="_onLeftScrollButtonDown"></paper-icon-button>
+        height: 48px;
+        font-size: 14px;
+        font-weight: 500;
+        overflow: hidden;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          -webkit-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
 
-    <div id="tabsContainer" class="flex" on-scroll="_scroll">
+        @apply(--paper-tabs);
+      }
 
+      :host-context([dir=rtl]) {
+        @apply(--layout-horizontal-reverse);
+      }
+
+      #tabsContainer {
+        position: relative;
+        height: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        @apply(--layout-flex);
+      }
+
+      #tabsContent {
+        height: 100%;
+      }
+
+      #tabsContent.scrollable {
+        position: absolute;
+        white-space: nowrap;
+      }
+
+      #tabsContent.horizontal {
+        @apply(--layout-horizontal);
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .not-visible {
+        opacity: 0;
+        cursor: default;
+      }
+
+      paper-icon-button {
+        width: 48px;
+        height: 48px;
+        padding: 12px;
+        margin: 0 4px;
+      }
+
+      #selectionBar {
+        position: absolute;
+        height: 2px;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: var(--paper-tabs-selection-bar-color, --paper-yellow-a100);
+          -webkit-transform: scale(0);
+        transform: scale(0);
+          -webkit-transform-origin: left center;
+        transform-origin: left center;
+          transition: -webkit-transform;
+        transition: transform;
+
+        @apply(--paper-tabs-selection-bar);
+      }
+
+      #selectionBar.align-bottom {
+        top: 0;
+        bottom: auto;
+      }
+
+      #selectionBar.expand {
+        transition-duration: 0.15s;
+        transition-timing-function: cubic-bezier(0.4, 0.0, 1, 1);
+      }
+
+      #selectionBar.contract {
+        transition-duration: 0.18s;
+        transition-timing-function: cubic-bezier(0.0, 0.0, 0.2, 1);
+      }
+
+      #tabsContent > ::content > *:not(#selectionBar) {
+        height: 100%;
+      }
+    </style>
+
+    <paper-icon-button icon="paper-tabs:chevron-left" class$="[[_computeScrollButtonClass(_leftHidden, scrollable, hideScrollButtons)]]" on-up="_onScrollButtonUp" on-down="_onLeftScrollButtonDown" tabindex="-1"></paper-icon-button>
+
+    <div id="tabsContainer" on-track="_scroll" on-down="_down">
       <div id="tabsContent" class$="[[_computeTabsContentClass(scrollable)]]">
-
         <content select="*"></content>
-
         <div id="selectionBar" class$="[[_computeSelectionBarClass(noBar, alignBottom)]]" on-transitionend="_onBarTransitionEnd"></div>
-
       </div>
-
     </div>
 
-    <paper-icon-button icon="paper-tabs:chevron-right" class$="[[_computeScrollButtonClass(_rightHidden, scrollable, hideScrollButtons)]]" on-up="_onScrollButtonUp" on-down="_onRightScrollButtonDown"></paper-icon-button>
+    <paper-icon-button icon="paper-tabs:chevron-right" class$="[[_computeScrollButtonClass(_rightHidden, scrollable, hideScrollButtons)]]" on-up="_onScrollButtonUp" on-down="_onRightScrollButtonDown" tabindex="-1"></paper-icon-button>
 
   </template>
 
-</dom-module>
-
+  </dom-module>
 <dom-module id="iron-a11y-announcer" assetpath="../bower_components/iron-a11y-announcer/">
   <style>
     :host {
@@ -2189,69 +3722,433 @@
   </style>
 
   <template>
-    <span aria-live$="[[mode]]">[[_text]]</span>
+    <div aria-live$="[[mode]]">[[_text]]</div>
   </template>
 
   </dom-module>
-<dom-module id="paper-toast" assetpath="../bower_components/paper-toast/">
+<dom-module id="iron-overlay-backdrop" assetpath="../bower_components/iron-overlay-behavior/">
+
   <style>
+
     :host {
-      display: inline-block;
       position: fixed;
-
-      background: #323232;
-      color: #f1f1f1;
-      min-height: 48px;
-      min-width: 288px;
-      padding: 16px 24px 12px;
-      box-sizing: border-box;
-      box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
-      border-radius: 2px;
-      bottom: 12px;
-      left: 12px;
-      font-size: 14px;
-      cursor: default;
-
-      -webkit-transition: visibility 0.3s, -webkit-transform 0.3s;
-      transition: visibility 0.3s, transform 0.3s;
-
-      -webkit-transform: translateY(100px);
-      transform: translateY(100px);
-
-      visibility: hidden;
-    }
-
-    :host(.capsule) {
-      border-radius: 24px;
-    }
-
-    :host(.fit-bottom) {
-      bottom: 0;
+      top: 0;
       left: 0;
-      width: 100%;
-      min-width: 0;
-      border-radius: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: var(--iron-overlay-backdrop-background-color, #000);
+      opacity: 0;
+      transition: opacity 0.2s;
+
+      @apply(--iron-overlay-backdrop);
     }
 
-    :host(.paper-toast-open){
-      visibility: visible;
+    :host([opened]) {
+      opacity: var(--iron-overlay-backdrop-opacity, 0.6);
 
-      -webkit-transform: translateY(0px);
-      transform: translateY(0px);
+      @apply(--iron-overlay-backdrop-opened);
     }
+
   </style>
+
   <template>
+    <content></content>
+  </template>
+
+</dom-module>
+
+<dom-module id="paper-toast" assetpath="../bower_components/paper-toast/">
+  <template>
+    <style>
+      :host {
+        display: block;
+        position: fixed;
+        background-color: var(--paper-toast-background-color, #323232);
+        color: var(--paper-toast-color, #f1f1f1);
+        min-height: 48px;
+        min-width: 288px;
+        padding: 16px 24px 12px;
+        box-sizing: border-box;
+        box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+        border-radius: 2px;
+        left: 0;
+        bottom: 0;
+        margin: 12px;
+        font-size: 14px;
+        cursor: default;
+        -webkit-transition: visibility 0.3s, -webkit-transform 0.3s, opacity 0.3s;
+        transition: visibility 0.3s, transform 0.3s, opacity 0.3s;
+        visibility: hidden;
+        opacity: 0;
+        -webkit-transform: translateY(100px);
+        transform: translateY(100px);
+      }
+
+      :host(.capsule) {
+        border-radius: 24px;
+      }
+
+      :host(.fit-bottom) {
+        width: 100%;
+        min-width: 0;
+        border-radius: 0;
+        margin: 0;
+      }
+
+      :host(.paper-toast-open) {
+        visibility: visible;
+        opacity: 1;
+        -webkit-transform: translateY(0px);
+        transform: translateY(0px);
+      }
+    </style>
+
     <span id="label">{{text}}</span>
     <content></content>
   </template>
+
+  </dom-module>
+<dom-module id="paper-spinner-styles" assetpath="../bower_components/paper-spinner/">
+  <template>
+    <style>
+      /*
+      /**************************/
+      /* STYLES FOR THE SPINNER */
+      /**************************/
+
+      /*
+       * Constants:
+       *      STROKEWIDTH = 3px
+       *      ARCSIZE     = 270 degrees (amount of circle the arc takes up)
+       *      ARCTIME     = 1333ms (time it takes to expand and contract arc)
+       *      ARCSTARTROT = 216 degrees (how much the start location of the arc
+       *                                should rotate each time, 216 gives us a
+       *                                5 pointed star shape (it's 360/5 * 3).
+       *                                For a 7 pointed star, we might do
+       *                                360/7 * 3 = 154.286)
+       *      CONTAINERWIDTH = 28px
+       *      SHRINK_TIME = 400ms
+       */
+
+      :host {
+        display: inline-block;
+        position: relative;
+        width: 28px; /* CONTAINERWIDTH */
+        height: 28px; /* CONTAINERWIDTH */
+      }
+
+      #spinnerContainer {
+        width: 100%;
+        height: 100%;
+
+        /* The spinner does not have any contents that would have to be
+         * flipped if the direction changes. Always use ltr so that the
+         * style works out correctly in both cases. */
+        direction: ltr;
+      }
+
+      #spinnerContainer.active {
+        /* duration: 360 * ARCTIME / (ARCSTARTROT + (360-ARCSIZE)) */
+        -webkit-animation: container-rotate 1568ms linear infinite;
+        animation: container-rotate 1568ms linear infinite;
+      }
+
+      @-webkit-keyframes container-rotate {
+        to { -webkit-transform: rotate(360deg) }
+      }
+
+      @keyframes container-rotate {
+        to { transform: rotate(360deg) }
+      }
+
+      .spinner-layer {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        white-space: nowrap;
+        border-color: var(--paper-spinner-color, --google-blue-500);
+      }
+
+      .layer-1 {
+        border-color: var(--paper-spinner-layer-1-color, --google-blue-500);
+      }
+
+      .layer-2 {
+        border-color: var(--paper-spinner-layer-2-color, --google-red-500);
+      }
+
+      .layer-3 {
+        border-color: var(--paper-spinner-layer-3-color, --google-yellow-500);
+      }
+
+      .layer-4 {
+        border-color: var(--paper-spinner-layer-4-color, --google-green-500);
+      }
+
+      /**
+       * IMPORTANT NOTE ABOUT CSS ANIMATION PROPERTIES (keanulee):
+       *
+       * iOS Safari (tested on iOS 8.1) does not handle animation-delay very well - it doesn't
+       * guarantee that the animation will start _exactly_ after that value. So we avoid using
+       * animation-delay and instead set custom keyframes for each color (as layer-2undant as it
+       * seems).
+       *
+       * We write out each animation in full (instead of separating animation-name,
+       * animation-duration, etc.) because under the polyfill, Safari does not recognize those
+       * specific properties properly, treats them as -webkit-animation, and overrides the
+       * other animation rules. See https://github.com/Polymer/platform/issues/53.
+       */
+      .active .spinner-layer {
+        /* durations: 4 * ARCTIME */
+        -webkit-animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+        animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+        opacity: 1;
+      }
+
+      .active .spinner-layer.layer-1 {
+        /* durations: 4 * ARCTIME */
+        -webkit-animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-1-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+        animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-1-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+      }
+
+      .active .spinner-layer.layer-2 {
+        /* durations: 4 * ARCTIME */
+        -webkit-animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-2-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+        animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-2-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+      }
+
+      .active .spinner-layer.layer-3 {
+        /* durations: 4 * ARCTIME */
+        -webkit-animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-3-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+        animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-3-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+      }
+
+      .active .spinner-layer.layer-4 {
+        /* durations: 4 * ARCTIME */
+        -webkit-animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-4-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+        animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-4-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+      }
+
+      @-webkit-keyframes fill-unfill-rotate {
+        12.5% { -webkit-transform: rotate(135deg);  } /* 0.5 * ARCSIZE */
+        25%   { -webkit-transform: rotate(270deg);  } /* 1   * ARCSIZE */
+        37.5% { -webkit-transform: rotate(405deg);  } /* 1.5 * ARCSIZE */
+        50%   { -webkit-transform: rotate(540deg);  } /* 2   * ARCSIZE */
+        62.5% { -webkit-transform: rotate(675deg);  } /* 2.5 * ARCSIZE */
+        75%   { -webkit-transform: rotate(810deg);  } /* 3   * ARCSIZE */
+        87.5% { -webkit-transform: rotate(945deg);  } /* 3.5 * ARCSIZE */
+        to    { -webkit-transform: rotate(1080deg); } /* 4   * ARCSIZE */
+      }
+
+      @keyframes fill-unfill-rotate {
+        12.5% { transform: rotate(135deg);  } /* 0.5 * ARCSIZE */
+        25%   { transform: rotate(270deg);  } /* 1   * ARCSIZE */
+        37.5% { transform: rotate(405deg);  } /* 1.5 * ARCSIZE */
+        50%   { transform: rotate(540deg);  } /* 2   * ARCSIZE */
+        62.5% { transform: rotate(675deg);  } /* 2.5 * ARCSIZE */
+        75%   { transform: rotate(810deg);  } /* 3   * ARCSIZE */
+        87.5% { transform: rotate(945deg);  } /* 3.5 * ARCSIZE */
+        to    { transform: rotate(1080deg); } /* 4   * ARCSIZE */
+      }
+
+      /**
+       * HACK: Even though the intention is to have the current .spinner-layer at
+       * `opacity: 1`, we set it to `opacity: 0.99` instead since this forces Chrome
+       * to do proper subpixel rendering for the elements being animated. This is
+       * especially visible in Chrome 39 on Ubuntu 14.04. See:
+       *
+       * - https://github.com/Polymer/paper-spinner/issues/9
+       * - https://code.google.com/p/chromium/issues/detail?id=436255
+       */
+      @-webkit-keyframes layer-1-fade-in-out {
+        from { opacity: 0.99; }
+        25% { opacity: 0.99; }
+        26% { opacity: 0; }
+        89% { opacity: 0; }
+        90% { opacity: 0.99; }
+        100% { opacity: 0.99; }
+      }
+
+      @keyframes layer-1-fade-in-out {
+        from { opacity: 0.99; }
+        25% { opacity: 0.99; }
+        26% { opacity: 0; }
+        89% { opacity: 0; }
+        90% { opacity: 0.99; }
+        100% { opacity: 0.99; }
+      }
+
+      @-webkit-keyframes layer-2-fade-in-out {
+        from { opacity: 0; }
+        15% { opacity: 0; }
+        25% { opacity: 0.99; }
+        50% { opacity: 0.99; }
+        51% { opacity: 0; }
+      }
+
+      @keyframes layer-2-fade-in-out {
+        from { opacity: 0; }
+        15% { opacity: 0; }
+        25% { opacity: 0.99; }
+        50% { opacity: 0.99; }
+        51% { opacity: 0; }
+      }
+
+      @-webkit-keyframes layer-3-fade-in-out {
+        from { opacity: 0; }
+        40% { opacity: 0; }
+        50% { opacity: 0.99; }
+        75% { opacity: 0.99; }
+        76% { opacity: 0; }
+      }
+
+      @keyframes layer-3-fade-in-out {
+        from { opacity: 0; }
+        40% { opacity: 0; }
+        50% { opacity: 0.99; }
+        75% { opacity: 0.99; }
+        76% { opacity: 0; }
+      }
+
+      @-webkit-keyframes layer-4-fade-in-out {
+        from { opacity: 0; }
+        65% { opacity: 0; }
+        75% { opacity: 0.99; }
+        90% { opacity: 0.99; }
+        100% { opacity: 0; }
+      }
+
+      @keyframes layer-4-fade-in-out {
+        from { opacity: 0; }
+        65% { opacity: 0; }
+        75% { opacity: 0.99; }
+        90% { opacity: 0.99; }
+        100% { opacity: 0; }
+      }
+
+      /**
+       * Patch the gap that appear between the two adjacent div.circle-clipper while the
+       * spinner is rotating (appears on Chrome 38, Safari 7.1, and IE 11).
+       *
+       * Update: the gap no longer appears on Chrome when .spinner-layer's opacity is 0.99,
+       * but still does on Safari and IE.
+       */
+      .gap-patch {
+        position: absolute;
+        box-sizing: border-box;
+        top: 0;
+        left: 45%;
+        width: 10%;
+        height: 100%;
+        overflow: hidden;
+        border-color: inherit;
+      }
+
+      .gap-patch .circle {
+        width: 1000%;
+        left: -450%;
+      }
+
+      .circle-clipper {
+        display: inline-block;
+        position: relative;
+        width: 50%;
+        height: 100%;
+        overflow: hidden;
+        border-color: inherit;
+      }
+
+      .circle-clipper .circle {
+        width: 200%;
+      }
+
+      .circle {
+        box-sizing: border-box;
+        height: 100%;
+        border-width: 3px; /* STROKEWIDTH */
+        border-style: solid;
+        border-color: inherit;
+        border-bottom-color: transparent !important;
+        border-radius: 50%;
+        -webkit-animation: none;
+        animation: none;
+
+        @apply(--layout-fit);
+      }
+
+      .circle-clipper.left .circle {
+        border-right-color: transparent !important;
+        -webkit-transform: rotate(129deg);
+        transform: rotate(129deg);
+      }
+
+      .circle-clipper.right .circle {
+        left: -100%;
+        border-left-color: transparent !important;
+        -webkit-transform: rotate(-129deg);
+        transform: rotate(-129deg);
+      }
+
+      .active .circle-clipper.left .circle {
+        /* duration: ARCTIME */
+        -webkit-animation: left-spin 1333ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+        animation: left-spin 1333ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+      }
+
+      .active .circle-clipper.right .circle {
+        /* duration: ARCTIME */
+        -webkit-animation: right-spin 1333ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+        animation: right-spin 1333ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+      }
+
+      @-webkit-keyframes left-spin {
+        from { -webkit-transform: rotate(130deg); }
+        50% { -webkit-transform: rotate(-5deg); }
+        to { -webkit-transform: rotate(130deg); }
+      }
+
+      @keyframes left-spin {
+        from { transform: rotate(130deg); }
+        50% { transform: rotate(-5deg); }
+        to { transform: rotate(130deg); }
+      }
+
+      @-webkit-keyframes right-spin {
+        from { -webkit-transform: rotate(-130deg); }
+        50% { -webkit-transform: rotate(5deg); }
+        to { -webkit-transform: rotate(-130deg); }
+      }
+
+      @keyframes right-spin {
+        from { transform: rotate(-130deg); }
+        50% { transform: rotate(5deg); }
+        to { transform: rotate(-130deg); }
+      }
+
+      #spinnerContainer.cooldown {
+        /* duration: SHRINK_TIME */
+        -webkit-animation: container-rotate 1568ms linear infinite, fade-out 400ms cubic-bezier(0.4, 0.0, 0.2, 1);
+        animation: container-rotate 1568ms linear infinite, fade-out 400ms cubic-bezier(0.4, 0.0, 0.2, 1);
+      }
+
+      @-webkit-keyframes fade-out {
+        from { opacity: 0.99; }
+        to { opacity: 0; }
+      }
+
+      @keyframes fade-out {
+        from { opacity: 0.99; }
+        to { opacity: 0; }
+      }
+    </style>
+  </template>
 </dom-module>
 <dom-module id="paper-spinner" assetpath="../bower_components/paper-spinner/">
-
-  <link rel="import" type="css" href="../bower_components/paper-spinner/paper-spinner.css">
-
   <template>
+    <style include="paper-spinner-styles"></style>
 
-    <div id="spinnerContainer" class-name="[[_spinnerContainerClassName]]">
+    <div id="spinnerContainer" class-name="[[__computeContainerClasses(active, __coolingDown)]]">
       <div class="spinner-layer layer-1">
         <div class="circle-clipper left">
           <div class="circle"></div>
@@ -2292,89 +4189,661 @@
         </div>
       </div>
     </div>
-
   </template>
 
   </dom-module>
-<dom-module id="paper-item" assetpath="../bower_components/paper-item/">
-
-  <link rel="import" type="css" href="../bower_components/paper-item/paper-item-shared.css">
-
-  <style>
-
-    :host {
-      @apply(--layout-horizontal);
-      @apply(--layout-center);
-      @apply(--paper-font-subhead);
-
-      @apply(--paper-item);
-    }
-
-  </style>
-
+<dom-module id="paper-menu-shared-styles" assetpath="../bower_components/paper-menu/">
   <template>
-    <content></content>
+    <style>
+      /* need a wrapper element to make this higher specificity than the :host rule in paper-item */
+      .selectable-content > ::content > .iron-selected {
+        font-weight: bold;
+
+        @apply(--paper-menu-selected-item);
+      }
+
+      .selectable-content > ::content > [disabled] {
+        color: var(--paper-menu-disabled-color, --disabled-text-color);
+      }
+
+      .selectable-content > ::content > *:focus {
+        position: relative;
+        outline: 0;
+
+        @apply(--paper-menu-focused-item);
+      }
+
+      .selectable-content > ::content > *:focus:after {
+        @apply(--layout-fit);
+        background: currentColor;
+        opacity: var(--dark-divider-opacity);
+        content: '';
+
+        @apply(--paper-menu-focused-item-after);
+      }
+
+      .selectable-content > ::content > *[colored]:focus:after {
+        opacity: 0.26;
+      }
+    </style>
+  </template>
+</dom-module>
+<dom-module id="paper-menu" assetpath="../bower_components/paper-menu/">
+  <template>
+    <style include="paper-menu-shared-styles"></style>
+    <style>
+      :host {
+        display: block;
+        padding: 8px 0;
+
+        background: var(--paper-menu-background-color, --primary-background-color);
+        color: var(--paper-menu-color, --primary-text-color);
+
+        @apply(--paper-menu);
+      }
+    </style>
+
+    <div class="selectable-content">
+      <content></content>
+    </div>
   </template>
 
+  </dom-module>
+<dom-module id="paper-material-shared-styles" assetpath="../bower_components/paper-material/">
+  <template>
+    <style>
+      :host {
+        display: block;
+        position: relative;
+      }
+
+      :host([elevation="1"]) {
+        @apply(--shadow-elevation-2dp);
+      }
+
+      :host([elevation="2"]) {
+        @apply(--shadow-elevation-4dp);
+      }
+
+      :host([elevation="3"]) {
+        @apply(--shadow-elevation-6dp);
+      }
+
+      :host([elevation="4"]) {
+        @apply(--shadow-elevation-8dp);
+      }
+
+      :host([elevation="5"]) {
+        @apply(--shadow-elevation-16dp);
+      }
+    </style>
+  </template>
+</dom-module>
+<dom-module id="paper-material" assetpath="../bower_components/paper-material/">
+  <template>
+    <style include="paper-material-shared-styles"></style>
+    <style>
+      :host([animated]) {
+        @apply(--shadow-transition);
+      }
+    </style>
+
+    <content></content>
+  </template>
+</dom-module>
+<dom-module id="iron-dropdown" assetpath="../bower_components/iron-dropdown/">
+  <style>
+    :host {
+      position: fixed;
+    }
+
+    #contentWrapper ::content > * {
+      overflow: auto;
+    }
+
+    #contentWrapper.animating ::content > * {
+      overflow: hidden;
+    }
+  </style>
+  <template>
+    <div id="contentWrapper">
+      <content id="content" select=".dropdown-content"></content>
+    </div>
+  </template>
+
+  </dom-module>
+<dom-module id="paper-menu-button" assetpath="../bower_components/paper-menu-button/">
+  <style>
+    :host {
+      display: inline-block;
+      position: relative;
+      padding: 8px;
+      outline: none;
+
+      @apply(--paper-menu-button);
+    }
+
+    :host([disabled]) {
+      cursor: auto;
+      color: var(--disabled-text-color);
+
+      @apply(--paper-menu-button-disabled);
+    }
+
+    :host([vertical-align="top"]) paper-material {
+      margin-bottom: 20px;
+      margin-top: -10px;
+      top: 10px;
+    }
+
+    :host([vertical-align="bottom"]) paper-material {
+      bottom: 10px;
+      margin-bottom: -10px;
+      margin-top: 20px;
+    }
+
+    iron-dropdown {
+      @apply(--paper-menu-button-dropdown);
+    }
+
+    .dropdown-content {
+      border-radius: 2px;
+      background-color: var(--paper-menu-button-dropdown-background, --primary-background-color);
+      @apply(--paper-menu-button-content);
+    }
+  </style>
+  <template>
+    <div id="trigger" on-tap="open">
+      <content select=".dropdown-trigger"></content>
+    </div>
+    <iron-dropdown id="dropdown" opened="{{opened}}" horizontal-align="[[horizontalAlign]]" vertical-align="[[verticalAlign]]" horizontal-offset="[[horizontalOffset]]" vertical-offset="[[verticalOffset]]" open-animation-config="[[openAnimationConfig]]" close-animation-config="[[closeAnimationConfig]]" no-animations="[[noAnimations]]" focus-target="[[_dropdownContent]]">
+      <paper-material class="dropdown-content">
+        <content id="content" select=".dropdown-content"></content>
+      </paper-material>
+    </iron-dropdown>
+  </template>
+</dom-module>
+<dom-module id="paper-dialog-shared-styles" assetpath="../bower_components/paper-dialog-behavior/">
+  <template>
+    <style>
+      :host {
+        display: block;
+        margin: 24px 40px;
+        -webkit-overflow-scrolling: touch;
+
+        background: var(--paper-dialog-background-color, --primary-background-color);
+        color: var(--paper-dialog-color, --primary-text-color);
+
+        @apply(--paper-font-body1);
+        @apply(--shadow-elevation-16dp);
+        @apply(--paper-dialog);
+      }
+
+      :host > ::content > * {
+        margin-top: 20px;
+        padding: 0 24px;
+      }
+
+      :host > ::content > .no-padding {
+        padding: 0;
+      }
+
+      :host > ::content > *:first-child {
+        margin-top: 24px;
+      }
+
+      :host > ::content > *:last-child {
+        margin-bottom: 24px;
+      }
+
+      :host > ::content h2 {
+        position: relative;
+        margin: 0;
+        @apply(--paper-font-title);
+
+        @apply(--paper-dialog-title);
+      }
+
+      :host > ::content .buttons {
+        position: relative;
+        padding: 8px 8px 8px 24px;
+        margin: 0;
+
+        color: var(--paper-dialog-button-color, --default-primary-color);
+
+        @apply(--layout-horizontal);
+        @apply(--layout-end-justified);
+      }
+    </style>
+  </template>
+</dom-module>
+<dom-module id="paper-dialog" assetpath="../bower_components/paper-dialog/">
+  <template>
+    <style include="paper-dialog-shared-styles"></style>
+    <content></content>
+  </template>
 </dom-module>
 
-<dom-module id="paper-material" assetpath="../bower_components/paper-material/">
+<dom-module id="paper-dialog-scrollable" assetpath="../bower_components/paper-dialog-scrollable/">
+
   <style>
+
     :host {
       display: block;
       position: relative;
-      @apply(--shadow-transition);
     }
 
-    :host([elevation="1"]) {
-      @apply(--shadow-elevation-2dp);
+    :host(.is-scrolled:not(:first-child))::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--divider-color);
     }
 
-    :host([elevation="2"]) {
-      @apply(--shadow-elevation-4dp);
+    :host(.can-scroll:not(.scrolled-to-bottom):not(:last-child))::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--divider-color);
     }
 
-    :host([elevation="3"]) {
-      @apply(--shadow-elevation-6dp);
+    .scrollable {
+      padding: 0 24px;
+
+      @apply(--layout-scroll);
+      @apply(--paper-dialog-scrollable);
     }
 
-    :host([elevation="4"]) {
-      @apply(--shadow-elevation-8dp);
-    }
-
-    :host([elevation="5"]) {
-      @apply(--shadow-elevation-16dp);
+    .fit {
+      @apply(--layout-fit);
     }
   </style>
+
   <template>
+    <div id="scrollable" class="scrollable">
+      <content></content>
+    </div>
+  </template>
+
+</dom-module>
+
+<dom-module id="paper-button" assetpath="../bower_components/paper-button/">
+  <template strip-whitespace="">
+
+    <style include="paper-material">
+      :host {
+        display: inline-block;
+        position: relative;
+        box-sizing: border-box;
+        min-width: 5.14em;
+        margin: 0 0.29em;
+        background: transparent;
+        text-align: center;
+        font: inherit;
+        text-transform: uppercase;
+        outline-width: 0;
+        border-radius: 3px;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        -webkit-user-select: none;
+        user-select: none;
+        cursor: pointer;
+        z-index: 0;
+        padding: 0.7em 0.57em;
+
+        @apply(--paper-button);
+      }
+
+      :host([raised].keyboard-focus) {
+        font-weight: bold;
+        @apply(--paper-button-raised-keyboard-focus);
+      }
+
+      :host(:not([raised]).keyboard-focus) {
+        font-weight: bold;
+        @apply(--paper-button-flat-keyboard-focus);
+      }
+
+      :host([disabled]) {
+        background: #eaeaea;
+        color: #a8a8a8;
+        cursor: auto;
+        pointer-events: none;
+
+        @apply(--paper-button-disabled);
+      }
+
+      paper-ripple {
+        color: var(--paper-button-ink-color);
+      }
+
+      :host > ::content * {
+        text-transform: inherit;
+      }
+    </style>
     <content></content>
   </template>
 </dom-module>
-<dom-module id="iron-collapse" assetpath="../bower_components/iron-collapse/">
 
-  <style>
-
-    :host {
-      display: block;
-      transition-duration: 300ms;
-    }
-
-    :host(.iron-collapse-closed) {
-      display: none;
-    }
-
-    :host(:not(.iron-collapse-opened)) {
-      overflow: hidden;
-    }
-
-  </style>
-
+<dom-module id="paper-input-char-counter" assetpath="../bower_components/paper-input/">
   <template>
+    <style>
+      :host {
+        display: inline-block;
+        float: right;
+
+        @apply(--paper-font-caption);
+        @apply(--paper-input-char-counter);
+      }
+
+      :host-context([dir="rtl"]) {
+        float: left;
+      }
+    </style>
+
+    <span>[[_charCounterStr]]</span>
+  </template>
+</dom-module>
+
+<dom-module id="paper-input-container" assetpath="../bower_components/paper-input/">
+  <template>
+    <style>
+      :host {
+        display: block;
+        padding: 8px 0;
+
+        @apply(--paper-input-container);
+      }
+
+      :host[inline] {
+        display: inline-block;
+      }
+
+      :host([disabled]) {
+        pointer-events: none;
+        opacity: 0.33;
+
+        @apply(--paper-input-container-disabled);
+      }
+
+      .floated-label-placeholder {
+        @apply(--paper-font-caption);
+      }
+
+      .underline {
+        position: relative;
+      }
+
+      .focused-line {
+        @apply(--layout-fit);
+
+        background: var(--paper-input-container-focus-color, --default-primary-color);
+        height: 2px;
+        -webkit-transform-origin: center center;
+        transform-origin: center center;
+        -webkit-transform: scale3d(0,1,1);
+        transform: scale3d(0,1,1);
+
+        @apply(--paper-input-container-underline-focus);
+      }
+
+      .underline.is-highlighted .focused-line {
+        -webkit-transform: none;
+        transform: none;
+        -webkit-transition: -webkit-transform 0.25s;
+        transition: transform 0.25s;
+
+        @apply(--paper-transition-easing);
+      }
+
+      .underline.is-invalid .focused-line {
+        background: var(--paper-input-container-invalid-color, --google-red-500);
+        -webkit-transform: none;
+        transform: none;
+        -webkit-transition: -webkit-transform 0.25s;
+        transition: transform 0.25s;
+
+        @apply(--paper-transition-easing);
+      }
+
+      .unfocused-line {
+        @apply(--layout-fit);
+
+        height: 1px;
+        background: var(--paper-input-container-color, --secondary-text-color);
+
+        @apply(--paper-input-container-underline);
+      }
+
+      :host([disabled]) .unfocused-line {
+        border-bottom: 1px dashed;
+        border-color: var(--paper-input-container-color, --secondary-text-color);
+        background: transparent;
+
+        @apply(--paper-input-container-underline-disabled);
+      }
+
+      .label-and-input-container {
+        @apply(--layout-flex);
+        @apply(--layout-relative);
+      }
+
+      .input-content {
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+
+        position: relative;
+      }
+
+      .input-content ::content label,
+      .input-content ::content .paper-input-label {
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        font: inherit;
+        color: var(--paper-input-container-color, --secondary-text-color);
+
+        @apply(--paper-font-common-nowrap);
+        @apply(--paper-font-subhead);
+        @apply(--paper-input-container-label);
+      }
+
+      .input-content.label-is-floating ::content label,
+      .input-content.label-is-floating ::content .paper-input-label {
+        -webkit-transform: translateY(-75%) scale(0.75);
+        transform: translateY(-75%) scale(0.75);
+        -webkit-transition: -webkit-transform 0.25s;
+        transition: transform 0.25s;
+        -webkit-transform-origin: left top;
+        transform-origin: left top;
+
+        /* Since we scale to 75/100 of the size, we actually have 100/75 of the
+        original space now available */
+        width: 133%;
+
+        @apply(--paper-transition-easing);
+        @apply(--paper-input-container-label-floating);
+      }
+
+      :host-context([dir="rtl"]) .input-content.label-is-floating ::content label,
+      :host-context([dir="rtl"]) .input-content.label-is-floating ::content .paper-input-label {
+        /* TODO(noms): Figure out why leaving the width at 133% before the animation
+         * actually makes
+         * it wider on the right side, not left side, as you would expect in RTL */
+        width: 100%;
+        -webkit-transform-origin: right top;
+        transform-origin: right top;
+      }
+
+      .input-content.label-is-highlighted ::content label,
+      .input-content.label-is-highlighted ::content .paper-input-label {
+        color: var(--paper-input-container-focus-color, --default-primary-color);
+
+        @apply(--paper-input-container-label-focus);
+      }
+
+      .input-content.is-invalid ::content label,
+      .input-content.is-invalid ::content .paper-input-label {
+        color: var(--paper-input-container-invalid-color, --google-red-500);
+      }
+
+      .input-content.label-is-hidden ::content label,
+      .input-content.label-is-hidden ::content .paper-input-label {
+        visibility: hidden;
+      }
+
+      .input-content ::content input,
+      .input-content ::content textarea,
+      .input-content ::content iron-autogrow-textarea,
+      .input-content ::content .paper-input-input {
+        position: relative; /* to make a stacking context */
+        outline: none;
+        box-shadow: none;
+        padding: 0;
+        width: 100%;
+        background: transparent;
+        border: none;
+        color: var(--paper-input-container-input-color, --primary-text-color);
+        -webkit-appearance: none;
+        text-align: inherit;
+
+        @apply(--paper-font-subhead);
+        @apply(--paper-input-container-input);
+      }
+
+      ::content [prefix] {
+        @apply(--paper-font-subhead);
+        @apply(--paper-input-prefix);
+      }
+
+      ::content [suffix] {
+        @apply(--paper-font-subhead);
+        @apply(--paper-input-suffix);
+      }
+
+      /* Firefox sets a min-width on the input, which can cause layout issues */
+      .input-content ::content input {
+        min-width: 0;
+      }
+
+      .input-content ::content textarea {
+        resize: none;
+      }
+
+      .add-on-content {
+        position: relative;
+      }
+
+      .add-on-content.is-invalid ::content * {
+        color: var(--paper-input-container-invalid-color, --google-red-500);
+      }
+
+      .add-on-content.is-highlighted ::content * {
+        color: var(--paper-input-container-focus-color, --default-primary-color);
+      }
+    </style>
+
+    <template is="dom-if" if="[[!noLabelFloat]]">
+      <div class="floated-label-placeholder">&nbsp;</div>
+    </template>
+
+    <div class$="[[_computeInputContentClass(noLabelFloat,alwaysFloatLabel,focused,invalid,_inputHasContent)]]">
+      <content select="[prefix]" id="prefix"></content>
+
+      <div class="label-and-input-container" id="labelAndInputContainer">
+        <content select=":not([add-on]):not([prefix]):not([suffix])"></content>
+      </div>
+
+      <content select="[suffix]"></content>
+    </div>
+
+    <div class$="[[_computeUnderlineClass(focused,invalid)]]">
+      <div class="unfocused-line"></div>
+      <div class="focused-line"></div>
+    </div>
+
+    <div class$="[[_computeAddOnContentClass(focused,invalid)]]">
+      <content id="addOnContent" select="[add-on]"></content>
+    </div>
+  </template>
+</dom-module>
+
+<dom-module id="paper-input-error" assetpath="../bower_components/paper-input/">
+  <template>
+    <style>
+      :host {
+        display: inline-block;
+        visibility: hidden;
+
+        color: var(--paper-input-container-invalid-color, --google-red-500);
+
+        @apply(--paper-font-caption);
+        @apply(--paper-input-error);
+        position: absolute;
+        left:0;
+        right:0;
+      }
+
+      :host([invalid]) {
+        visibility: visible;
+      };
+    </style>
 
     <content></content>
-
   </template>
+</dom-module>
 
+<dom-module id="paper-input" assetpath="../bower_components/paper-input/">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      input::-webkit-input-placeholder {
+        color: var(--paper-input-container-color, --secondary-text-color);
+      }
+
+      input:-moz-placeholder {
+        color: var(--paper-input-container-color, --secondary-text-color);
+      }
+
+      input::-moz-placeholder {
+        color: var(--paper-input-container-color, --secondary-text-color);
+      }
+
+      input:-ms-input-placeholder {
+        color: var(--paper-input-container-color, --secondary-text-color);
+      }
+    </style>
+
+    <paper-input-container no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
+
+      <content select="[prefix]"></content>
+
+      <label hidden$="[[!label]]">[[label]]</label>
+
+      <input is="iron-input" id="input" aria-labelledby$="[[_ariaLabelledBy]]" aria-describedby$="[[_ariaDescribedBy]]" disabled$="[[disabled]]" bind-value="{{value}}" invalid="{{invalid}}" prevent-invalid-input="[[preventInvalidInput]]" allowed-pattern="[[allowedPattern]]" validator="[[validator]]" type$="[[type]]" pattern$="[[pattern]]" required$="[[required]]" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" minlength$="[[minlength]]" maxlength$="[[maxlength]]" min$="[[min]]" max$="[[max]]" step$="[[step]]" name$="[[name]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" list$="[[list]]" size$="[[size]]" autocapitalize$="[[autocapitalize]]" autocorrect$="[[autocorrect]]" on-change="_onChange" tabindex$="[[tabindex]]" autosave$="[[autosave]]" results$="[[results]]" accept$="[[accept]]" multiple$="[[multiple]]">
+
+      <content select="[suffix]"></content>
+
+      <template is="dom-if" if="[[errorMessage]]">
+        <paper-input-error>[[errorMessage]]</paper-input-error>
+      </template>
+
+      <template is="dom-if" if="[[charCounter]]">
+        <paper-input-char-counter></paper-input-char-counter>
+      </template>
+
+    </paper-input-container>
+  </template>
 </dom-module>
 
 <iron-iconset-svg name="icons" size="24">
@@ -2645,6 +5114,203 @@
 <g id="zoom-out"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM7 9h5v1H7z"></path></g>
 </defs></svg>
 </iron-iconset-svg>
+<dom-module id="ptm-project-linker" assetpath="ptm-project-linker/">
+  <style>
+    h2 {
+      width: 180px;
+    }
+    iron-icon {
+      width: 16px;
+      height: 16px;
+      margin-right: 4px;
+    }
+    paper-dialog-scrollable {
+      --paper-dialog-scrollable: {
+        padding: 0;
+      }
+    }
+    paper-item {
+      cursor: pointer;
+      padding: 0 24px;
+      margin: 0;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    paper-item:not([disabled]):hover {
+      background-color: var(--primary-background-color);
+    }
+    paper-item[disabled] {
+      cursor: auto;
+      color: var(--disabled-text-color);
+    }
+    .accent {
+      color: var(--text-primary-color);
+      background-color: var(--accent-color);
+    }
+    .buttons {
+      padding: 10px 5px 10px 10px;
+      @apply(--layout-horizontal);
+      @apply(--layout-end-justified);
+    }
+  </style>
+  <template>
+    <paper-dialog id="dialog" modal="">
+      <h2>{{_l10n('link_session_to_a_project')}}</h2>
+      <paper-dialog-scrollable>
+        <paper-item on-tap="_onCreate">
+          <!-- <paper-ripple></paper-ripple> -->
+          <span class="flex title">{{_l10n('create_a_new_project')}}</span>
+          <paper-icon-button icon="icons:add"></paper-icon-button>
+        </paper-item>
+        <template id="repeat" is="dom-repeat" items="[[projects]]" filter="_filterSessions">
+          <paper-item on-tap="_onLink" disabled$="[[_isLinked(item)]]">
+            <span class="flex title">[[item.title]]</span>
+            <iron-icon icon="[[_getLinkedIcon(item)]]"></iron-icon>
+          </paper-item>
+        </template>
+      </paper-dialog-scrollable>
+      <div class="buttons">
+        <paper-button on-tap="close" raised="">{{_l10n('cancel')}}</paper-button>
+        <template is="dom-if" if="{{_showUnlinkIfLinked(linkingProject)}}">
+          <paper-button class="accent" raised="" on-tap="_onUnlink">{{_l10n('unlink')}}</paper-button>
+        </template>
+      </div>
+    </paper-dialog>
+  </template>
+</dom-module>
+
+<dom-module id="paper-item-shared-styles" assetpath="../bower_components/paper-item/">
+  <template>
+    <style>
+      :host {
+        display: block;
+        position: relative;
+        min-height: var(--paper-item-min-height, 48px);
+        padding: 0px 16px;
+      }
+
+      :host([hidden]) {
+        display: none !important;
+      }
+
+      :host(.iron-selected) {
+        font-weight: var(--paper-item-selected-weight, bold);
+
+        @apply(--paper-item-selected);
+      }
+
+      :host([disabled]) {
+        color: var(--paper-item-disabled-color, --disabled-text-color);
+
+        @apply(--paper-item-disabled);
+      }
+
+      :host(:focus) {
+        position: relative;
+        outline: 0;
+
+        @apply(--paper-item-focused);
+      }
+
+      :host(:focus):before {
+        @apply(--layout-fit);
+
+        background: currentColor;
+        content: '';
+        opacity: var(--dark-divider-opacity);
+        pointer-events: none;
+
+        @apply(--paper-item-focused-before);
+      }
+    </style>
+  </template>
+</dom-module>
+<dom-module id="paper-item" assetpath="../bower_components/paper-item/">
+  <template>
+    <style include="paper-item-shared-styles"></style>
+    <style>
+      :host {
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+        @apply(--paper-font-subhead);
+
+        @apply(--paper-item);
+      }
+    </style>
+
+    <content></content>
+  </template>
+
+  </dom-module>
+<dom-module id="iron-collapse" assetpath="../bower_components/iron-collapse/">
+
+  <style>
+
+    :host {
+      display: block;
+      transition-duration: 300ms;
+      overflow: auto;
+    }
+
+    :host(.iron-collapse-closed) {
+      display: none;
+    }
+
+  </style>
+
+  <template>
+
+    <content></content>
+
+  </template>
+
+</dom-module>
+
+<dom-module id="paper-tooltip" assetpath="../bower_components/paper-tooltip/">
+  <template>
+    <style>
+      :host {
+        display: block;
+        position: absolute;
+        outline: none;
+        z-index: 1002;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        -webkit-user-select: none;
+        user-select: none;
+        cursor: default;
+      }
+
+      #tooltip {
+        display: block;
+        outline: none;
+        @apply(--paper-font-common-base);
+        font-size: 10px;
+        line-height: 1;
+
+        background-color: var(--paper-tooltip-background, #616161);
+        opacity: var(--paper-tooltip-opacity, 0.9);
+        color: var(--paper-tooltip-text-color, white);
+
+        padding: 8px;
+        border-radius: 2px;
+
+        @apply(--paper-tooltip);
+      }
+
+      /* Thanks IE 10. */
+      .hidden {
+        display: none !important;
+      }
+    </style>
+
+    <div id="tooltip" class="hidden">
+      <content></content>
+    </div>
+  </template>
+
+  </dom-module>
 <dom-module id="ptm-bookmark" assetpath="ptm-bookmark/">
   <style>
   paper-item > *:not(:first-child):not(:last-child) {
@@ -2652,11 +5318,10 @@
   }
   .favicon {
     display: block;
-    padding: 8px;
-    width: 24px;
-    height: 24px;
+    width: 16px;
+    height: 16px;
+    padding: 2px 4px 4px 4px;
     -webkit-user-select: none;
-    @apply (--paper-icon-button)
   }
   iron-icon {
     width: 100%;
@@ -2684,14 +5349,15 @@
     <iron-meta id="meta" type="idb"></iron-meta>
     <paper-item>
       <div class="favicon">
-        <iron-icon src="[[_validateFavIcon(favIconUrl)]]"></iron-icon>
+        <iron-icon src="[[_validFavIconUrl]]"></iron-icon>
       </div>
-      <div class="title" on-tap="open" active$="[[_isActive(tabId)]]">
-        
+      <div class="title" on-tap="open" active$="[[_active]]">
+        <!-- <paper-ripple recenters></paper-ripple> -->
         <span>[[title]]</span>
+        <paper-tooltip>[[url]]</paper-tooltip>
       </div>
       <template is="dom-if" if="[[projectLinked]]">
-        <paper-icon-button id="star" icon="icons:star" on-tap="_onTapStar" bookmarked$="[[_isBookmarked(bookmarkId)]]" tabindex="-1"></paper-icon-button>
+        <paper-icon-button id="star" icon="icons:star" on-tap="_onTapStar" bookmarked$="[[_bookmarked]]" tabindex="-1"></paper-icon-button>
       </template>
     </paper-item>
   </template>
@@ -2701,6 +5367,9 @@
   <style>
     :host {
       display: block;
+    }
+    *:focus {
+      outline: none;
     }
     paper-material[expanded] {
       margin: 0 0 1em 0;
@@ -2725,14 +5394,14 @@
     }
   </style>
   <template>
-    <paper-material elevation="[[_computeElevation(expanded)]]" expanded$="[[expanded]]" animated="">
-      <paper-item focused$="{{focused}}">
-        <paper-icon-button tabindex="-1" icon="[[_computeFoldIcon(expanded)]]" on-tap="toggle"></paper-icon-button>
+    <paper-material elevation="[[_elevation]]" expanded$="[[expanded]]" animated="">
+      <paper-item focused$="{{focused}}" tabindex="-1">
+        <paper-icon-button tabindex="-1" icon="[[_foldIcon]]" on-tap="toggle"></paper-icon-button>
         <div class="title" on-tap="openProject" active$="[[_computeActive(winId)]]">
-          
+          <!-- <paper-ripple></paper-ripple> -->
           <span>[[projectTitle]]</span>
         </div>
-        <template is="dom-if" if="[[!_computeProjectLinked(projectId)]]" restamp="">
+        <template is="dom-if" if="[[!_projectLinked]]" restamp="">
           <template is="dom-if" if="[[!expanded]]" restamp="">
             <paper-icon-button icon="icons:link" on-tap="_onTapLink" tabindex="-1"></paper-icon-button>
           </template>
@@ -2745,18 +5414,17 @@
         </template>
       </paper-item>
       <iron-collapse id="collapse" opened="[[expanded]]" tabindex="-1">
-        <template is="dom-if" if="[[!fields.length]]">
-          <paper-item class="layout">
-            <paper-icon-button icon="icons:warning"></paper-icon-button>
-            <span on-tap="open" class="title">No open tabs or bookmarks</span>
-          </paper-item>
-        </template>
-        <template is="dom-if" if="[[expanded]]">
-          <template id="repeat" is="dom-repeat" items="[[fields]]" filter="filter">
-            <ptm-bookmark url="[[item.url]]" fav-icon-url="{{item.favIconUrl}}" bookmark-id="[[item.id]]" tab-id="[[item.tabId]]" title="[[item.title]]" project-linked="[[_computeProjectLinked(projectId)]]" on-toggle-bookmark="_onToggleBookmark"></ptm-bookmark>
+        <div class="collapse-content">
+          <template is="dom-if" if="[[!fields.length]]">
+            <paper-item class="layout">
+              <paper-icon-button icon="icons:warning"></paper-icon-button>
+              <span class="title">{{_l10n('no_tabs')}}</span>
+            </paper-item>
           </template>
-          
-        </template>
+          <template id="repeat" is="dom-repeat" items="[[fields]]">
+            <ptm-bookmark url="[[item.url]]" fav-icon-url="{{item.favIconUrl}}" bookmark-id="[[item.id]]" tab-id="[[item.tabId]]" title="[[item.title]]" project-id="[[projectId]]" on-toggle-bookmark="_toggleBookmark"></ptm-bookmark>
+          </template>
+        </div>
       </iron-collapse>
     </paper-material>
   </template>
@@ -2764,13 +5432,13 @@
 
 <dom-module id="ptm-session-list" assetpath="ptm-session-list/">
   <style>
+    *:focus {
+      outline: none;
+    }
   </style>
   <template>
-    <iron-meta id="meta" type="dialog"></iron-meta>
-    <ptm-project-linker id="linker" style$="{{linkerStyle}}" on-link-project="link" on-unlink-project="unlink" on-create-project="create" on-associate-bookmark="associate" projects="{{projectManager.projects}}">
-    </ptm-project-linker>
-    <template id="repeat" is="dom-repeat" items="{{projectManager.projects}}" filter="filter" sort="sort">
-      <ptm-session project="{{item}}" project-id="{{item.id}}" session-id="{{item.session.id}}" win-id="{{item.session.winId}}" session-title="{{item.session.title}}" project-title="{{item.title}}" fields="{{item.fields}}" query="{{query}}" expanded="{{_isSearching(query, item.session.winId)}}" on-open-clicked="open" on-link-clicked="_showLinkingProject" on-remove-clicked="remove" tabindex="0">
+    <template id="repeat" is="dom-repeat" items="[[projects]]" filter="filter" sort="sort">
+      <ptm-session project="{{item}}" project-id="[[item.id]]" session-id="[[item.session.id]]" win-id="[[item.session.winId]]" session-title="[[item.session.title]]" project-title="[[item.title]]" fields="[[item.fields]]" expanded="[[_isActive(item.session.winId)]]" tabindex="0">
       </ptm-session>
     </template>
   </template>
@@ -2780,6 +5448,9 @@
   <style>
     :host {
       display: block;
+    }
+    *:focus {
+      outline: none;
     }
     :host:focus {
       outline: none;
@@ -2807,17 +5478,17 @@
     }
   </style>
   <template>
-    <paper-material elevation="[[_computeElevation(expanded)]]" expanded$="[[expanded]]" animated="">
-      <paper-item focused$="{{focused}}">
-        <paper-icon-button tabindex="-1" icon="[[_computeFoldIcon(expanded)]]" on-tap="toggle"></paper-icon-button>
+    <paper-material elevation="[[_elevation]]" expanded$="[[expanded]]" animated="">
+      <paper-item focused$="{{focused}}" tabindex="-1">
+        <paper-icon-button tabindex="-1" icon="[[_foldIcon]]" on-tap="toggle"></paper-icon-button>
         <div class="title" on-tap="openProject" active$="[[_isNotRemovable(projectId)]]">
-          
+          <!-- <paper-ripple></paper-ripple> -->
           <span>{{projectTitle}}</span>
         </div>
         <template is="dom-if" if="[[expanded]]">
-          <paper-icon-button icon="create" on-tap="_onTapRename"></paper-icon-button>
+          <paper-icon-button icon="create" on-tap="_onTapRename" tabindex="-1"></paper-icon-button>
           <template is="dom-if" if="[[!_isNotRemovable()]]">
-            <paper-icon-button icon="delete" on-tap="_onTapRemove"></paper-icon-button>
+            <paper-icon-button icon="delete" on-tap="_onTapRemove" tabindex="-1"></paper-icon-button>
           </template>
         </template>
       </paper-item>
@@ -2825,13 +5496,11 @@
         <template is="dom-if" if="[[!fields.length]]">
           <paper-item class="layout">
             <paper-icon-button icon="icons:warning"></paper-icon-button>
-            <span on-tap="open" class="title">No bookmarks</span>
+            <span class="title">{{_l10n('no_bookmarks')}}</span>
           </paper-item>
         </template>
-        <template is="dom-if" if="[[expanded]]">
-          <template id="repeat" is="dom-repeat" items="[[fields]]" filter="filter">
-            <ptm-bookmark url="[[item.url]]" fav-icon-url="{{item.favIconUrl}}" bookmark-id="[[item.id]]" tab-id="[[item.tabId]]" title="[[item.title]]" project-linked="[[_computeProjectLinked(projectId)]]" on-toggle-bookmark="_onToggleBookmark"></ptm-bookmark>
-          </template>
+        <template id="repeat" is="dom-repeat" items="[[fields]]">
+          <ptm-bookmark url="[[item.url]]" fav-icon-url="{{item.favIconUrl}}" bookmark-id="[[item.id]]" tab-id="[[item.tabId]]" title="[[item.title]]" project-id="[[projectId]]" on-toggle-bookmark="_toggleBookmark"></ptm-bookmark>
         </template>
       </iron-collapse>
     </paper-material>
@@ -2840,544 +5509,29 @@
 
 <dom-module id="ptm-project-list" assetpath="ptm-project-list/">
   <style>
+    *:focus {
+      outline: none;
+    }
   </style>
   <template>
-    <iron-meta id="meta" type="dialog"></iron-meta>
-    <template id="repeat" is="dom-repeat" items="{{projectManager.projects}}" filter="filter">
-      <ptm-project project="{{item}}" project-id="{{item.id}}" project-title="{{item.title}}" fields="{{item.fields}}" query="{{query}}" expanded="{{_isSearching(query)}}" on-open-clicked="open" on-rename-clicked="rename" on-remove-clicked="remove">
+    <template id="repeat" is="dom-repeat" items="[[projects]]" filter="filter">
+      <ptm-project project="{{item}}" project-id="[[item.id]]" project-title="[[item.title]]" fields="[[item.fields]]">
       </ptm-project>
     </template>
   </template>
 </dom-module>
 
-<dom-module id="iron-overlay-backdrop" assetpath="../bower_components/iron-overlay-behavior/">
-
+<dom-module id="ptm-search-list" assetpath="ptm-search-list/">
   <style>
-
-    :host {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: var(--iron-overlay-backdrop-background-color, #000);
-      opacity: 0;
-      transition: opacity 0.2s;
-
-      @apply(--iron-overlay-backdrop);
-    }
-
-    :host([opened]) {
-      opacity: var(--iron-overlay-backdrop-opacity, 0.6);
-
-      @apply(--iron-overlay-backdrop-opened);
-    }
-
-  </style>
-
-  <template>
-    <content></content>
-  </template>
-
-</dom-module>
-
-<dom-module id="paper-dialog" assetpath="../bower_components/paper-dialog/">
-
-  <link rel="import" type="css" href="../bower_components/paper-dialog-behavior/paper-dialog-common.css">
-
-  <template>
-    <content></content>
-  </template>
-
-</dom-module>
-
-<dom-module id="paper-dialog-scrollable" assetpath="../bower_components/paper-dialog-scrollable/">
-
-  <style>
-
-    :host {
-      display: block;
-      position: relative;
-    }
-
-    :host(.is-scrolled:not(:first-child))::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: var(--divider-color);
-    }
-
-    :host(.can-scroll:not(.scrolled-to-bottom):not(:last-child))::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: var(--divider-color);
-    }
-
-    .scrollable {
-      padding: 0 24px;
-
-      @apply(--layout-scroll);
-
-      @apply(--paper-dialog-scrollable);
-    }
-  </style>
-
-  <template>
-    <div id="scrollable" class="scrollable">
-      <content></content>
-    </div>
-  </template>
-
-</dom-module>
-
-<dom-module id="paper-button" assetpath="../bower_components/paper-button/">
-
-  <style>
-
-    :host {
-      display: inline-block;
-      position: relative;
-      box-sizing: border-box;
-      min-width: 5.14em;
-      margin: 0 0.29em;
-      background: transparent;
-      text-align: center;
-      font: inherit;
-      text-transform: uppercase;
+    *:focus {
       outline: none;
-      border-radius: 3px;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      -webkit-user-select: none;
-      user-select: none;
-      cursor: pointer;
-      z-index: 0;
-
-      @apply(--paper-button);
-    }
-
-    .keyboard-focus {
-      font-weight: bold;
-    }
-
-    :host([disabled]) {
-      background: #eaeaea;
-      color: #a8a8a8;
-      cursor: auto;
-      pointer-events: none;
-
-      @apply(--paper-button-disabled);
-    }
-
-    :host([noink]) paper-ripple {
-      display: none;
-    }
-
-    paper-material {
-      border-radius: inherit;
-    }
-
-    .content > ::content * {
-      text-transform: inherit;
-    }
-
-    .content {
-      padding: 0.7em 0.57em
     }
   </style>
-
   <template>
-
-    <paper-ripple></paper-ripple>
-
-    <paper-material class$="[[_computeContentClass(receivedFocusFromKeyboard)]]" elevation="[[_elevation]]" animated="">
-      <content></content>
-    </paper-material>
-
-  </template>
-
-</dom-module>
-
-<dom-module id="paper-input-container" assetpath="../bower_components/paper-input/">
-
-  <style>
-
-    :host {
-      display: block;
-      padding: 8px 0;
-
-      @apply(--paper-input-container);
-    }
-
-    :host[inline] {
-      display: inline-block;
-    }
-
-    :host([disabled]) {
-      pointer-events: none;
-      opacity: 0.33;
-
-      @apply(--paper-input-container-disabled);
-    }
-
-    .floated-label-placeholder {
-      @apply(--paper-font-caption);
-    }
-
-    .underline {
-      position: relative;
-    }
-
-    .focused-line {
-      height: 2px;
-
-      -webkit-transform-origin: center center;
-      transform-origin: center center;
-      -webkit-transform: scale3d(0,1,1);
-      transform: scale3d(0,1,1);
-
-      background: var(--paper-input-container-focus-color, --default-primary-color);
-
-      @apply(--paper-input-container-underline-focus);
-    }
-
-    .underline.is-highlighted .focused-line {
-      -webkit-transform: none;
-      transform: none;
-      -webkit-transition: -webkit-transform 0.25s;
-      transition: transform 0.25s;
-
-      @apply(--paper-transition-easing);
-    }
-
-    .underline.is-invalid .focused-line {
-      background: var(--paper-input-container-invalid-color, --google-red-500);
-
-      -webkit-transform: none;
-      transform: none;
-      -webkit-transition: -webkit-transform 0.25s;
-      transition: transform 0.25s;
-
-      @apply(--paper-transition-easing);
-    }
-
-    .unfocused-line {
-      height: 1px;
-      background: var(--paper-input-container-color, --secondary-text-color);
-
-      @apply(--paper-input-container-underline);
-    }
-
-    :host([disabled]) .unfocused-line {
-      border-bottom: 1px dashed;
-      border-color: var(--paper-input-container-color, --secondary-text-color);
-      background: transparent;
-
-      @apply(--paper-input-container-underline-disabled);
-    }
-
-    .label-and-input-container {
-      @apply(--layout-flex);
-      @apply(--layout-relative);
-    }
-
-    .input-content {
-      position: relative;
-      @apply(--layout-horizontal);
-      @apply(--layout-end);
-    }
-
-    .input-content ::content label,
-    .input-content ::content .paper-input-label {
-      position: absolute;
-      top: 0;
-      right: 0;
-      left: 0;
-      font: inherit;
-      color: var(--paper-input-container-color, --secondary-text-color);
-
-      @apply(--paper-font-subhead);
-      @apply(--paper-input-container-label);
-    }
-
-    .input-content.label-is-floating ::content label,
-    .input-content.label-is-floating ::content .paper-input-label {
-      -webkit-transform: translate3d(0, -75%, 0) scale(0.75);
-      transform: translate3d(0, -75%, 0) scale(0.75);
-      -webkit-transform-origin: left top;
-      transform-origin: left top;
-      -webkit-transition: -webkit-transform 0.25s;
-      transition: transform 0.25s;
-
-      @apply(--paper-transition-easing);
-    }
-
-    .input-content.label-is-highlighted ::content label,
-    .input-content.label-is-highlighted ::content .paper-input-label {
-      color: var(--paper-input-container-focus-color, --default-primary-color);
-
-      @apply(--paper-input-container-label-focus);
-    }
-
-    .input-content.is-invalid ::content label,
-    .input-content.is-invalid ::content .paper-input-label {
-      color: var(--paper-input-container-invalid-color, --google-red-500);
-    }
-
-    .input-content.label-is-hidden ::content label,
-    .input-content.label-is-hidden ::content .paper-input-label {
-      visibility: hidden;
-    }
-
-    .input-content ::content input,
-    .input-content ::content textarea,
-    .input-content ::content iron-autogrow-textarea,
-    .input-content ::content .paper-input-input {
-      position: relative; /* to make a stacking context */
-      outline: none;
-      box-shadow: none;
-      padding: 0;
-      width: 100%;
-      background: transparent;
-      border: none;
-      color: var(--paper-input-container-input-color, --primary-text-color);
-
-      @apply(--paper-font-subhead);
-      @apply(--paper-input-container-input);
-    }
-
-    ::content [prefix] {
-      @apply(--paper-font-subhead);
-      @apply(--paper-input-prefix);
-    }
-
-    ::content [suffix] {
-      @apply(--paper-font-subhead);
-      @apply(--paper-input-suffix);
-    }
-
-    /* Firefox sets a min-width on the input, which can cause layout issues */
-    .input-content ::content input {
-      min-width: 0;
-    }
-
-    .input-content ::content textarea {
-      resize: none;
-    }
-
-    .add-on-content.is-invalid ::content * {
-      color: var(--paper-input-container-invalid-color, --google-red-500);
-    }
-
-    .add-on-content.is-highlighted ::content * {
-      color: var(--paper-input-container-focus-color, --default-primary-color);
-    }
-
-  </style>
-
-  <template>
-
-    <template is="dom-if" if="[[!noLabelFloat]]">
-      <div class="floated-label-placeholder">&nbsp;</div>
+    <template id="repeat" is="dom-repeat" items="[[projects]]">
+      <ptm-project project="{{item}}" project-id="[[item.id]]" project-title="[[item.title]]" fields="[[item.fields]]" expanded="true">
+      </ptm-project>
     </template>
-
-    <div class$="[[_computeInputContentClass(noLabelFloat,alwaysFloatLabel,focused,invalid,_inputHasContent)]]">
-      <content select="[prefix]" id="prefix"></content>
-      <div class="label-and-input-container">
-        <content select=":not([add-on]):not([prefix]):not([suffix])"></content>
-      </div>
-      <content select="[suffix]"></content>
-    </div>
-
-    <div class$="[[_computeUnderlineClass(focused,invalid)]]">
-      <div class="unfocused-line fit"></div>
-      <div class="focused-line fit"></div>
-    </div>
-
-    <div class$="[[_computeAddOnContentClass(focused,invalid)]]">
-      <content id="addOnContent" select="[add-on]"></content>
-    </div>
-
-  </template>
-
-</dom-module>
-
-<dom-module id="paper-input-error" assetpath="../bower_components/paper-input/">
-
-  <style>
-
-    :host {
-      display: inline-block;
-      visibility: hidden;
-      float: left;
-
-      color: var(--paper-input-container-invalid-color, --google-red-500);
-
-      @apply(--paper-font-caption);
-      @apply(--paper-input-error);
-    }
-
-    :host([invalid]) {
-      visibility: visible;
-    };
-
-  </style>
-
-  <template>
-
-    <content></content>
-
-  </template>
-
-</dom-module>
-
-<dom-module id="paper-input-char-counter" assetpath="../bower_components/paper-input/">
-
-  <style>
-
-    :host {
-      display: inline-block;
-      float: right;
-
-      @apply(--paper-font-caption);
-      @apply(--paper-input-char-counter);
-    }
-
-  </style>
-
-  <template>
-
-    <span>[[_charCounterStr]]</span>
-
-  </template>
-
-</dom-module>
-
-<dom-module id="paper-input" assetpath="../bower_components/paper-input/">
-
-  <style>
-
-    :host {
-      display: block;
-    }
-
-    input::-webkit-input-placeholder {
-      color: var(--paper-input-container-color, --secondary-text-color);
-    }
-
-    input:-moz-placeholder {
-      color: var(--paper-input-container-color, --secondary-text-color);
-    }
-
-    input::-moz-placeholder {
-      color: var(--paper-input-container-color, --secondary-text-color);
-    }
-
-    input:-ms-input-placeholder {
-      color: var(--paper-input-container-color, --secondary-text-color);
-    }
-
-  </style>
-
-  <template>
-
-    <paper-input-container no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
-
-      <content select="[prefix]"></content>
-
-      <label hidden$="[[!label]]">[[label]]</label>
-
-      <input is="iron-input" id="input" aria-labelledby$="[[_ariaLabelledBy]]" aria-describedby$="[[_ariaDescribedBy]]" disabled$="[[disabled]]" bind-value="{{value}}" invalid="{{invalid}}" prevent-invalid-input="[[preventInvalidInput]]" allowed-pattern="[[allowedPattern]]" validator="[[validator]]" type$="[[type]]" pattern$="[[pattern]]" required$="[[required]]" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" minlength$="[[minlength]]" maxlength$="[[maxlength]]" min$="[[min]]" max$="[[max]]" step$="[[step]]" name$="[[name]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" list$="[[list]]" size$="[[size]]" autocapitalize$="[[autocapitalize]]" autocorrect$="[[autocorrect]]">
-
-      <content select="[suffix]"></content>
-
-      <template is="dom-if" if="[[errorMessage]]">
-        <paper-input-error>[[errorMessage]]</paper-input-error>
-      </template>
-
-      <template is="dom-if" if="[[charCounter]]">
-        <paper-input-char-counter></paper-input-char-counter>
-      </template>
-
-    </paper-input-container>
-
-  </template>
-
-</dom-module>
-
-<dom-module id="ptm-project-linker" assetpath="ptm-project-linker/">
-  <style>
-    :host {
-      position: absolute;
-      z-index: 12;
-      width: 100%;
-      padding: 0 24px;
-      box-sizing: border-box;
-    }
-    iron-icon {
-      width: 16px;
-      height: 16px;
-      padding: 2px 4px 4px 4px;
-    }
-    paper-material {
-      display: none;
-      background-color: var(--default-background-color);
-    }
-    paper-material[show] {
-      display: block;
-    }
-    .accent {
-      color: var(--text-primary-color);
-      background-color: var(--accent-color);
-    }
-    paper-item {
-      cursor: pointer;
-      padding-left: 6px;
-    }
-    paper-item[disabled] {
-      cursor: auto;
-      color: var(--disabled-text-color);
-    }
-    paper-item:not([disabled]):hover {
-      background-color: var(--primary-background-color);
-    }
-    paper-ripple {
-      color: var(--default-primary-color);
-    }
-    .buttons {
-      padding: 10px 5px 10px 10px;
-      @apply(--layout-horizontal);
-      @apply(--layout-end-justified);
-    }
-  </style>
-  <template>
-    <paper-material id="dialog" elevation="4" show$="{{show}}" animated="">
-      <paper-item on-tap="_create">
-        
-        <span class="flex title">Create a new project</span>
-        <paper-icon-button icon="icons:add"></paper-icon-button>
-      </paper-item>
-      <template is="dom-repeat" items="[[projects]]" filter="_filterSessions">
-        <paper-item on-tap="_link" disabled$="[[_isLinked(item)]]">
-          
-          <span class="flex title">[[item.title]]</span>
-          <iron-icon icon$="[[_getLinkedIcon(item)]]"></iron-icon>
-        </paper-item>
-      </template>
-      <div class="buttons">
-        <template is="dom-if" if="{{_showUnlinkIfLinked(linkingProject)}}">
-          <paper-button class="accent" raised="" on-tap="_unlink">Unlink</paper-button>
-        </template>
-        <paper-button on-tap="_onBlur" raised="">Cancel</paper-button>
-      </div>
-    </paper-material>
   </template>
 </dom-module>
 
@@ -3388,17 +5542,267 @@
     }
   </style>
   <template>
-    <paper-dialog id="dialog" entry-animation="scale-up-animation" exit-animation="scale-down-animation" modal="">
+    <paper-dialog id="dialog" modal="">
       <h2>{{line1}}</h2>
       <template is="dom-if" if="{{line2}}">
         <p>{{line2}}</p>
       </template>
       <template is="dom-if" if="{{_isPrompt}}">
-        <paper-input id="input" value="{{answer}}" placeholder="{{placeholder}}"></paper-input>
+        <paper-input id="input" value="{{answer}}" placeholder="{{placeholder}}" autofocus=""></paper-input>
       </template>
       <div class="buttons">
-        <paper-button class="accent" raised="" on-tap="_onConfirmed">{{okay}}</paper-button>
         <paper-button raised="" on-tap="_onCanceled">{{cancel}}</paper-button>
+        <paper-button class="accent" raised="" on-tap="_onConfirmed">{{okay}}</paper-button>
+      </div>
+    </paper-dialog>
+  </template>
+</dom-module>
+
+<dom-module id="paper-dropdown-menu" assetpath="../bower_components/paper-dropdown-menu/">
+  <template>
+    <style>
+      :host {
+        display: inline-block;
+        position: relative;
+        text-align: left;
+        cursor: pointer;
+
+        /* NOTE(cdata): Both values are needed, since some phones require the
+         * value to be `transparent`.
+         */
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+        -webkit-tap-highlight-color: transparent;
+
+        --paper-input-container-input: {
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          max-width: 100%;
+          box-sizing: border-box;
+          cursor: pointer;
+        };
+
+        @apply(--paper-dropdown-menu);
+      }
+
+      :host([disabled]) {
+        @apply(--paper-dropdown-menu-disabled);
+      }
+
+      :host([noink]) paper-ripple {
+        display: none;
+      }
+
+      :host([no-label-float]) paper-ripple {
+        top: 8px;
+      }
+
+      paper-ripple {
+        top: 12px;
+        left: 0px;
+        bottom: 8px;
+        right: 0px;
+
+        @apply(--paper-dropdown-menu-ripple);
+      }
+
+      paper-menu-button {
+        display: block;
+        padding: 0;
+
+        @apply(--paper-dropdown-menu-button);
+      }
+
+      paper-input {
+        @apply(--paper-dropdown-menu-input);
+      }
+
+      iron-icon {
+        color: var(--disabled-text-color);
+
+        @apply(--paper-dropdown-menu-icon);
+      }
+    </style>
+
+    <!-- this div fulfills an a11y requirement for combobox, do not remove -->
+    <div role="button"></div>
+    <paper-menu-button id="menuButton" vertical-align="[[verticalAlign]]" horizontal-align="[[horizontalAlign]]" vertical-offset="[[_computeMenuVerticalOffset(noLabelFloat)]]" disabled="[[disabled]]" no-animations="[[noAnimations]]" on-iron-select="_onIronSelect" on-iron-deselect="_onIronDeselect" opened="{{opened}}">
+      <div class="dropdown-trigger">
+        <paper-ripple></paper-ripple>
+        <!-- paper-input has type="text" for a11y, do not remove -->
+        <paper-input type="text" invalid="[[invalid]]" readonly="" disabled="[[disabled]]" value="[[selectedItemLabel]]" placeholder="[[placeholder]]" always-float-label="[[alwaysFloatLabel]]" no-label-float="[[noLabelFloat]]" label="[[label]]">
+          <iron-icon icon="arrow-drop-down" suffix=""></iron-icon>
+        </paper-input>
+      </div>
+      <content id="content" select=".dropdown-content"></content>
+    </paper-menu-button>
+  </template>
+
+  </dom-module>
+<dom-module id="paper-toggle-button" assetpath="../bower_components/paper-toggle-button/">
+  <template strip-whitespace="">
+
+    <style>
+      :host {
+        display: inline-block;
+      }
+
+      :host([disabled]) {
+        pointer-events: none;
+      }
+
+      :host(:focus) {
+        outline:none;
+      }
+
+      .toggle-bar {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        border-radius: 8px;
+        pointer-events: none;
+        opacity: 0.4;
+        transition: background-color linear .08s;
+        background-color: var(--paper-toggle-button-unchecked-bar-color, #000000);
+        @apply(--paper-toggle-button-unchecked-bar);
+      }
+
+      .toggle-button {
+        position: absolute;
+        top: -3px;
+        height: 20px;
+        width: 20px;
+        border-radius: 50%;
+        box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.6);
+        transition: -webkit-transform linear .08s, background-color linear .08s;
+        transition: transform linear .08s, background-color linear .08s;
+        will-change: transform;
+        background-color: var(--paper-toggle-button-unchecked-button-color, --paper-grey-50);
+        @apply(--paper-toggle-button-unchecked-button);
+      }
+
+      .toggle-button.dragging {
+        -webkit-transition: none;
+        transition: none;
+      }
+
+      :host([checked]:not([disabled])) .toggle-bar {
+        opacity: 0.5;
+        background-color: var(--paper-toggle-button-checked-bar-color, --default-primary-color);
+        @apply(--paper-toggle-button-checked-bar);
+      }
+
+      :host([disabled]) .toggle-bar {
+        background-color: #000;
+        opacity: 0.12;
+      }
+
+      :host([checked]) .toggle-button {
+        -webkit-transform: translate(16px, 0);
+        transform: translate(16px, 0);
+      }
+
+      :host([checked]:not([disabled])) .toggle-button {
+        background-color: var(--paper-toggle-button-checked-button-color, --default-primary-color);
+        @apply(--paper-toggle-button-checked-button);
+      }
+
+      :host([disabled]) .toggle-button {
+        background-color: #bdbdbd;
+        opacity: 1;
+      }
+
+      .toggle-ink {
+        position: absolute;
+        top: -14px;
+        left: -14px;
+        width: 48px;
+        height: 48px;
+        opacity: 0.5;
+        pointer-events: none;
+        color: var(--paper-toggle-button-unchecked-ink-color, --primary-text-color);
+      }
+
+      :host([checked]) .toggle-ink {
+        color: var(--paper-toggle-button-checked-ink-color, --default-primary-color);
+      }
+
+      .toggle-container {
+        display: inline-block;
+        position: relative;
+        width: 36px;
+        height: 14px;
+      }
+
+      .toggle-label {
+        position: relative;
+        top: -2px;
+        display: inline-block;
+        vertical-align: middle;
+        padding-left: var(--paper-toggle-button-label-spacing, 8px);
+        white-space: normal;
+        pointer-events: none;
+        color: var(--paper-toggle-button-label-color, --primary-text-color);
+      }
+    </style>
+
+    <div class="toggle-container">
+      <div id="toggleBar" class="toggle-bar"></div>
+      <div id="toggleButton" class="toggle-button"></div>
+    </div>
+
+    <div class="toggle-label"><content></content></div>
+
+  </template>
+
+  </dom-module>
+<dom-module id="ptm-options" assetpath="ptm-options/">
+  <style>
+    iron-icon {
+      width: 16px;
+      height: 16px;
+      margin-right: 4px;
+    }
+    paper-item {
+      cursor: pointer;
+      padding: 0 24px;
+      margin: 0;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    p {
+      color: var(--secondary-text-color);
+    }
+    .accent {
+      color: var(--text-primary-color);
+      background-color: var(--accent-color);
+    }
+    .buttons {
+      padding: 10px 5px 10px 10px;
+      @apply(--layout-horizontal);
+      @apply(--layout-end-justified);
+    }
+  </style>
+  <template>
+    <paper-dialog id="dialog" modal="">
+      <h2>{{_l10n('settings')}}</h2>
+      <paper-dialog-scrollable>
+        <p>{{_l10n('root_folder_location_help')}}</p>
+        <paper-dropdown-menu id="root" label="{{_l10n('root_folder_location')}}">
+          <paper-menu class="dropdown-content" selected="[[rootParent]]">
+            <template is="dom-repeat" items="[[rootFolders]]">
+              <paper-item>{{item.title}}</paper-item>
+            </template>
+          </paper-menu>
+        </paper-dropdown-menu><br>
+        <paper-input id="rootName" value="{{rootName}}" label="{{_l10n('root_folder_name')}}"></paper-input>
+        <p>{{_l10n('disable_lazy_load_help')}}</p>
+        <paper-toggle-button id="lazyLoad" checked="{{lazyLoad}}">{{_l10n('disable_lazy_load')}}</paper-toggle-button>
+      </paper-dialog-scrollable>
+      <div class="buttons">
+        <paper-button on-tap="close" raised="">{{_l10n('cancel')}}</paper-button>
+        <paper-button class="accent" on-tap="save" raised="">{{_l10n('save')}}</paper-button>
       </div>
     </paper-dialog>
   </template>
@@ -3406,6 +5810,9 @@
 
 <dom-module id="ptm-app" assetpath="ptm-app/">
   <style>
+    *:focus {
+      outline: none;
+    }
     paper-header-panel {
       min-height: 400px;
       overflow-y: hidden;
@@ -3415,21 +5822,28 @@
       --paper-input-container-focus-color: rgba(255, 255, 255, 1);
       --paper-input-container-input-color: var(--default-background-color);
     }
-    .paper-header {
-      background-color: var(--default-primary-color);
+    paper-menu {
+      width: 130px;
+      padding: 8px 0;
+    }
+    paper-material paper-item {
+      cursor: pointer;
+      padding: 0 10px;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
     }
     .toolbar-header {
       @apply(--layout-horizontal);
       @apply(--layout-center);
       margin: 0 4px -8px 16px;
     }
-    .paper-header paper-icon-button {
+    .paper-header {
+      background-color: var(--default-primary-color);
+    }
+    paper-menu-button paper-icon-button {
       color: var(--text-primary-color);
       margin-left: 4px;
-    }
-    .paper-header .bottom {
-      @apply(--layout-horizontal);
-      @apply(--layout-center);
     }
     .loading {
       @apply(--layout-horizontal);
@@ -3447,26 +5861,39 @@
       <div class="paper-header">
         <div class="toolbar-header">
           <paper-input placeholder="Project Tab Manager" class="flex" value="{{query}}"></paper-input>
-          <paper-icon-button icon="icons:more-vert" tabindex="-1"></paper-icon-button>
+          <paper-menu-button id="menu" horizontal-align="right" vertical-offset="2">
+            <paper-icon-button icon="icons:more-vert" class="dropdown-trigger" tabindex="-1"></paper-icon-button>
+            <paper-material class="dropdown-content">
+              <paper-item on-tap="reload">{{_l10n('reload')}}</paper-item>
+              <paper-item on-tap="manageBookmarks">{{_l10n('manage_bookmarks')}}</paper-item>
+              <paper-item on-tap="openHistory">{{_l10n('history')}}</paper-item>
+              <paper-item on-tap="openSettings">{{_l10n('settings')}}</paper-item>
+              <paper-item on-tap="openHelp">{{_l10n('help')}}</paper-item>
+            </paper-material>
+          </paper-menu-button>
         </div>
         <paper-tabs class="flex" selected="{{selected}}" tabindex="-1">
-          <paper-tab tabindex="-1">Sessions</paper-tab>
-          <paper-tab tabindex="-1">Projects</paper-tab>
+          <paper-tab tabindex="-1">{{_l10n('sessions')}}</paper-tab>
+          <paper-tab tabindex="-1">{{_l10n('projects')}}</paper-tab>
         </paper-tabs>
       </div>
+      <iron-meta id="meta" type="dialog"></iron-meta>
+      <ptm-project-linker id="linker" projects="[[projectManager.projects]]" on-create-project="_createProject" on-link-project="_linkProject" on-unlink-project="_unlinkProject"></ptm-project-linker>
+      <ptm-options id="options"></ptm-options>
       <iron-pages id="pages" selected="[[selected]]">
-        <ptm-session-list query="[[query]]" project-manager="[[projectManager]]">
+        <ptm-session-list projects="[[projectManager.projects]]" project-manager="[[projectManager]]" on-open-clicked="_openProject" on-remove-clicked="_removeSession">
         </ptm-session-list>
-        <ptm-project-list query="[[query]]" project-manager="[[projectManager]]">
+        <ptm-project-list projects="[[projectManager.projects]]" project-manager="[[projectManager]]" on-open-clicked="_openProject" on-rename-clicked="_renameProject" on-remove-clicked="_removeProject">
         </ptm-project-list>
         <div class="fit loading">
           <paper-spinner active=""></paper-spinner>
         </div>
+        <ptm-search-list projects="[[searchResults]]" project-manager="[[projectManager]]" on-open-clicked="_openProject">
+        </ptm-search-list>
       </iron-pages>
       <paper-toast id="toast" duration="3000" text="{{toastText}}"></paper-toast>
     </paper-header-panel>
   </template>
 </dom-module>
 
-</div>
-<script src="vulcanized.elements.js"></script></body></html>
+</div><script src="vulcanized.elements.js"></script></body></html>

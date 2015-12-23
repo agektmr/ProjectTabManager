@@ -1,0 +1,152 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../chrome-i18n/chrome-i18n.html">
+
+<dom-module id="ptm-options">
+  <style>
+    iron-icon {
+      width: 16px;
+      height: 16px;
+      margin-right: 4px;
+    }
+    paper-item {
+      cursor: pointer;
+      padding: 0 24px;
+      margin: 0;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    p {
+      color: var(--secondary-text-color);
+    }
+    .accent {
+      color: var(--text-primary-color);
+      background-color: var(--accent-color);
+    }
+    .buttons {
+      padding: 10px 5px 10px 10px;
+      @apply(--layout-horizontal);
+      @apply(--layout-end-justified);
+    }
+  </style>
+  <template>
+    <paper-dialog id="dialog" modal>
+      <h2>{{_l10n('settings')}}</h2>
+      <paper-dialog-scrollable>
+        <p>{{_l10n('root_folder_location_help')}}</p>
+        <paper-dropdown-menu id="root" label="{{_l10n('root_folder_location')}}">
+          <paper-menu class="dropdown-content" selected="[[rootParent]]">
+            <template is="dom-repeat" items="[[rootFolders]]">
+              <paper-item>{{item.title}}</paper-item>
+            </template>
+          </paper-menu>
+        </paper-dropdown-menu><br/>
+        <paper-input id="rootName" value="{{rootName}}" label="{{_l10n('root_folder_name')}}"></paper-input>
+        <p>{{_l10n('disable_lazy_load_help')}}</p>
+        <paper-toggle-button id="lazyLoad" checked="{{lazyLoad}}">{{_l10n('disable_lazy_load')}}</paper-toggle-button>
+      </paper-dialog-scrollable>
+      <div class="buttons">
+        <paper-button on-tap="close" raised>{{_l10n('cancel')}}</paper-button>
+        <paper-button class="accent" on-tap="save" raised>{{_l10n('save')}}</paper-button>
+      </div>
+    </paper-dialog>
+  </template>
+</dom-module>
+
+<script>
+  Polymer({
+    is: 'ptm-options',
+    properties: {
+      lazyLoad: {
+        type: Boolean,
+        value: true
+      },
+      rootName: {
+        type: String,
+        value: 'Project Tab Manager'
+      },
+      rootParent: {
+        type: Number,
+        value: 1
+      },
+      rootParentId: {
+        type: String,
+        value: '2'
+      },
+      rootFolders: {
+        type: Object,
+        value: function() {
+          return [];
+        }
+      },
+      debug: {
+        type: Boolean,
+        value: true
+      }
+    },
+    behaviors: [
+      ChromeI18n
+    ],
+    ready: function() {
+      chrome.bookmarks.getSubTree('0', bookmarks => {
+        this.rootFolders = bookmarks[0].children;
+      });
+
+      // fat arrow doesn't seem to work for this
+      chrome.storage.sync.get((function(items) {
+        if (chrome.runtime.lastError) {
+          console.error(chrome.runtime.lastError.message);
+        } else {
+          var conf = items.config || {};
+          this.rootParentId = conf.rootParentId || this.rootParentId;
+          this.rootParent   = this.rootParentId - 1;
+          this.rootName     = conf.rootName     || this.rootName;
+          this.lazyLoad = conf.lazyLoad !== undefined ? conf.lazyLoad : this.lazyLoad;
+          if (this.debug) console.log('[Config] initialization finished');
+        }
+      }).bind(this));
+
+      var manifest = chrome.runtime.getManifest();
+      if (manifest.key !== undefined) {
+        // If there's a key property exists in manifest, this is production
+        this.debug = false;
+      }
+    },
+    open: function() {
+      this.$.dialog.open();
+    },
+    save: function() {
+      var rootParentId = (this.rootParent+1)+'';
+      chrome.storage.sync.set({config: {
+        lazyLoad:     this.lazyLoad,
+        rootParentId: rootParentId,
+        rootName:     this.rootName
+      }}, () => {
+        if (chrome.runtime.lastError) {
+          this.fire('show-toast', {
+            text: chrome.runtime.lastError.message
+          });
+          console.error(chrome.runtime.lastError.message);
+        } else {
+          this.fire('show-toast', {
+            text: 'Options saved.'
+          });
+          console.log('sessions stored.', this.lazyLoad, this.rootParentId, this.rootName);
+          this.close();
+        }
+      });
+    },
+    close: function() {
+      this.$.dialog.close();
+    }
+  })
+</script>

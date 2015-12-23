@@ -1,5 +1,5 @@
 var BookmarkManager = (function() {
-  'use strict'
+  'use strict';
 
   var config_ = null;
 
@@ -143,7 +143,7 @@ var BookmarkManager = (function() {
             });
           }
         }, reject);
-      })
+      });
     }
 
     /**
@@ -151,7 +151,7 @@ var BookmarkManager = (function() {
      * @param  {[type]} bookmarkId [description]
      */
     openEditWindow(bookmarkId) {
-      chrome.tabs.create({url:'chrome://bookmarks#' + (bookmarkId || this.rootId)});
+      chrome.tabs.create({url: 'chrome://bookmarks#' + (bookmarkId || this.rootId)});
     }
 
     /**

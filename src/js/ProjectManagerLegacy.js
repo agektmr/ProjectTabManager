@@ -1,6 +1,4 @@
 var ProjectManager = (function() {
-  'use strict';
-
   var config_ = null;
 
   /**
@@ -12,7 +10,7 @@ var ProjectManager = (function() {
   var normalizeBookmarks = function(src, dst) {
     src = src || [];
     dst = dst || [];
-    for (let i = 0; i < src.length; i++) {
+    for (var i = 0; i < src.length; i++) {
       if (src[i].url) {
         dst.push(src[i]);
       } else if (src[i].children.length > 0) {
@@ -28,45 +26,42 @@ var ProjectManager = (function() {
    * @param {TabEntity}                         tab      [description]
    * @param {chrome.bookmarks.BookmarkTreeNode} bookmark [description]
    */
-  class FieldEntity {
-    constructor(tab, bookmark) {
-      let url         = util.unlazify(tab && tab.url || bookmark.url);
+  var FieldEntity = function(tab, bookmark) {
+    var url         = util.unlazify(tab && tab.url || bookmark.url);
 
-      this.id         = bookmark && bookmark.id || undefined;
-      this.tabId      = tab && tab.id || undefined;
-      // this.index      = tab && tab.index || undefined; // TODO: what if index==0
-      this.title      = tab && tab.title || bookmark.title;
-      this.url        = url;
-      this.pinned     = tab && tab.pinned || false;
-      this.favIconUrl = tab && tab.favIconUrl;
-    }
-  }
+    this.id         = bookmark && bookmark.id || undefined;
+    this.tabId      = tab && tab.id || undefined;
+    // this.index      = tab && tab.index || undefined; // TODO: what if index==0
+    this.title      = tab && tab.title || bookmark.title;
+    this.url        = url;
+    this.pinned     = tab && tab.pinned || false;
+    this.favIconUrl = tab && tab.favIconUrl;
+  };
 
   /**
    * [ProjectEntity description]
    * @param {SessionEntity}                     session [description]
    * @param {chrome.bookmarks.BookmarkTreeNode} folder  [description]
    */
-  class ProjectEntity {
-    constructor(session, bookmark) {
-      this.id           = (bookmark && bookmark.id) || (session && session.id) || '0';
-      this.fields       = [];
-      this.session      = session;
-      this.bookmark     = bookmark;
-      this.title        = (bookmark && bookmark.title) || (session && session.title) || chrome.i18n.getMessage('new_project');
+  var ProjectEntity = function(session, bookmark, callback) {
+    this.id           = (bookmark && bookmark.id) || (session && session.id) || '0';
+    this.fields       = [];
+    this.session      = session;
+    this.bookmark     = bookmark;
+    this.title        = (bookmark && bookmark.title) || (session && session.title) || chrome.i18n.getMessage('new_project');
 
-      // Set project id on session only when both session and bookmaks are available
-      if (this.session && this.bookmark) {
-        this.session.setId(this.bookmark.id);
-      }
-      this.load(session && session.tabs || [], bookmark && bookmark.children || []);
+    // Set project id on session only when both session and bookmaks are available
+    if (this.session && this.bookmark) {
+      this.session.setId(this.bookmark.id);
     }
-
+    this.load(session && session.tabs || [], bookmark && bookmark.children || [], callback);
+  };
+  ProjectEntity.prototype = {
     /**
      * [open description]
      * @return {[type]}            [description]
      */
-    open() {
+    open: function() {
       sessionManager.openingProject = this.id;
       // If there's no fields, open an empty window
       if (this.fields.length === 0) {
@@ -89,50 +84,49 @@ var ProjectManager = (function() {
       } else if (this.bookmark) {
         if (config_.debug) console.log('[ProjectEntity] Opening bookmarks', this.bookmark);
 
-        let bookmarks = normalizeBookmarks(this.bookmark.children, []);
+        var bookmarks = normalizeBookmarks(this.bookmark.children, []);
 
         // open first tab with window
         chrome.windows.create({
           url: bookmarks[0].url,
           focused: true
-        }, win => {
+        }, (function(win) {
           // open bookmarks in window
-          bookmarks.forEach((bookmark, i) => {
+          bookmarks.forEach((function(bookmark, i) {
             if (!bookmark || i === 0) return; // skip if undefined or first bookmark (since it's already open)
             if (bookmark.url === undefined) return; // skip if a folder
-            let url = config_.lazyLoad ? bookmark.url : util.lazify(bookmark.url, bookmark.title);
+            var url = config_.lazyLoad ? bookmark.url : util.lazify(bookmark.url, bookmark.title);
             chrome.tabs.create({
               windowId: win.id,
               url:      url,
               active:   false
             });
-          });
-        });
+          }).bind(this));
+        }).bind(this));
       }
-    }
+    },
 
     /**
      * Rename project
      */
-    rename(name) {
-      return new Promise((resolve, reject) => {
-        name = name + '';
-        if (name.length === 0) resolve();
-        this.title = name + '';
-        if (!this.bookmark) {
-          bookmarkManager.addFolder(name).then(folder => {
-            this.id       = folder.id;
-            this.bookmark = folder;
-            if (this.session) {
-              this.session.setId(folder.id);
-            }
-            resolve();
-          });
-        } else {
-          bookmarkManager.renameFolder(this.id, name).then(resolve);
-        }
-      });
-    }
+    rename: function(name, callback) {
+      var that = this;
+      name = name+'';
+      if (name.length === 0) callback();
+      this.title = name+'';
+      if (!this.bookmark) {
+        bookmarkManager.addFolder(name).then(function(folder) {
+          that.id       = folder.id;
+          that.bookmark = folder;
+          if (that.session) {
+            that.session.setId(folder.id);
+          }
+          callback();
+        });
+      } else {
+        bookmarkManager.renameFolder(this.id, name).then(callback);
+      }
+    },
 
     /**
      * [load description]
@@ -140,16 +134,16 @@ var ProjectManager = (function() {
      * @param  {Array}            bookmarks Array of chrome.bookmarks.BookmarkTreeNode
      * @return {[type]}             [description]
      */
-    load(tabs, bookmarks) {
+    load: function(tabs, bookmarks) {
       tabs = tabs || [];
       bookmarks = bookmarks || [];
       this.fields = [];
-      let copy = normalizeBookmarks(bookmarks, []),
+      var copy = normalizeBookmarks(bookmarks, []),
           j;
 
       // Loop through tabs
-      for (let i = 0; i < tabs.length; i++) {
-        let tab = tabs[i],
+      for (var i = 0; i < tabs.length; i++) {
+        var tab = tabs[i];
             bookmark = null;
 
         if (tab.url.match(util.CHROME_EXCEPTION_URL)) continue;
@@ -165,23 +159,22 @@ var ProjectManager = (function() {
       for (j = 0; j < copy.length; j++) {
         this.fields.push(new FieldEntity(undefined, copy[j]));
       }
-    }
+    },
 
     /**
      * Adds bookmark of given tab id
      * @param {Integer}         tabId
+     * @param {requestCallback} callback
      */
-    addBookmark(tabId) {
-      let mergeBookmark = bookmark => {
-        return new Promise((resolve, reject) => {
-          this.bookmark = bookmarkManager.getFolder(bookmark.parentId);
-          this.load(this.session.tabs, this.bookmark.children);
-          resolve(bookmark);
-        });
+    addBookmark: function(tabId, callback) {
+      var that = this;
+      var mergeBookmark = function(callback, bookmark) {
+        this.bookmark = bookmarkManager.getFolder(bookmark.parentId);
+        this.load(this.session.tabs, this.bookmark.children);
+        callback(bookmark);
       };
-
-      let url = '', title = '';
-      for (let i = 0; i < this.fields.length; i++) {
+      var url = '', title = '';
+      for (var i = 0; i < this.fields.length; i++) {
         if (this.fields[i].tabId === tabId) {
           title = this.fields[i].title;
           url   = this.fields[i].url;
@@ -192,33 +185,34 @@ var ProjectManager = (function() {
         throw "Unsync session. Adding bookmark failed because relevant tab counld't be found";
       }
       if (!this.bookmark) {
-        bookmarkManager.addFolder(this.title).then(folder => {
-          this.id       = folder.id;
-          this.bookmark = folder;
-          if (this.session) {
-            this.session.setId(folder.id);
+        bookmarkManager.addFolder(this.title).then(function(folder) {
+          that.id       = folder.id;
+          that.bookmark = folder;
+          if (that.session) {
+            that.session.setId(folder.id);
           }
-          return bookmarkManager.addBookmark(this.id, title, url).then(mergeBookmark);
+          bookmarkManager.addBookmark(that.id, title, url).then(mergeBookmark.bind(that, callback));
         });
       } else {
-        return bookmarkManager.addBookmark(this.id, title, url).then(mergeBookmark);
+        bookmarkManager.addBookmark(this.id, title, url).then(mergeBookmark.bind(this, callback));
       }
-    }
+    },
 
     /**
      * Opens this bookmark folder's edit window
      */
-    openBookmarkEditWindow() {
+    openBookmarkEditWindow: function() {
       bookmarkManager.openEditWindow(this.id);
-    }
+    },
 
     /**
      * Removes bookmark of given bookmark id
      * @param {Integer}         bookmarkId
+     * @param {requestCallback} callback
      */
-    removeBookmark(bookmarkId) {
-      return bookmarkManager.removeBookmark(bookmarkId);
-    }
+    removeBookmark: function(bookmarkId, callback) {
+      bookmarkManager.removeBookmark(bookmarkId).then(callback);
+    },
 
     /**
      * Associates a project with bookmark entity. Use when:
@@ -226,20 +220,20 @@ var ProjectManager = (function() {
      * @param  {[type]} folder [description]
      * @return {[type]}        [description]
      */
-    associateBookmark(folder) {
+    associateBookmark: function(folder) {
       this.id = folder.id; // Overwrite project id
       if (config_.debug) console.log('[ProjectEntity] associated bookmark', folder);
       this.bookmark = folder;
       this.session.setId(this.id); // Overwrite project id
       this.load(this.session.tabs, this.bookmark.children);
-    }
+    },
 
     /**
      * Remove association of a project with bookmark entity. Use when:
      * - unlinking bookmark with a session
      * - abondoning a session from linked project
      */
-    deassociateBookmark() {
+    deassociateBookmark: function() {
       this.id = '-'+this.session.id;
       if (config_.debug) console.log('[ProjectEntity] deassociated bookmark', this.bookmark);
       this.bookmark = null;
@@ -253,165 +247,160 @@ var ProjectManager = (function() {
    * [ProjectManager description]
    * @param {[type]} config [description]
    */
-  class ProjectManager {
-    constructor(config) {
-      config_ = config;
-      this.projects = [];
-    }
-
+  var ProjectManager = function(config) {
+    config_ = config;
+    this.projects = [];
+  };
+  ProjectManager.prototype = {
     /**
      * [saveNewProject description]
      * @param  {[type]} id    project id
      * @param  {[type]} title optional title
      * @return {[type]}       [description]
      */
-    createProject(id, title) {
-      return new Promise((resolve, reject) => {
-        let project = this.getProjectFromId(id);
+    createProject: function(id, title, callback) {
+      var that = this;
+      var project = this.getProjectFromId(id);
 
-        if (!project || !project.session) {
-          throw '[ProjectManager] Session not found when creating new project';
+      if (!project || !project.session) {
+        throw '[ProjectManager] Session not found when creating new project';
+      }
+      var session = project.session;
+      title = title || session.title;
+
+      bookmarkManager.addFolder(title).then(function(folder) {
+        for (var i = 0; i < session.tabs.length; i++) {
+          var title = session.tabs[i].title;
+          var url   = session.tabs[i].url;
+          bookmarkManager.addBookmark(folder.id, title, url);
         }
-        let session = project.session;
-        title = title || session.title;
+        // Create new project
+        var new_project = new ProjectEntity(session, folder);
+        // Remove non-bound session project
+        that.removeProject(id);
+        // Add the new project to list
+        that.projects.unshift(new_project);
 
-        bookmarkManager.addFolder(title).then(folder => {
-          for (let i = 0; i < session.tabs.length; i++) {
-            let title = session.tabs[i].title;
-            let url   = session.tabs[i].url;
-            bookmarkManager.addBookmark(folder.id, title, url);
-          }
-          // Create new project
-          let new_project = new ProjectEntity(session, folder);
-          // Remove non-bound session project
-          this.removeProject(id);
-          // Add the new project to list
-          this.projects.unshift(new_project);
-
-          if (config_.debug) console.log('[ProjectManager] created new project', new_project);
-          resolve(new_project);
-        });
+        if (config_.debug) console.log('[ProjectManager] created new project', new_project);
+        if (typeof callback === 'function') callback(new_project);
       });
-    }
+    },
 
     /**
      * Gets Project of given project id
      * @param  {String} id
      * @return {ProjectEntity|undefined}
      */
-    getProjectFromId(id) {
-      for (let i = 0; i < this.projects.length; i++) {
+    getProjectFromId: function(id) {
+      for (var i = 0; i < this.projects.length; i++) {
         if (this.projects[i].id === id) {
           return this.projects[i];
         }
       }
       return undefined;
-    }
+    },
 
     /**
      * Gets project of given window id
      * @param  {Integer} winId
      * @return {ProjectEntity|undefined}
      */
-    getProjectFromWinId(winId) {
-      let session = null;
-      for (let i = 0; i < this.projects.length; i++) {
+    getProjectFromWinId: function(winId) {
+      var session = null;
+      for (var i = 0; i < this.projects.length; i++) {
         session = this.projects[i].session;
         if (session && session.winId === winId) {
           return this.projects[i];
         }
       }
       return undefined;
-    }
+    },
 
     /**
      * Renames project of given project id
      * @param  {String} project id
      * @return void
      */
-    renameProject(id, title) {
-      return new Promise((resolve, reject) => {
-        let project = this.getProjectFromId(id);
-        if (project) {
-          project.rename(title).then(resolve);
-        } else {
-          throw `Project ${id} not found`;
-        }
-      });
-    }
+    renameProject: function(id, title, callback) {
+      var project = this.getProjectFromId(id);
+      if (project) {
+        project.rename(title, callback);
+      } else {
+        throw 'Project '+id+' not found';
+      }
+    },
 
     /**
      * Removes a project from bookmark
      * @param  {String}           id        [description]
      * @param  {requestCallback}  callback  [description]
      */
-    removeProject(id) {
-      return new Promise((resolve, reject) => {
-        for (let i = 0; i < this.projects.length; i++) {
-          if (this.projects[i].id === id) {
-            // Remove project from list first
-            let project = this.projects.splice(i, 1)[0];
-            // Then remove bookmark if exists (otherwise non-bound session)
-            if (project.bookmark) {
-              bookmarkManager.archiveFolder(id).then(() => resolve(project));
-              if (config_.debug) console.log('[ProjectManager] removed project %s from bookmark', id);
-            } else {
-              // non-bound session should be removed from session list as well
-              sessionManager.removeSessionFromProjectId(id);
-              resolve();
-            }
+    removeProject: function(id, callback) {
+      for (var i = 0; i < this.projects.length; i++) {
+        if (this.projects[i].id === id) {
+          // Remove project from list first
+          var project = this.projects.splice(i, 1)[0];
+          // Then remove bookmark if exists (otherwise non-bound session)
+          if (project.bookmark) {
+            bookmarkManager.archiveFolder(id).then(function() {
+              if (typeof callback === 'function') callback(project);
+            });
+            if (config_.debug) console.log('[ProjectManager] removed project %s from bookmark', id);
+          } else {
+            // non-bound session should be removed from session list as well
+            sessionManager.removeSessionFromProjectId(id);
+            if (typeof callback === 'function') callback(project);
           }
         }
-      });
-    }
+      }
+    },
 
     /**
      * Removes session part of the project
      * @param  {String}           id       [description]
      * @param  {requestCallback}  callback [description]
      */
-    removeSession(id) {
-      return new Promise((resolve, reject) => {
-        for (let i = 0; i < this.projects.length; i++) {
-          if (this.projects[i].id === id) {
-            this.projects[i].deassociateBookmark();
-            this.removeProject(this.projects[i].id).then(resolve);
-            break;
-          }
+    removeSession: function(id, callback) {
+      for (var i = 0; i < this.projects.length; i++) {
+        if (this.projects[i].id === id) {
+          this.projects[i].deassociateBookmark();
+          this.removeProject(this.projects[i].id, callback);
+          break;
         }
-      });
-    }
+      }
+    },
 
     /**
      * [getActiveProject description]
      * @return {[type]} [description]
      */
-    getActiveProject() {
-      let winId = sessionManager.getCurrentWindowId();
+    getActiveProject: function() {
+      var winId = sessionManager.getCurrentWindowId();
       if (winId) {
-        let project = this.getProjectFromWinId(winId);
+        var project = this.getProjectFromWinId(winId);
         if (config_.debug) console.log('[SessionManager] Got active project', project);
         return project;
       }
       return undefined;
-    }
+    },
 
     /**
      * [getCurrentWindowId description]
      * @return {[type]} [description]
      */
-    getActiveWindowId() {
+    getActiveWindowId: function() {
       return sessionManager.getCurrentWindowId();
-    }
+    },
 
     /**
      * [update description]
      * @return {[type]} [description]
      */
-    update(force_reload, callback) {
+    update: function(force_reload, callback) {
+      var that = this;
       if (config_.debug) console.log('[ProjectManager] Starting to generate project list');
       this.projects = [];
-      let session, project, i, j,
+      var session, project, i, j,
           sessions = sessionManager.getSessions().slice(0);
 
       // Append non-bound sessions first
@@ -423,10 +412,10 @@ var ProjectManager = (function() {
         this.projects.push(project);
         if (config_.debug) console.log('[ProjectManager] Project %s: %o created non-bound session: %o', project.id, project, session);
       }
-      bookmarkManager.getRoot(force_reload).then(bookmarks => {
+      bookmarkManager.getRoot(force_reload).then(function(bookmarks) {
         // Loop through all sessions
         for (i = 0; i < bookmarks.length; i++) {
-          let found = false,
+          var found = false,
               bookmark = bookmarks[i];
 
           // Skip Archives folder
@@ -439,22 +428,22 @@ var ProjectManager = (function() {
               break;
             }
           }
-          let project = new ProjectEntity(session, bookmark);
-          this.projects.push(project);
+          var project = new ProjectEntity(session, bookmark);
+          that.projects.push(project);
           if (config_.debug) console.log('[ProjectManager] Project %s: %o created from session: %o and bookmark: %o', project.id, project, session, bookmark);
         }
 
-        if (typeof callback === 'function') callback(this);
+        if (typeof callback === 'function') callback(that);
       });
-    }
+    },
 
     /**
      * [openBookmarkEditWindow description]
      * @param  {String} bookmarkId
      */
-    openBookmarkEditWindow(bookmarkId) {
+    openBookmarkEditWindow: function(bookmarkId) {
       bookmarkManager.openEditWindow(bookmarkId);
-    }
+    },
 
     /**
      * [getTimeTable description]
@@ -462,20 +451,20 @@ var ProjectManager = (function() {
      * @param  {Function} callback [description]
      * @return {[type]}            [description]
      */
-    getTimeTable(date, callback) {
-      sessionManager.getTimeTable(date, table => {
-        table.forEach(session => {
+    getTimeTable: function(date, callback) {
+      sessionManager.getTimeTable(date, (function(table) {
+        table.forEach((function(session) {
           if (session.id) {
-            let project = this.getProjectFromId(session.id);
-            let _session = sessionManager.getSessionFromProjectId(session.id);
+            var project = this.getProjectFromId(session.id);
+            var _session = sessionManager.getSessionFromProjectId(session.id);
             session.title = project && project.title || _session && _session.title;
           } else {
             session.title = 'Unknown';
           }
-        });
+        }).bind(this));
         callback(table);
-      });
-    }
+      }).bind(this));
+    },
 
     /**
      * [getSummary description]
@@ -484,20 +473,19 @@ var ProjectManager = (function() {
      * @param  {Function} callback [description]
      * @return {[type]}            [description]
      */
-    getSummary(start, end, callback) {
-      sessionManager.getSummary(start, end, summary => {
-        for (let id in summary) {
-          let title = 'Unknown';
-          let project = this.getProjectFromId(id);
+    getSummary: function(start, end, callback) {
+      sessionManager.getSummary(start, end, (function(summary) {
+        for (var id in summary) {
+          var title = 'Unknown';
+          var project = this.getProjectFromId(id);
           if (project) {
             title = project.title;
           }
           summary[id].title = title;
         }
         callback(summary);
-      });
+      }).bind(this));
     }
   };
-
   return ProjectManager;
 })();

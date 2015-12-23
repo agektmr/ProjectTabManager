@@ -101,5 +101,22 @@ var util = {
     var UTCMidnight = date.getTime();
     var TimezoneOffset = date.getTimezoneOffset() * 60 * 1000;
     return UTCMidnight + TimezoneOffset;
-  }
+  },
+
+  /**
+   * Deep copies an array
+   * @param  {Array}  array     an array to deep copy
+   * @return {Promise}          A promise
+   */
+  deepCopy: (function() {
+    return function(array) {
+      var mc = new MessageChannel;
+      return new Promise(function(resolve) {
+        mc.port1.onmessage = resolve;
+        mc.port2.postMessage(array);
+      }).then(function(e) {
+        return e.data;
+      });
+    }
+  })()
 };

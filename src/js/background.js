@@ -22,7 +22,7 @@ var bookmarkManager,
     projectManager,
     db;
 
-chrome.runtime.onInstalled.addListener(function(details) {
+chrome.runtime.onInstalled.addListener(details => {
   // Pop up history page only if the version changes in major (ex 2.0.0) or minor (ex 2.1.0).
   // Trivial change (ex 2.1.1) won't popu up.
   if (details.reason === 'update' && chrome.runtime.getManifest().version.match(/0$/)) {
@@ -34,19 +34,20 @@ chrome.runtime.onInstalled.addListener(function(details) {
   }
 });
 
-var config = new Config(function() {
+var config = new Config();
+config.init().then(() => {
   bookmarkManager = new BookmarkManager(config);
-  bookmarkManager.load().then(function() {
-    db = new idb(config);
-    sessionManager = new SessionManager(config);
-    sessionManager.resumeSessions().then(function() {
-      projectManager = new ProjectManager(config);
-      projectManager.update(true);
-    });
-  });
+  return bookmarkManager.load();
+}).then(() => {
+  db = new idb(config);
+  sessionManager = new SessionManager(config);
+  return sessionManager.resumeSessions()
+}).then(() => {
+  projectManager = new ProjectManager(config);
+  projectManager.update(true);
 });
 
-chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
+chrome.runtime.onMessage.addListener((msg, sender, respond) => {
   var params = [];
   for (var key in msg) {
     if (key == 'command') continue;

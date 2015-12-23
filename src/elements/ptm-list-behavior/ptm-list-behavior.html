@@ -1,43 +1,15 @@
 <script>
 var PtmListBehavior = {
   properties: {
+    projects: {
+      type: Object,
+      value: []
+    },
+    // TODO: remove projectManager and move all operations to ptm-app from ptm-session-list
     projectManager: {
       type: Object,
       value: {}
-    },
-    query: {
-      type: String,
-      value: '',
-      observer: 'search'
     }
-  },
-  listeners: {
-    'add-bookmark': '_onAddBookmark',
-    'remove-bookmark': '_onRemoveBookmark'
-  },
-  search: function(e) {
-    this.debounce('search', (function() {
-      this.$.repeat.render();
-    }).bind(this), 100);
-  },
-  /**
-   * See if there're any matching bookmarks / sessions
-   * @return {Boolean} True if matching bookmark exists.
-   */
-  _filterFields: function(item) {
-    var matched = false;
-    for (var i = 0; i < item.fields.length; i++) {
-      var field = item.fields[i];
-      if (field.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1) {
-        matched = true;
-        break;
-      }
-    }
-    return matched;
-  },
-  open: function(e) {
-    var project = this.projectManager.getProjectFromId(e.detail.projectId);
-    project.open();
   }
 };
 </script>

@@ -20,6 +20,12 @@
   "save": {
     "message": "保存する"
   },
+  "cancel": {
+    "message": "キャンセル"
+  },
+  "unlink": {
+    "message": "リンクを切る"
+  },
   "add": {
     "message": "プロジェクトに追加"
   },
@@ -41,14 +47,35 @@
   "bookmark": {
     "message": "ブックマークを追加・削除"
   },
-  "no_bookmarks_found": {
+  "no_bookmarks": {
     "message": "ブックマークがありません"
+  },
+  "no_tabs": {
+    "message": "タブがありません"
   },
   "todays_project_summary": {
     "message": "プロジェクト使用時間の統計"
   },
-  "options": {
-    "message": "オプション"
+  "sessions": {
+    "message": "セッション"
+  },
+  "projects": {
+    "message": "プロジェクト"
+  },
+  "reload": {
+    "message": "再読み込み"
+  },
+  "manage_bookmarks": {
+    "message": "ブックマークを管理"
+  },
+  "history": {
+    "message": "履歴"
+  },
+  "settings": {
+    "message": "設定"
+  },
+  "help": {
+    "message": "ヘルプ"
   },
   "project_name": {
     "message": "名前をつけて下さい"
@@ -69,21 +96,90 @@
     "message": "設定を保存しました"
   },
   "root_folder_location": {
-    "message": "ルートフォルダの場所:"
+    "message": "ルートフォルダの場所"
   },
   "root_folder_location_help": {
-    "message": "ブックマーク内でのルートフォルダの場所を指定します"
+    "message": "プロジェクトはブックマークとして保存されます。ルートフォルダの場所を指定して下さい。"
   },
   "root_folder_name": {
-    "message": "ルートフォルダの名前:"
+    "message": "ルートフォルダの名前"
   },
   "root_folder_name_help": {
     "message": "ルートフォルダの名前を指定します"
   },
   "disable_lazy_load": {
-    "message": "レイジーロードを無効にする:"
+    "message": "レイジーロードを無効にする"
   },
   "disable_lazy_load_help": {
-    "message": "レイジーロードはプロジェクトから複数のタブを開く際、アクティブなタブのみをロードします"
+    "message": "レイジーロードは、複数のタブを同時に開く際、アクティブなタブのみをロードします"
+  },
+  "link_session_to_a_project": {
+    "message": "セッションをプロジェクトにリンク"
+  },
+  "create_a_new_project": {
+    "message": "新しいプロジェクトを作る"
+  },
+  "project_linked": {
+    "message": "プロジェクトがリンクされました"
+  },
+  "project_unlinked": {
+    "message": "プロジェクトのリンクが外されました"
+  },
+  "project_to_link_not_found": {
+    "message": "リンクするプロジェクトが見つかりませんでした"
+  },
+  "failed_linking": {
+    "message": "プロジェクトのリンクに失敗しました"
+  },
+  "failed_unlinking": {
+    "message": "プロジェクトのリンクが外せませんでした"
+  },
+  "failed_opening": {
+    "message": "プロジェクトが開けませんでした"
+  },
+  "save_project_notice": {
+    "message": "このセッションをプロジェクトとして保存することで、開いているタブがブックマークとして保存され、すべての Chrome プロフィールで同期されます"
+  },
+  "new_project_name": {
+    "message": "新しいプロジェクトの名前"
+  },
+  "project_created": {
+    "message": "プロジェクトを作成しました"
+  },
+  "remove_a_session": {
+    "message": "セッションを削除しますか？"
+  },
+  "remove_session_notice": {
+    "message": "セッションを削除しても、リンクされたプロジェクトは削除されません"
+  },
+  "session_removed": {
+    "message": "セッションを削除しました"
+  },
+  "rename_a_project": {
+    "message": "プロジェクトの名前を変更する"
+  },
+  "change_project_name_notice": {
+    "message": "プロジェクトの名前を変更すると、ブックマークのフォルダ名も変更されます"
+  },
+  "update": {
+    "message": "変更する"
+  },
+  "project_renamed": {
+    "message": "プロジェクトの名前を変更しました"
+  },
+  "remove_a_project": {
+    "message": "プロジェクトを削除しますか？"
+  },
+  "remove_project_notice": {
+    "message": "プロジェクトを削除すると、ブックマークフォルダーが __Archive__ フォルダーに移動されます"
+  },
+  "project_removed": {
+    "message": "プロジェクトを削除しました"
+  },
+  "are_you_sure": {
+    "message": "本当にいいですか？"
+  },
+  "undonable_operation": {
+    "message": "この処理は元に戻せません"
   }
 }

@@ -1,36 +1,24 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../bower_components/iron-meta/iron-meta.html">
 <link rel="import" href="../ptm-list-behavior/ptm-list-behavior.html">
 <link rel="import" href="../ptm-session/ptm-session.html">
 
 <dom-module id="ptm-session-list">
   <style>
+    *:focus {
+      outline: none;
+    }
   </style>
   <template>
-    <iron-meta id="meta" type="dialog"></iron-meta>
-    <ptm-project-linker
-      id="linker"
-      style$="{{linkerStyle}}"
-      on-link-project="link"
-      on-unlink-project="unlink"
-      on-create-project="create"
-      on-associate-bookmark="associate"
-      projects="{{projectManager.projects}}">
-    </ptm-project-linker>
-    <template id="repeat" is="dom-repeat" items="{{projectManager.projects}}" filter="filter" sort="sort">
+    <template id="repeat" is="dom-repeat" items="[[projects]]" filter="filter" sort="sort">
       <ptm-session
         project="{{item}}"
-        project-id="{{item.id}}"
-        session-id="{{item.session.id}}"
-        win-id="{{item.session.winId}}"
-        session-title="{{item.session.title}}"
-        project-title="{{item.title}}"
-        fields="{{item.fields}}"
-        query="{{query}}"
-        expanded="{{_isSearching(query, item.session.winId)}}"
-        on-open-clicked="open"
-        on-link-clicked="_showLinkingProject"
-        on-remove-clicked="remove"
+        project-id="[[item.id]]"
+        session-id="[[item.session.id]]"
+        win-id="[[item.session.winId]]"
+        session-title="[[item.session.title]]"
+        project-title="[[item.title]]"
+        fields="[[item.fields]]"
+        expanded="[[_isActive(item.session.winId)]]"
         tabindex="0">
       </ptm-session>
     </template>
@@ -48,24 +36,10 @@
       activeWinId: {
         type: Number,
         value: 0
-      },
-      linkerStyle: {
-        type: String,
-        reflectToAttribute: true
       }
     },
     filter: function(item) {
-      if (this.query.length < 2) {
-        return !!item.session;
-      } else {
-        // If one of bookmarks / sessions matches, keep this project visible
-        if (this._filterFields(item)) {
-          return true;
-        // Otherwise, keep this project only if title matches query
-        } else {
-          return item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
-        }
-      }
+      return !!item.session;
     },
     sort: function(item1, item2) {
       var winId1 = item1.session && item1.session.winId ? true : false;
@@ -78,71 +52,14 @@
         return 1;
       }
     },
-    _isSearching: function(query, winId) {
+    _isActive: function(winId) {
       if (this.projectManager) {
         var activeWinId = this.projectManager.getActiveWindowId();
         if (activeWinId == winId) {
           return true;
         }
       }
-      return query.length > 2;
-    },
-    _showLinkingProject: function(e) {
-      this.$.linker.projects = this.projectManager.projects;
-      var top = e.target.getBoundingClientRect().top;
-      this.$.linker.linkerStyle = 'top: '+top+'px;';
-      this.$.linker.openDialog(e.model.item);
-    },
-    link: function(e) {
-      e.detail.sourceProject.associateBookmark(e.detail.targetProject.bookmark);
-      this.fire('reload');
-      this.fire('show-toast', {
-        text: 'Project linked'
-      });
-    },
-    unlink: function(e) {
-      e.detail.targetProject.deassociateBookmark();
-      this.fire('reload');
-      this.fire('show-toast', {
-        text: 'Project unlinked'
-      });
-    },
-    create: function(e) {
-      var that = this;
-      this.$.meta.byKey('confirm')
-        .prompt({
-          line1: 'New project',
-          line2: 'By saving this session as a project, all open tabs will be saved as bookmarks and sync across same Chrome profile.',
-          answer: '',
-          placeholder: 'New project name',
-          confirm: 'Save',
-          cancel: 'Cancel'
-        }).then(function(result) {
-          e.detail.targetProject.deassociateBookmark();
-          that.projectManager.createProject(e.detail.targetProject.id, result).then(function() {
-            that.fire('reload');
-            that.fire('show-toast', {
-              text: 'Project created'
-            });
-          });
-        });
-    },
-    remove: function(e) {
-      var that = this;
-      this.$.meta.byKey('confirm')
-        .confirm({
-          line1: 'Remove session?',
-          line2: 'This won\'t delete linked project.',
-          confirm: 'OK',
-          cancel: 'Cancel'
-        }).then(function() {
-          that.projectManager.removeSession(e.model.item.id).then(function() {
-            that.fire('reload');
-            that.fire('show-toast', {
-              text: 'Session removed'
-            });
-          });
-        });
+      return false;
     }
   });
 </script>

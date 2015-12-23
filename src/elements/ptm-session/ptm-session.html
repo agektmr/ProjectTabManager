@@ -13,6 +13,9 @@
     :host {
       display: block;
     }
+    *:focus {
+      outline: none;
+    }
     paper-material[expanded] {
       margin: 0 0 1em 0;
     }
@@ -36,14 +39,14 @@
     }
   </style>
   <template>
-    <paper-material elevation="[[_computeElevation(expanded)]]" expanded$="[[expanded]]" animated>
-      <paper-item focused$="{{focused}}">
-        <paper-icon-button tabindex="-1" icon="[[_computeFoldIcon(expanded)]]" on-tap="toggle"></paper-icon-button>
+    <paper-material elevation="[[_elevation]]" expanded$="[[expanded]]" animated>
+      <paper-item focused$="{{focused}}" tabindex="-1">
+        <paper-icon-button tabindex="-1" icon="[[_foldIcon]]" on-tap="toggle"></paper-icon-button>
         <div class="title" on-tap="openProject" active$="[[_computeActive(winId)]]">
           <!-- <paper-ripple></paper-ripple> -->
           <span>[[projectTitle]]</span>
         </div>
-        <template is="dom-if" if="[[!_computeProjectLinked(projectId)]]" restamp>
+        <template is="dom-if" if="[[!_projectLinked]]" restamp>
           <template is="dom-if" if="[[!expanded]]" restamp>
             <paper-icon-button icon="icons:link" on-tap="_onTapLink" tabindex="-1"></paper-icon-button>
           </template>
@@ -56,25 +59,24 @@
         </template>
       </paper-item>
       <iron-collapse id="collapse" opened="[[expanded]]" tabindex="-1">
-        <template is="dom-if" if="[[!fields.length]]">
-          <paper-item class="layout">
-            <paper-icon-button icon="icons:warning"></paper-icon-button>
-            <span on-tap="open" class="title">No open tabs or bookmarks</span>
-          </paper-item>
-        </template>
-        <template is="dom-if" if="[[expanded]]">
-          <template id="repeat" is="dom-repeat" items="[[fields]]" filter="filter">
+        <div class="collapse-content">
+          <template is="dom-if" if="[[!fields.length]]">
+            <paper-item class="layout">
+              <paper-icon-button icon="icons:warning"></paper-icon-button>
+              <span class="title">{{_l10n('no_tabs')}}</span>
+            </paper-item>
+          </template>
+          <template id="repeat" is="dom-repeat" items="[[fields]]">
             <ptm-bookmark
               url="[[item.url]]"
               fav-icon-url="{{item.favIconUrl}}"
               bookmark-id="[[item.id]]"
               tab-id="[[item.tabId]]"
               title="[[item.title]]"
-              project-linked="[[_computeProjectLinked(projectId)]]"
-              on-toggle-bookmark="_onToggleBookmark"></ptm-bookmark>
+              project-id="[[projectId]]"
+              on-toggle-bookmark="_toggleBookmark"></ptm-bookmark>
           </template>
-          <!-- <paper-icon-button icon="icons:expand-more"></paper-icon-button> -->
-        </template>
+        </div>
       </iron-collapse>
     </paper-material>
   </template>
@@ -105,11 +107,15 @@
     ],
     _onTapLink: function(e) {
       // e.stopPropagation();
-      this.fire('link-clicked');
+      this.fire('link-clicked', {
+        id: this.projectId
+      });
     },
     _onTapRemove: function(e) {
       // e.stopPropagation();
-      this.fire('remove-clicked');
+      this.fire('remove-clicked', {
+        id: this.projectId
+      });
     }
   });
 </script>

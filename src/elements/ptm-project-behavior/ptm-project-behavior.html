@@ -1,16 +1,21 @@
 <link rel="import" href="../../bower_components/iron-behaviors/iron-control-state.html">
 <link rel="import" href="../../bower_components/iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
+<link rel="import" href="../chrome-i18n/chrome-i18n.html">
 
 <script>
 var PtmProjectBehaviorImpl = {
   properties: {
     project: {
       type: Object,
-      value: {}
+      value: function() {
+        return [];
+      }
     },
     fields: {
       type: Array,
-      value: []
+      value: function() {
+        return [];
+      }
     },
     projectId: {
       type: String,
@@ -25,20 +30,19 @@ var PtmProjectBehaviorImpl = {
     expanded: {
       type: Boolean,
       value: false,
-      reflectToAttribute: true,
-      observer: '_expandedChanged'
+      reflectToAttribute: true
     },
-    query: {
+    _foldIcon: {
       type: String,
-      value: ''
-    },
-    _unfoldIcon: {
-      type: String,
-      value: 'unfold-more'
+      computed: '_computeFoldIcon(expanded)'
     },
     _elevation: {
       type: Number,
-      value: 0
+      computed: '_computeElevation(expanded)'
+    },
+    _projectLinked: {
+      type: Boolean,
+      computed: '_computeProjectLinked(projectId)'
     }
   },
   hostAttributes: {
@@ -56,17 +60,10 @@ var PtmProjectBehaviorImpl = {
     e.stopPropagation();
     this.expanded = !this.expanded;
   },
-  filter: function(item) {
-    if (this.query.length < 2) {
-      return true
-    } else {
-      return item.title.toLowerCase().indexOf(this.query.toLowerCase()) > -1;
-    }
-  },
   openProject: function(e) {
     e.stopPropagation();
     this.fire('open-clicked', {
-      projectId: this.projectId
+      id: this.projectId
     });
   },
   _onArrow: function(e) {
@@ -79,10 +76,6 @@ var PtmProjectBehaviorImpl = {
         this.expanded = true;
         break;
     }
-  },
-  _expandedChanged: function() {
-    this._unfoldIcon = this.expanded ? 'unfold-less' : 'unfold-more';
-    this._elevation = this.expanded ? 2 : 0;
   },
   _focusedChanged: function(receivedFocusFromKeyboard) {
     this.focused != this.focused;
@@ -99,36 +92,33 @@ var PtmProjectBehaviorImpl = {
   _computeActive: function(winId) {
     return winId !== null;
   },
-  _onToggleBookmark: function(e) {
+  _toggleBookmark: function(e) {
     var that = this;
     e.stopPropagation();
     var field = e.model.item;
     var index = e.model.index;
     if (field.id === undefined || field.id === '') {
-      this.project.addBookmark(field.tabId).then(function(bookmark) {
-        that.set('fields.'+index+'.id', bookmark.id);
-        that.fire('show-toast', {
+      this.project.addBookmark(field.tabId).then(bookmark => {
+        this.set(`fields.${index}.id`, bookmark.id);
+        this.fire('show-toast', {
           text: 'Bookmark added'
         });
       });
     } else {
-      this.project.removeBookmark(field.id).then(function() {
-        that.set('fields.'+index+'.id', '');
-        that.fire('show-toast', {
+      this.project.removeBookmark(field.id).then(() => {
+        this.set(`fields.${index}.id`, '');
+        this.fire('show-toast', {
           text: 'Bookmark removed'
         });
       });
     }
-  },
-  _onFieldUpdated: function() {
-    console.log('field updated');
-    this.$.repeat.render();
   }
 };
 
 var PtmProjectBehavior = [
   PtmProjectBehaviorImpl,
   Polymer.IronControlState,
-  Polymer.IronA11yKeysBehavior
+  Polymer.IronA11yKeysBehavior,
+  ChromeI18n
 ];
 </script>

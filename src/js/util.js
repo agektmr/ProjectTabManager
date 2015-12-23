@@ -111,7 +111,7 @@ var util = {
   deepCopy: (function() {
     return function(array) {
       var mc = new MessageChannel;
-      return new Promise(function(resolve) {
+      return new Promise(resolve => {
         mc.port1.onmessage = resolve;
         mc.port2.postMessage(array);
       }).then(function(e) {

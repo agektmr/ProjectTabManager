@@ -1,3 +1,21 @@
+<!--
+Copyright 2015 Eiji Kitamura
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Author: Eiji Kitamura (agektmr@gmail.com)
+-->
+
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
@@ -77,7 +95,7 @@
             <paper-material class="dropdown-content">
               <paper-item on-tap="reload">{{_l10n('reload')}}</paper-item>
               <paper-item on-tap="manageBookmarks">{{_l10n('manage_bookmarks')}}</paper-item>
-              <paper-item on-tap="openHistory">{{_l10n('history')}}</paper-item>
+              <!-- <paper-item on-tap="openHistory">{{_l10n('history')}}</paper-item> -->
               <paper-item on-tap="openSettings">{{_l10n('settings')}}</paper-item>
               <paper-item on-tap="openHelp">{{_l10n('help')}}</paper-item>
             </paper-material>
@@ -98,13 +116,11 @@
       <iron-pages id="pages" selected="[[selected]]">
         <ptm-session-list
           projects="[[projectManager.projects]]"
-          project-manager="[[projectManager]]"
           on-open-clicked="_openProject"
           on-remove-clicked="_removeSession">
         </ptm-session-list>
         <ptm-project-list
           projects="[[projectManager.projects]]"
-          project-manager="[[projectManager]]"
           on-open-clicked="_openProject"
           on-rename-clicked="_renameProject"
           on-remove-clicked="_removeProject">
@@ -114,7 +130,6 @@
         </div>
         <ptm-search-list
           projects="[[searchResults]]"
-          project-manager="[[projectManager]]"
           on-open-clicked="_openProject">
         </ptm-search-list>
       </iron-pages>
@@ -344,14 +359,15 @@
         for (var i = 0; i < projects.length; i++) {
           var project = projects[i];
           for (var j = 0; j < project.fields.length; j++) {
-            var field = project.fields[j];
-            if (field.title.toLowerCase().indexOf(this.query.toLowerCase()) === -1) {
+            var fieldTitle = project.fields[j].title.toLowerCase();
+            if (fieldTitle.indexOf(this.query.toLowerCase()) === -1) {
               project.fields.splice(j, 1);
               j--;
             }
           }
           if (project.fields.length === 0) {
-            if (project.title.toLowerCase().indexOf(this.query.toLowerCase()) === -1) {
+            var projectTitle = project.title.toLowerCase();
+            if (projectTitle.indexOf(this.query.toLowerCase()) === -1) {
               projects.splice(i, 1);
               i--;
             }

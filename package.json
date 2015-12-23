@@ -1,12 +1,13 @@
 {
   "name": "ProjectTabManager",
-  "version": "3.0.1",
+  "version": "4.0.0",
   "description": "Project tab management per window on your Chrome",
   "main": "app/js/background.js",
   "scripts": {
     "postinstall": "bower install",
     "vulcanize": "vulcanize src/elements/elements.html | crisper -h src/elements/vulcanized.elements.html -j src/elements/vulcanized.elements.js",
-    "build": "npm run vulcanize; grunt vulcanizeless --force"
+    "build": "npm run clean; npm run vulcanize; grunt vulcanizeless --force",
+    "clean": "rm -rf app/*"
   },
   "repository": "",
   "keywords": [
@@ -15,6 +16,7 @@
   "author": "Eiji Kitamura <agektmr+github@gmail.com>",
   "license": "Apache2.0",
   "devDependencies": {
+    "concat-files": "^0.1.0",
     "grunt": "^0.4.5",
     "grunt-contrib-clean": "^0.6.0",
     "grunt-contrib-compress": "^0.13.0",

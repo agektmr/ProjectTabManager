@@ -1,5 +1,7 @@
+
 window.Polymer = {};
 window.Polymer.dom = 'shadow';
+
 (function () {
 function resolve() {
 document.body.removeAttribute('unresolved');
@@ -7262,7 +7264,9 @@ this._insertChildren();
 this.fire('dom-change');
 }
 });
-(function() {
+
+
+  (function() {
 
     // monostate data
     var metaDatas = {};
@@ -7523,10 +7527,14 @@ this.fire('dom-change');
     });
 
   })();
+
+
 if (!window.Promise) {
   window.Promise = MakePromise(Polymer.Base.async);
-};
-'use strict'
+}
+;
+
+  'use strict'
 
   Polymer({
     is: 'iron-request',
@@ -7938,7 +7946,9 @@ if (!window.Promise) {
       this._setStatusText((this.xhr.statusText === undefined) ? '' : this.xhr.statusText);
     }
   });
-'use strict';
+
+
+  'use strict';
 
   Polymer({
 
@@ -8394,7 +8404,9 @@ if (!window.Promise) {
     },
 
   });
-/**
+
+
+  /**
    * `IronResizableBehavior` is a behavior that can be used in Polymer elements to
    * coordinate the flow of resize events between "resizers" (elements that control the
    * size or hidden state of their children) and "resizables" (elements that need to be
@@ -8572,7 +8584,10 @@ if (!window.Promise) {
       this._notifyingDescendant = false;
     }
   };
-/**
+
+
+
+  /**
    * @param {!Function} selectCallback
    * @constructor
    */
@@ -8671,7 +8686,11 @@ if (!window.Promise) {
     }
 
   };
-/** @polymerBehavior */
+
+
+
+
+  /** @polymerBehavior */
   Polymer.IronSelectableBehavior = {
 
       /**
@@ -8980,7 +8999,10 @@ if (!window.Promise) {
     }
 
   };
-(function() {
+
+
+
+  (function() {
     'use strict';
 
     /**
@@ -9385,7 +9407,10 @@ if (!window.Promise) {
       }
     };
   })();
-/**
+
+
+
+  /**
    * @demo demo/index.html
    * @polymerBehavior
    */
@@ -9475,7 +9500,11 @@ if (!window.Promise) {
     }
 
   };
-/**
+
+
+
+
+  /**
    * @demo demo/index.html
    * @polymerBehavior Polymer.IronButtonState
    */
@@ -9685,7 +9714,11 @@ if (!window.Promise) {
     Polymer.IronA11yKeysBehavior,
     Polymer.IronButtonStateImpl
   ];
-/**
+
+
+
+
+  /**
    * `Polymer.PaperRippleBehavior` dynamically implements a ripple
    * when the element has focus via pointer or keyboard.
    *
@@ -9798,7 +9831,11 @@ if (!window.Promise) {
     }
 
   };
-/** @polymerBehavior Polymer.PaperButtonBehavior */
+
+
+
+
+  /** @polymerBehavior Polymer.PaperButtonBehavior */
   Polymer.PaperButtonBehaviorImpl = {
 
     properties: {
@@ -9882,7 +9919,11 @@ if (!window.Promise) {
     Polymer.PaperRippleBehavior,
     Polymer.PaperButtonBehaviorImpl
   ];
-/**
+
+
+
+
+  /**
    * `Polymer.PaperInkyFocusBehavior` implements a ripple when the element has keyboard focus.
    *
    * @polymerBehavior Polymer.PaperInkyFocusBehavior
@@ -9919,7 +9960,10 @@ if (!window.Promise) {
     Polymer.PaperRippleBehavior,
     Polymer.PaperInkyFocusBehaviorImpl
   ];
-/** @polymerBehavior Polymer.IronMultiSelectableBehavior */
+
+
+
+  /** @polymerBehavior Polymer.IronMultiSelectableBehavior */
   Polymer.IronMultiSelectableBehaviorImpl = {
     properties: {
 
@@ -10028,7 +10072,11 @@ if (!window.Promise) {
     Polymer.IronSelectableBehavior,
     Polymer.IronMultiSelectableBehaviorImpl
   ];
-/**
+
+
+
+
+  /**
    * `Polymer.IronMenuBehavior` implements accessible menu behavior.
    *
    * @demo demo/index.html
@@ -10329,7 +10377,11 @@ if (!window.Promise) {
     Polymer.IronA11yKeysBehavior,
     Polymer.IronMenuBehaviorImpl
   ];
-/**
+
+
+
+
+  /**
    * `Polymer.IronMenubarBehavior` implements accessible menubar behavior.
    *
    * @polymerBehavior Polymer.IronMenubarBehavior
@@ -10379,7 +10431,10 @@ if (!window.Promise) {
     Polymer.IronMenuBehavior,
     Polymer.IronMenubarBehaviorImpl
   ];
-/**
+
+
+
+  /**
    * The `iron-iconset-svg` element allows users to define their own icon sets
    * that contain svg icons. The svg icon elements should be children of the
    * `iron-iconset-svg` element. Multiple icons should be given distinct id's.
@@ -10558,6 +10613,9 @@ if (!window.Promise) {
     }
 
   });
+
+
+
 /**
 Polymer.IronFitBehavior fits an element in another element using `max-height` and `max-width`, and
 optionally centers it in the window or another element.
@@ -10802,7 +10860,11 @@ CSS properties               | Action
     }
 
   };
-Polymer.IronOverlayManager = {
+
+
+
+
+  Polymer.IronOverlayManager = {
 
     _overlays: [],
 
@@ -10901,6 +10963,10 @@ Polymer.IronOverlayManager = {
     }
 
   };
+
+
+
+
 /**
 Use `Polymer.IronOverlayBehavior` to implement an element that can be hidden or shown, and displays
 on top of other content. It includes an optional backdrop, and can be used to implement a variety
@@ -11327,7 +11393,12 @@ context. You should place this element as a child of `<body>` whenever possible.
 
   /** @polymerBehavior */
   Polymer.IronOverlayBehavior = [Polymer.IronFitBehavior, Polymer.IronResizableBehavior, Polymer.IronOverlayBehaviorImpl];
-/** @polymerBehavior */
+
+
+
+
+
+  /** @polymerBehavior */
   Polymer.PaperSpinnerBehavior = {
 
     listeners: {
@@ -11399,7 +11470,10 @@ context. You should place this element as a child of `<body>` whenever possible.
       this.__coolingDown = false;
     }
   };
-/**
+
+
+
+  /**
    * Use `Polymer.NeonAnimationBehavior` to implement an animation.
    * @polymerBehavior
    */
@@ -11467,7 +11541,11 @@ context. You should place this element as a child of `<body>` whenever possible.
     complete: function() {}
 
   };
-Polymer({
+
+
+
+
+  Polymer({
 
     is: 'opaque-animation',
 
@@ -11490,7 +11568,11 @@ Polymer({
     }
 
   });
-/**
+
+
+
+
+  /**
    * `Polymer.NeonAnimatableBehavior` is implemented by elements containing animations for use with
    * elements implementing `Polymer.NeonAnimationRunnerBehavior`.
    * @polymerBehavior
@@ -11630,7 +11712,11 @@ Polymer({
     }
 
   };
-/**
+
+
+
+
+  /**
    * `Polymer.NeonAnimationRunnerBehavior` adds a method to run animations.
    *
    * @polymerBehavior Polymer.NeonAnimationRunnerBehavior
@@ -11734,7 +11820,9 @@ Polymer({
     Polymer.NeonAnimatableBehavior,
     Polymer.NeonAnimationRunnerBehaviorImpl
   ];
-(function() {
+
+
+  (function() {
     'use strict';
 
     /**
@@ -11945,7 +12033,10 @@ Polymer({
       }
     };
   })();
-Polymer({
+
+
+
+  Polymer({
 
     is: 'fade-in-animation',
 
@@ -11963,7 +12054,11 @@ Polymer({
     }
 
   });
-Polymer({
+
+
+
+
+  Polymer({
 
     is: 'fade-out-animation',
 
@@ -11981,7 +12076,10 @@ Polymer({
     }
 
   });
-Polymer({
+
+
+
+  Polymer({
     is: 'paper-menu-grow-height-animation',
 
     behaviors: [
@@ -12073,6 +12171,9 @@ Polymer({
       return this._effect;
     }
   });
+
+
+
 /**
 Use `Polymer.PaperDialogBehavior` and `paper-dialog-shared-styles.html` to implement a Material Design
 dialog.
@@ -12294,7 +12395,10 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
   /** @polymerBehavior */
   Polymer.PaperDialogBehavior = [Polymer.IronOverlayBehavior, Polymer.PaperDialogBehaviorImpl];
-/**
+
+
+
+  /**
   Polymer.IronFormElementBehavior enables a custom element to be included
   in an `iron-form`.
 
@@ -12365,7 +12469,11 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
     }
 
   };
-/**
+
+
+
+
+  /**
    * `Use Polymer.IronValidatableBehavior` to implement an element that validates user input.
    * Use the related `Polymer.IronValidatorBehavior` to add custom validation logic to an iron-input.
    *
@@ -12482,6 +12590,10 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       return true;
     }
   };
+
+
+
+
 /*
 `<iron-input>` adds two-way binding and custom validators using `Polymer.IronValidatorBehavior`
 to `<input>`.
@@ -12717,7 +12829,10 @@ is separate from validation, and `allowed-pattern` does not affect how the input
   The `iron-input-validate` event is fired whenever `validate()` is called.
   @event iron-input-validate
   */
-/**
+
+
+
+  /**
    * Use `Polymer.PaperInputBehavior` to implement inputs with `<paper-input-container>`. This
    * behavior is implemented by `<paper-input>`. It exposes a number of properties from
    * `<paper-input-container>` and `<input is="iron-input">` and they should be bound in your
@@ -13200,7 +13315,10 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     Polymer.IronA11yKeysBehavior,
     Polymer.PaperInputBehaviorImpl
   ];
-/**
+
+
+
+  /**
    * Use `Polymer.PaperInputAddonBehavior` to implement an add-on for `<paper-input-container>`. A
    * add-on appears below the input, and may display information based on the input value and
    * validity such as a character counter or an error message.
@@ -13231,6 +13349,9 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     }
 
   };
+
+
+
 var ChromeI18nImpl = {
   _l10n: function(message) {
     return chrome.i18n.getMessage(message);
@@ -13240,20 +13361,23 @@ var ChromeI18nImpl = {
 var ChromeI18n = [
   ChromeI18nImpl
 ];
+
+
 var PtmListBehavior = {
   properties: {
     projects: {
       type: Object,
       value: []
     },
-    // TODO: remove projectManager and move all operations to ptm-app from ptm-session-list
-    projectManager: {
-      type: Object,
-      value: {}
+    activeWinId: {
+      type: Number,
+      value: 0
     }
   }
 };
-/** @polymerBehavior Polymer.PaperItemBehavior */
+
+
+  /** @polymerBehavior Polymer.PaperItemBehavior */
   Polymer.PaperItemBehaviorImpl = {
     hostAttributes: {
       role: 'option',
@@ -13267,7 +13391,9 @@ var PtmListBehavior = {
     Polymer.IronControlState,
     Polymer.PaperItemBehaviorImpl
   ];
-/**
+
+
+  /**
   `iron-selector` is an element which can be used to manage a list of elements
   that can be selected.  Tapping on the item will make the item selected.  The `selected` indicates
   which item is being selected.  The default is to use the index of the item.
@@ -13322,6 +13448,9 @@ var PtmListBehavior = {
     ]
 
   });
+
+
+
 var PtmProjectBehaviorImpl = {
   properties: {
     project: {
@@ -13440,7 +13569,10 @@ var PtmProjectBehavior = [
   Polymer.IronA11yKeysBehavior,
   ChromeI18n
 ];
-/**
+
+
+
+  /**
    * Use `Polymer.IronCheckedElementBehavior` to implement a custom element
    * that has a `checked` property, which can be used for validation if the
    * element is also `required`. Element instances implementing this behavior
@@ -13542,7 +13674,11 @@ var PtmProjectBehavior = [
     Polymer.IronValidatableBehavior,
     Polymer.IronCheckedElementBehaviorImpl
   ];
-/**
+
+
+
+
+  /**
    * Use `Polymer.PaperCheckedElementBehavior` to implement a custom element
    * that has a `checked` property similar to `Polymer.IronCheckedElementBehavior`
    * and is compatible with having a ripple effect.
@@ -13585,7 +13721,10 @@ var PtmProjectBehavior = [
     Polymer.IronCheckedElementBehavior,
     Polymer.PaperCheckedElementBehaviorImpl
   ];
-// Cache connetions to open database
+
+
+
+  // Cache connetions to open database
   var database = {};
 
   Polymer({
@@ -13868,7 +14007,10 @@ var PtmProjectBehavior = [
       });
     }
   });
-Polymer({
+
+
+
+  Polymer({
 
     is: 'iron-pages',
 
@@ -13898,7 +14040,11 @@ Polymer({
       this.async(this.notifyResize);
     }
   });
-Polymer({
+
+
+
+
+    Polymer({
 
       is: 'iron-icon',
 
@@ -13984,7 +14130,10 @@ Polymer({
       }
 
     });
-(function() {
+
+  
+
+  (function() {
     var Utility = {
       distance: function(x1, y1, x2, y2) {
         var xDelta = (x1 - x2);
@@ -14581,7 +14730,9 @@ Polymer({
       }
     });
   })();
-Polymer({
+
+
+    Polymer({
       is: 'paper-icon-button',
 
       hostAttributes: {
@@ -14629,7 +14780,9 @@ Polymer({
         }
       }
     });
-(function() {
+  
+
+    (function() {
       'use strict';
 
       var SHADOW_WHEN_SCROLLING = 1;
@@ -14865,7 +15018,9 @@ Polymer({
         }
       });
     })();
-Polymer({
+  
+
+    Polymer({
       is: 'paper-toolbar',
 
       hostAttributes: {
@@ -14954,7 +15109,9 @@ Polymer({
         return barJustify + (barJustify === 'justified' ? '' : '-justified');
       }
     });
-Polymer({
+  
+
+    Polymer({
       is: 'paper-tab',
 
       behaviors: [
@@ -14990,7 +15147,9 @@ Polymer({
         this.noink = !!this.noink || !!this._parentNoink;
       }
     });
-Polymer({
+  
+
+    Polymer({
       is: 'paper-tabs',
 
       behaviors: [
@@ -15319,7 +15478,10 @@ Polymer({
         }
       }
     });
-(function() {
+  
+
+
+    (function() {
       'use strict';
 
       Polymer.IronA11yAnnouncer = Polymer({
@@ -15380,6 +15542,10 @@ Polymer({
         document.body.appendChild(Polymer.IronA11yAnnouncer.instance);
       };
     })();
+
+  
+
+
 (function() {
 
   Polymer({
@@ -15448,7 +15614,10 @@ Polymer({
   });
 
 })();
-(function() {
+
+
+
+    (function() {
       // Keeps track of the toast currently opened.
       var currentToast = null;
 
@@ -15582,14 +15751,18 @@ Polymer({
          */
       });
     })();
-Polymer({
+  
+
+    Polymer({
       is: 'paper-spinner',
 
       behaviors: [
         Polymer.PaperSpinnerBehavior
       ]
     });
-(function() {
+  
+
+    (function() {
       Polymer({
         is: 'paper-menu',
 
@@ -15598,7 +15771,9 @@ Polymer({
         ]
       });
     })();
-Polymer({
+  
+
+  Polymer({
     is: 'paper-material',
 
     properties: {
@@ -15632,7 +15807,9 @@ Polymer({
       }
     }
   });
-(function() {
+
+
+    (function() {
       'use strict';
 
       Polymer({
@@ -16058,7 +16235,9 @@ Polymer({
         }
       });
     })();
-(function() {
+  
+
+  (function() {
     'use strict';
 
     var PaperMenuButton = Polymer({
@@ -16310,6 +16489,9 @@ Polymer({
 
     Polymer.PaperMenuButton = PaperMenuButton;
   })();
+
+
+
 (function() {
 
   Polymer({
@@ -16350,6 +16532,10 @@ Polymer({
   });
 
 })();
+
+
+
+
 (function() {
 
   Polymer({
@@ -16411,7 +16597,10 @@ Polymer({
   })
 
 })();
-Polymer({
+
+
+
+  Polymer({
     is: 'paper-button',
 
     behaviors: [
@@ -16447,7 +16636,9 @@ Polymer({
     @param {{node: Object}} detail Contains the animated node.
     */
   });
-Polymer({
+
+
+  Polymer({
     is: 'paper-input-char-counter',
 
     behaviors: [
@@ -16477,7 +16668,9 @@ Polymer({
       this._charCounterStr = str;
     }
   });
-Polymer({
+
+
+  Polymer({
     is: 'paper-input-container',
 
     properties: {
@@ -16755,7 +16948,9 @@ Polymer({
       return cls;
     }
   });
-Polymer({
+
+
+  Polymer({
     is: 'paper-input-error',
 
     behaviors: [
@@ -16777,7 +16972,9 @@ Polymer({
       this._setInvalid(state.invalid);
     }
   });
-Polymer({
+
+
+  Polymer({
     is: 'paper-input',
 
     behaviors: [
@@ -16785,7 +16982,9 @@ Polymer({
       Polymer.PaperInputBehavior
     ]
   });
-Polymer({
+
+
+  Polymer({
     is: 'ptm-project-linker',
     properties: {
       projects: {
@@ -16845,15 +17044,20 @@ Polymer({
       }
       return !project.session ? '' : 'check';
     }
-  });
-Polymer({
+  })
+
+
+    Polymer({
       is: 'paper-item',
 
       behaviors: [
         Polymer.PaperItemBehavior
       ]
     });
-Polymer({
+  
+
+
+  Polymer({
 
     is: 'iron-collapse',
 
@@ -17006,7 +17210,10 @@ Polymer({
     }
 
   });
-Polymer({
+
+
+
+    Polymer({
       is: 'paper-tooltip',
 
       hostAttributes: {
@@ -17263,7 +17470,9 @@ Polymer({
         }
       },
     });
-var DEFAULT_FAVICON_URL = '/img/favicon.png';
+  
+
+  var DEFAULT_FAVICON_URL = '/img/favicon.png';
   var cache = {};
 
   Polymer({
@@ -17288,7 +17497,7 @@ var DEFAULT_FAVICON_URL = '/img/favicon.png';
         type: Boolean,
         computed: '_computeProjectLinked(projectId)'
       },
-      title: {
+      siteTitle: {
         type: String,
         value: '',
         reflectToAttribute: true
@@ -17436,8 +17645,10 @@ var DEFAULT_FAVICON_URL = '/img/favicon.png';
         url: favIconUrl
       });
     }
-  });
-Polymer({
+  })
+
+
+  Polymer({
     is: 'ptm-session',
     properties: {
       sessionId: {
@@ -17472,17 +17683,20 @@ Polymer({
       });
     }
   });
-'use strict'
+
+
+  'use strict'
   Polymer({
     is: 'ptm-session-list',
     behaviors: [
       PtmListBehavior
     ],
-    properties: {
-      activeWinId: {
-        type: Number,
-        value: 0
-      }
+    ready: function() {
+      chrome.runtime.sendMessage({
+        command: 'getActiveWindowId'
+      }, activeWinId => {
+        this.activeWinId = activeWinId;
+      });
     },
     filter: function(item) {
       return !!item.session;
@@ -17499,16 +17713,12 @@ Polymer({
       }
     },
     _isActive: function(winId) {
-      if (this.projectManager) {
-        var activeWinId = this.projectManager.getActiveWindowId();
-        if (activeWinId == winId) {
-          return true;
-        }
-      }
-      return false;
+      return this.activeWinId === winId;
     }
   });
-Polymer({
+
+
+  Polymer({
     is: 'ptm-project',
     behaviors: [
       PtmProjectBehavior
@@ -17530,7 +17740,9 @@ Polymer({
       });
     }
   });
-Polymer({
+
+
+  Polymer({
     is: 'ptm-project-list',
     behaviors: [
       PtmListBehavior
@@ -17539,13 +17751,17 @@ Polymer({
       return !!item.bookmark;
     }
   });
-Polymer({
+
+
+  Polymer({
     is: 'ptm-search-list',
     behaviors: [
       PtmListBehavior
     ]
   });
-Polymer({
+
+
+  Polymer({
     is: 'ptm-dialog',
     properties: {
       line1: {
@@ -17635,7 +17851,9 @@ Polymer({
       this.close();
     }
   });
-(function() {
+
+
+    (function() {
       'use strict';
 
       Polymer({
@@ -17899,7 +18117,9 @@ Polymer({
         }
       });
     })();
-Polymer({
+  
+
+    Polymer({
       is: 'paper-toggle-button',
 
       behaviors: [
@@ -17974,7 +18194,9 @@ Polymer({
       }
 
     });
-Polymer({
+  
+
+  Polymer({
     is: 'ptm-options',
     properties: {
       lazyLoad: {
@@ -18059,8 +18281,10 @@ Polymer({
     close: function() {
       this.$.dialog.close();
     }
-  });
-Polymer({
+  })
+
+
+  Polymer({
     is: 'ptm-app',
     properties: {
       projectManager: {
@@ -18280,14 +18504,15 @@ Polymer({
         for (var i = 0; i < projects.length; i++) {
           var project = projects[i];
           for (var j = 0; j < project.fields.length; j++) {
-            var field = project.fields[j];
-            if (field.title.toLowerCase().indexOf(this.query.toLowerCase()) === -1) {
+            var fieldTitle = project.fields[j].title.toLowerCase();
+            if (fieldTitle.indexOf(this.query.toLowerCase()) === -1) {
               project.fields.splice(j, 1);
               j--;
             }
           }
           if (project.fields.length === 0) {
-            if (project.title.toLowerCase().indexOf(this.query.toLowerCase()) === -1) {
+            var projectTitle = project.title.toLowerCase();
+            if (projectTitle.indexOf(this.query.toLowerCase()) === -1) {
               projects.splice(i, 1);
               i--;
             }

@@ -147,5 +147,5 @@ module.exports = function(grunt) {
 
   // Default task.
   grunt.registerTask('default', ['clean', 'sass', 'vulcanize', 'concat', 'copy', 'replace', 'markdown', 'version', 'compress']);
-  grunt.registerTask('vulcanizeless', ['clean', 'sass', 'concat', 'copy', 'replace', 'markdown', 'version', 'compress']);
+  grunt.registerTask('vulcanizeless', ['concat', 'copy', 'replace', 'markdown', 'version', 'compress']);
 };

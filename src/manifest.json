@@ -10,9 +10,7 @@
   "permissions": [
     "bookmarks",
     "storage",
-    "tabs",
-    "http://*/",
-    "https://*/"
+    "tabs"
   ],
   "default_locale": "en",
   "background": {

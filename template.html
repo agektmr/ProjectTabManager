@@ -1,0 +1,28 @@
+<html>
+  <head>
+    <title>Project Tab Manager {{pagetitle}}</title>
+    <link rel="import" href="elements/vulcanized.tpl_elems.html">
+    <style is="custom-style">
+      h1 {
+        @apply(--paper-font-title)
+      }
+      .content {
+        padding: 0 16px;
+        @apply(--paper-font-common-base)
+      }
+      .blue .paper-header {
+        background-color: var(--paper-light-blue-500);
+      }
+    </style>
+  </head>
+  <body class="fullbleed">
+    <paper-header-panel class="blue">
+      <paper-toolbar class="paper-header">
+        <h1 class="paper-font-title">Project Tab Manager {{pagetitle}}</h1>
+      </paper-toolbar>
+      <section class="content">
+{{content|raw}}
+      </section>
+    </paper-header-panel>
+  </body>
+</html>

@@ -40,7 +40,11 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     paper-item > *:not(:first-child):not(:last-child) {
       margin-right: 0 !important;
     }
-    paper-item[focused] {
+    paper-item > paper-icon-button:first-child {
+      padding-left: 2px;
+      border-left: 2px white solid;
+    }
+    paper-item[focused] > paper-icon-button:first-child {
       border-left: 2px var(--accent-color) solid;
     }
     .title {

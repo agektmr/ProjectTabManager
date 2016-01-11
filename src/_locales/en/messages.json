@@ -114,7 +114,7 @@
     "message": "Lazy load prevents simultaneous load of multiple tabs when opening a project."
   },
   "link_session_to_a_project": {
-    "message": "Link session to a project"
+    "message": "Link session to an existing project"
   },
   "create_a_new_project": {
     "message": "Create a new project"
@@ -133,6 +133,12 @@
   },
   "failed_unlinking": {
     "message": "Failed unlinking a project"
+  },
+  "linked_project": {
+    "message": "Already linked"
+  },
+  "confirm_breaking_link": {
+    "message": "This project is already linked with another session. Are you sure you want to re-link it with this session? (unlinked session will remain)"
   },
   "failed_opening": {
     "message": "Failed opening a project"

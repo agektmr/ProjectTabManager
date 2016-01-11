@@ -26,7 +26,7 @@ chrome.runtime.onInstalled.addListener(details => {
   // Pop up history page only if the version changes in major (ex 2.0.0) or minor (ex 2.1.0).
   // Trivial change (ex 2.1.1) won't popu up.
   if (details.reason === 'update' && chrome.runtime.getManifest().version.match(/0$/)) {
-    chrome.tabs.create({url: chrome.extension.getURL('/HISTORY.html')});
+    chrome.tabs.create({url: chrome.extension.getURL('/CHANGELOG.html')});
 
   // Pop up help page on first installation
   } else if (details.reason === 'install') {

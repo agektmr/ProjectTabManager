@@ -114,7 +114,7 @@
     "message": "レイジーロードは、複数のタブを同時に開く際、アクティブなタブのみをロードします"
   },
   "link_session_to_a_project": {
-    "message": "セッションをプロジェクトにリンク"
+    "message": "セッションを既存プロジェクトにリンク"
   },
   "create_a_new_project": {
     "message": "新しいプロジェクトを作る"
@@ -133,6 +133,12 @@
   },
   "failed_unlinking": {
     "message": "プロジェクトのリンクが外せませんでした"
+  },
+  "linked_project": {
+    "message": "既にリンクされています"
+  },
+  "confirm_breaking_link": {
+    "message": "指定したプロジェクトは既に他のセッションとリンクされています。このセッションにリンクを貼り直してよいですか？(元のセッションはリンクを外されても残ります)"
   },
   "failed_opening": {
     "message": "プロジェクトが開けませんでした"

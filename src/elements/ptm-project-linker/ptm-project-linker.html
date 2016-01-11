@@ -44,7 +44,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     }
     paper-item {
       cursor: pointer;
-      padding: 0 24px;
+      padding: 0 16px;
       margin: 0;
       text-overflow: ellipsis;
       overflow: hidden;
@@ -68,16 +68,12 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     }
   </style>
   <template>
+    <iron-meta id="meta" type="dialog"></iron-meta>
     <paper-dialog id="dialog" modal>
       <h2>{{_l10n('link_session_to_a_project')}}</h2>
       <paper-dialog-scrollable>
-        <paper-item on-tap="_onCreate">
-          <!-- <paper-ripple></paper-ripple> -->
-          <span class="flex title">{{_l10n('create_a_new_project')}}</span>
-          <paper-icon-button icon="icons:add"></paper-icon-button>
-        </paper-item>
         <template id="repeat" is="dom-repeat" items="[[projects]]" filter="_filterSessions">
-          <paper-item on-tap="_onLink" disabled$="[[_isLinked(item)]]">
+          <paper-item on-tap="_onLink">
             <span class="flex title">[[item.title]]</span>
             <iron-icon icon="[[_getLinkedIcon(item)]]"></iron-icon>
           </paper-item>
@@ -117,20 +113,28 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     close: function() {
       this.$.dialog.close();
     },
-    _onCreate: function(e) {
-      this.close();
-      this.fire('create-project', {
-        targetProject: this.linkingProject
-      });
-    },
     _onLink: function(e) {
-      // e.stopPropagation();
-      if (!!e.model.item.session) return;
       this.close();
-      this.fire('link-project', {
-        sourceProject: this.linkingProject,
-        targetProject: e.model.item
-      });
+      // Already linked?
+      if (e.model.item.session) {
+        this.$.meta.byKey('confirm')
+        .confirm({
+          line1: this._l10n('linked_project'),
+          line2: this._l10n('confirm_breaking_link'),
+          confirm: this._l10n('OK'),
+          cancel: this._l10n('cancel')
+        }).then(() => {
+          this.fire('link-project', {
+            sourceProject: this.linkingProject,
+            targetProject: e.model.item
+          });
+        }).catch(() => { return; });
+      } else {
+        this.fire('link-project', {
+          sourceProject: this.linkingProject,
+          targetProject: e.model.item
+        });
+      }
     },
     _onUnlink: function(e) {
       // e.stopPropagation();
@@ -149,10 +153,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
       return !!project.bookmark;
     },
     _getLinkedIcon: function(project) {
-      if (project.id == this.linkingProject.id) {
-        return 'link';
-      }
-      return !project.session ? '' : 'check';
+      return !project.session ? '' : 'link';
     }
   })
 </script>

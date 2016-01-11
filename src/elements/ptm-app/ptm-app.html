@@ -109,13 +109,13 @@ Author: Eiji Kitamura (agektmr@gmail.com)
       <iron-meta id="meta" type="dialog"></iron-meta>
       <ptm-project-linker id="linker"
         projects="[[projectManager.projects]]"
-        on-create-project="_createProject"
         on-link-project="_linkProject"
         on-unlink-project="_unlinkProject"></ptm-project-linker>
       <ptm-options id="options"></ptm-options>
       <iron-pages id="pages" selected="[[selected]]">
         <ptm-session-list
           projects="[[projectManager.projects]]"
+          on-create-project="_createProject"
           on-open-clicked="_openProject"
           on-remove-clicked="_removeSession">
         </ptm-session-list>
@@ -242,6 +242,14 @@ Author: Eiji Kitamura (agektmr@gmail.com)
       if (e.detail.sourceProject && e.detail.targetProject) {
         var targetProject = e.detail.targetProject;
         var sourceProject = e.detail.sourceProject;
+        if (!!targetProject.session) {
+          var bookmark = targetProject.bookmark;
+          targetProject.deassociateBookmark();
+          // create a dummy target project
+          targetProject = {
+            bookmark:bookmark
+          };
+        }
         sourceProject.associateBookmark(targetProject.bookmark);
 
         this.fire('reload');
@@ -282,7 +290,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
       }
     },
     _createProject: function(e) {
-      this.$.linker.close();
+      var project = this.projectManager.getProjectFromId(e.detail.id);
       this.$.meta.byKey('confirm')
       .prompt({
         line1: this._l10n('new_project'),
@@ -292,8 +300,8 @@ Author: Eiji Kitamura (agektmr@gmail.com)
         confirm: this._l10n('save'),
         cancel: this._l10n('cancel')
       }).then(result => {
-        e.detail.targetProject.deassociateBookmark();
-        this.projectManager.createProject(e.detail.targetProject.id, result).then(() => {
+        project.deassociateBookmark();
+        this.projectManager.createProject(project.id, result).then(() => {
           this.fire('reload');
           this.fire('show-toast', {
             text: this._l10n('project_created')

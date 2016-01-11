@@ -27,6 +27,9 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 
 <dom-module id="ptm-dialog">
   <style>
+    paper-dialog .content {
+      padding: 0 16px !important;
+    }
     .accent {
       background-color: var(--accent-color);
     }
@@ -34,12 +37,14 @@ Author: Eiji Kitamura (agektmr@gmail.com)
   <template>
     <paper-dialog id="dialog" modal>
       <h2>{{line1}}</h2>
-      <template is="dom-if" if="{{line2}}">
-        <p>{{line2}}</p>
-      </template>
-      <template is="dom-if" if="{{_isPrompt}}">
-        <paper-input id="input" value="{{answer}}" placeholder="{{placeholder}}" autofocus></paper-input>
-      </template>
+      <div class="content">
+        <template is="dom-if" if="{{line2}}">
+          <p>{{line2}}</p>
+        </template>
+        <template is="dom-if" if="{{_isPrompt}}">
+          <paper-input id="input" value="{{answer}}" placeholder="{{placeholder}}" autofocus></paper-input>
+        </template>
+      </div>
       <div class="buttons">
         <paper-button raised on-tap="_onCanceled">{{cancel}}</paper-button>
         <paper-button class="accent" raised on-tap="_onConfirmed">{{okay}}</paper-button>
@@ -92,7 +97,6 @@ Author: Eiji Kitamura (agektmr@gmail.com)
       new Polymer.IronMeta({type: 'dialog', key: 'confirm', value: this});
     },
     prompt: function(qs) {
-      var that = this;
       this.line1 = qs.line1 || '';
       this.line2 = qs.line2 || this._l10n('undonable_operation');
       this.answer = qs.answer || '';
@@ -101,22 +105,21 @@ Author: Eiji Kitamura (agektmr@gmail.com)
       this.cancel = qs.cancel || this._l10n('cancel');
       this._isPrompt = true;
       this.$.dialog.open();
-      return new Promise(function(resolve, reject) {
-        that._confirmed = resolve || function() {};
-        that._canceled = reject || function() {};
+      return new Promise((resolve, reject) => {
+        this._confirmed = resolve || function() {};
+        this._canceled = reject || function() {};
       });
     },
     confirm: function(qs) {
-      var that = this;
       this.line1 = qs.line1 || this._l10n('are_you_sure?');
       this.line2 = qs.line2 || this._l10n('undonable_operation');
       this.okay = qs.confirm || 'OK';
       this.cancel = qs.cancel || this._l10n('cancel');
       this._isPrompt = false;
       this.$.dialog.open();
-      return new Promise(function(resolve, reject) {
-        that._confirmed = resolve || function() {};
-        that._canceled = reject || function() {};
+      return new Promise((resolve, reject) => {
+        this._confirmed = resolve || function() {};
+        this._canceled = reject || function() {};
       });
     },
     close: function() {

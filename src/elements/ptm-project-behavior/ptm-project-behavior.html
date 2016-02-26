@@ -54,10 +54,6 @@ var PtmProjectBehaviorImpl = {
       type: String,
       computed: '_computeFoldIcon(expanded)'
     },
-    _elevation: {
-      type: Number,
-      computed: '_computeElevation(expanded)'
-    },
     _projectLinked: {
       type: Boolean,
       computed: '_computeProjectLinked(projectId)'
@@ -97,9 +93,6 @@ var PtmProjectBehaviorImpl = {
   },
   _focusedChanged: function(receivedFocusFromKeyboard) {
     this.focused != this.focused;
-  },
-  _computeElevation: function(expanded) {
-    return expanded ? 2 : 0;
   },
   _computeFoldIcon: function(expanded) {
     return expanded ? 'unfold-less' : 'unfold-more';

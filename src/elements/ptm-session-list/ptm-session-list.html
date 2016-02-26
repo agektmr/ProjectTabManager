@@ -25,6 +25,12 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     *:focus {
       outline: none;
     }
+
+    /* Hide the topmost border and avoid double borders */
+    ptm-session[expanded]:first-of-type,
+    ptm-session[expanded] + ptm-session[expanded] {
+      border-top: none;
+    }
   </style>
   <template>
     <template id="repeat" is="dom-repeat" items="[[projects]]" filter="filter" sort="sort">

@@ -696,7 +696,10 @@ var SessionManager = (function() {
         this.activeInfo.end       = null;
         this.activeInfo.windowId  = winId;
       }
+
       if (config_.debug) console.log('[SessionManager] active session info updated', this.activeInfo);
+
+      this.updateBrowserAction();
     }
 
     /**
@@ -726,6 +729,19 @@ console.log('current window id:', win.id);
         });
       }
       return winId || null;
+    }
+
+    /**
+     * Update the browser action with an active (colored) or non-active (grey) icon
+     */
+    updateBrowserAction() {
+      let session = this.getActiveSession();
+      let isBoundSession = session && !/^-/.test(session.id);
+      let scale = Math.max(Math.min(Math.ceil(window.devicePixelRatio), 3), 1)
+      let inactiveIconPath = chrome.extension.getURL(`img/${scale * 19}.png`);
+      let activeIconPath = chrome.extension.getURL(`img/active-${scale * 19}.png`);
+
+      chrome.browserAction.setIcon({path: isBoundSession ? activeIconPath : inactiveIconPath});
     }
 
     /**
@@ -831,6 +847,10 @@ console.log('current window id:', win.id);
               this.prev_sessions.splice(i--, 1);
             }
             if (config_.debug) console.log('[SessionManager] Session list created.', sessionManager.sessions);
+
+            // Update the icon
+            this.updateBrowserAction();
+
             resolve();
           });
         });

@@ -307,6 +307,10 @@ var ProjectManager = (function() {
           this.projects.unshift(new_project);
 
           if (config_.debug) console.log('[ProjectManager] created new project', new_project);
+
+          // Update the icon
+          sessionManager.updateBrowserAction();
+
           resolve(new_project);
         });
       });

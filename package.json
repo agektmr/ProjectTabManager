@@ -5,7 +5,7 @@
   "main": "app/js/background.js",
   "scripts": {
     "postinstall": "bower install",
-    "build": "grunt build"
+    "build": "gulp build"
   },
   "repository": "https://github.com/agektmr/ProjectTabManager",
   "keywords": [

@@ -135,10 +135,10 @@
     "message": "Failed unlinking a project"
   },
   "linked_project": {
-    "message": "Already linked"
+    "message": "Re-linked with this project?"
   },
   "confirm_breaking_link": {
-    "message": "This project is already linked with another session. Are you sure you want to re-link it with this session? (unlinked session will remain)"
+    "message": "This project is already linked with another session. Are you sure you want to unlink and re-link it with this session? (unlinked session will remain)"
   },
   "failed_opening": {
     "message": "Failed opening a project"

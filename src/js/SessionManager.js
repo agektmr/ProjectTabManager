@@ -17,8 +17,8 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 */
 
 
-var SessionManager = (function() {
-  'use strict'
+const SessionManager = (function() {
+  'use strict';
 
   var config_ = null;
 
@@ -27,14 +27,14 @@ var SessionManager = (function() {
    * @param  {Integer}   winId    [description]
    * @param  {Function} callback [description]
    */
-  var getWindowInfo = function(winId) {
-    return new Promise(function(resolve, reject) {
+  const getWindowInfo = function(winId) {
+    return new Promise(resolve => {
       if (winId === chrome.windows.WINDOW_ID_NONE) {
         resolve(undefined);
       } else {
         chrome.windows.get(winId, {populate:true}, function(win) {
           if (chrome.runtime.lastError) {
-            if (config_.debug) `[SessionManager] window of id ${winId} not open`;
+            if (config_.debug) console.log(`[SessionManager] window of id ${winId} not open`);
             resolve(undefined);
           }
           if (!win || win.type !== 'normal') {
@@ -61,7 +61,7 @@ var SessionManager = (function() {
       chrome.storage.local.get(items => {
         if (chrome.runtime.lastError) {
           console.error(chrome.runtime.lastError.message);
-          throw '[UpdateManager] chrome.storage.local.get error'
+          throw '[UpdateManager] chrome.storage.local.get error';
         } else {
           let sessions = items['sessions'] || items['projects'] || []; // 'projects' is a transitional solution
           if (config_.debug) console.log('[UpdateManager] restoring sessions from storage.', sessions);
@@ -116,7 +116,7 @@ var SessionManager = (function() {
       } else {
         if (config_.debug) console.log('[UpdateManager] tab %o sync completed. %o remaining', tab, UpdateManager.queue);
       }
-    },
+    }
   };
 
   /**
@@ -162,8 +162,8 @@ var SessionManager = (function() {
 
       this.tabs   = [];
       if (target.tabs) {
-        for (let i = 0; i < target.tabs.length; i++) {
-          this.addTab(target.tabs[i]);
+        for (let tab of target.tabs) {
+          this.addTab(tab);
         }
       }
       if (config_.debug) console.log('[SessionEntity] Created new session entity %o based on %o', this, target);
@@ -194,9 +194,9 @@ var SessionManager = (function() {
      * @return {TabEntity|undefined}
      */
     getTab(tabId) {
-      for (let i = 0; i < this.tabs.length; i++) {
-        if (this.tabs[i].id === tabId) {
-          return this.tabs[i];
+      for (let tab of this.tabs) {
+        if (tab.id === tabId) {
+          return tab;
         }
       }
       return undefined;
@@ -254,12 +254,12 @@ var SessionManager = (function() {
       chrome.windows.get(this.winId, {populate:true}, win => {
         if (!win) return;
         let tmp = [];
-        for (let i = 0; i < win.tabs.length; i++) {
-          if (win.tabs[i].url.match(util.CHROME_EXCEPTION_URL)) continue;
-          let tab = this.getTab(win.tabs[i].id);
-          if (tab) {
-            // tab.index = win.tabs[i].index;
-            tmp.push(tab);
+        for (let tab of win.tabs) {
+          if (tab.url.match(util.CHROME_EXCEPTION_URL)) continue;
+          let _tab = this.getTab(tab.id);
+          if (_tab) {
+            // tab.index = tab.index;
+            tmp.push(_tab);
           }
         }
         // Isn't this leaking memory?
@@ -338,7 +338,7 @@ var SessionManager = (function() {
       if (config_.debug) console.log('[SessionEntity] Removed window %s from session %o', this.winId, this);
       this.winId = null;
     }
-  };
+  }
 
   /**
    * [SessionManager description]
@@ -523,7 +523,7 @@ var SessionManager = (function() {
 
     onwindowcreated(win) {
       // ignore windows that are devtools, chrome extension, etc
-      if (win.type !== "normal" || win.id === chrome.windows.WINDOW_ID_NONE) return;
+      if (win.type !== 'normal' || win.id === chrome.windows.WINDOW_ID_NONE) return;
       if (config_.debug) console.log('[SessionManager] chrome.windows.onCreated', win);
       getWindowInfo(win.id).then(win => {
         // If this is a project intentionally opened
@@ -548,13 +548,13 @@ var SessionManager = (function() {
           // * Restoring previous session (Chrome's native feature)
           // * Opening a profile
           // * Opening a new window after closing all
-          for (let i = 0; i < this.sessions.length; i++) {
-            if (this.sessions[i].winId) continue;
-            if (this.compareTabs(win, this.sessions[i])) {
+          for (let session of this.sessions) {
+            if (session.winId) continue;
+            if (this.compareTabs(win, session)) {
               // set project id and title to this session and make it bound session
-              this.sessions[i].setWinId(win.id);
-              if (config_.debug) console.log('[SessionManager] Associated with a previous session', this.sessions[i]);
-              this.setActiveSession(win.id, this.sessions[i]);
+              session.setWinId(win.id);
+              if (config_.debug) console.log('[SessionManager] Associated with a previous session', session);
+              this.setActiveSession(win.id, session);
               UpdateManager.storeSessions();
               return;
             }
@@ -630,12 +630,12 @@ var SessionManager = (function() {
     }
 
     unsetWinId(winId) {
-      for (let i = 0; i < this.sessions.length; i++) {
-        if (this.sessions[i].winId === winId) {
-          this.sessions[i].unsetWinId();
+      for (let session of this.sessions) {
+        if (session.winId === winId) {
+          session.unsetWinId();
+          return;
         }
       }
-      return;
     }
 
     /**
@@ -653,9 +653,9 @@ var SessionManager = (function() {
      */
     getSessionFromProjectId(projectId) {
       if (!projectId) return undefined;
-      for (let i = 0; i < this.sessions.length; i++) {
-        if (this.sessions[i].id === projectId) {
-          return this.sessions[i];
+      for (let session of this.sessions) {
+        if (session.id === projectId) {
+          return session;
         }
       }
       return undefined;
@@ -668,9 +668,9 @@ var SessionManager = (function() {
      */
     getSessionFromWinId(winId) {
       if (!winId) return undefined;
-      for (let i = 0; i < this.sessions.length; i++) {
-        if (this.sessions[i].winId === winId) {
-          return this.sessions[i];
+      for (let session of this.sessions) {
+        if (session.winId === winId) {
+          return session;
         }
       }
       return undefined;
@@ -734,10 +734,9 @@ console.log('current window id:', win.id);
      * @return {Boolean}       [description]
      */
     removeTab(tabId) {
-      for (let i = 0; i < this.sessions.length; i++) {
-        let session = this.sessions[i];
-        for (let j = 0; j < session.tabs.length; j++) {
-          if (session.tabs[j].id === tabId) {
+      for (let session of this.sessions) {
+        for (let tab of session.tabs) {
+          if (tab.id === tabId) {
             session.removeTab(tabId);
             return true;
           }
@@ -753,17 +752,16 @@ console.log('current window id:', win.id);
      * @return {[type]}
      */
     compareTabs(win, session) {
-      let similar = 0,
-          count = 0;
+      let similar = 0, count = 0;
 
       // Loop through all tabs in temporary session
-      for (let j = 0; j < win.tabs.length; j++) {
-        if (win.tabs[j].url.match(util.CHROME_EXCEPTION_URL)) continue;
+      for (let tab of win.tabs) {
+        if (tab.url.match(util.CHROME_EXCEPTION_URL)) continue;
         count++;
         // Loop through all tabs in previous session
-        for (let k = 0; k < session.tabs.length; k++) {
+        for (let t of session.tabs) {
           // Check if tab url is similar
-          if (util.resembleUrls(session.tabs[k].url, win.tabs[j].url)) {
+          if (util.resembleUrls(t.url, tab.url)) {
             similar++;
           }
         }
@@ -808,7 +806,7 @@ console.log('current window id:', win.id);
      * Resume sessions from previous one
      */
     resumeSessions() {
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         // Restore sessions
         UpdateManager.restoreSessions(sessions => {
           // Cleans duplicate sessions
@@ -841,7 +839,7 @@ console.log('current window id:', win.id);
      * Compare a window status with previous sessions
      */
     restoreSession(win) {
-      if (win.type !== "normal" || win.id === chrome.windows.WINDOW_ID_NONE) return;
+      if (win.type !== 'normal' || win.id === chrome.windows.WINDOW_ID_NONE) return;
 
       // Create temporary non-bound session
       let session = new SessionEntity(win);
@@ -939,7 +937,7 @@ console.log('current window id:', win.id);
         if (config_.debug) console.log('[SessionManager] Old summary record has been deleted in database.');
       });
     }
-  };
+  }
 
   return SessionManager;
 })();

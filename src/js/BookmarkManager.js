@@ -16,7 +16,7 @@ limitations under the License.
 Author: Eiji Kitamura (agektmr@gmail.com)
 */
 
-var BookmarkManager = (function() {
+const BookmarkManager = (function() {
   'use strict';
 
   var config_ = null;
@@ -28,13 +28,13 @@ var BookmarkManager = (function() {
    * @return {Promise} [description]
    */
   var getFolder = function(parentId, title) {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       chrome.bookmarks.getSubTree(parentId, bookmarks => {
         var children = bookmarks[0].children;
         // Loop through bookmarks under parentId
-        for (var i = 0; i < children.length; i++) {
-          if (title === children[i].title) {
-            resolve(children[i]);
+        for (let child of children) {
+          if (title === child.title) {
+            resolve(child);
             return;
           }
         }
@@ -129,7 +129,7 @@ var BookmarkManager = (function() {
      * @param {[type]}   title    New title
      */
     renameFolder(id, title) {
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         chrome.bookmarks.update(id, {title: title}, resolve);
       });
     }
@@ -139,9 +139,9 @@ var BookmarkManager = (function() {
      * @param  {String}           bookmarkId
      */
     getFolder(folderId) {
-      for (var i = 0; i < this.bookmarks.length; i++) {
-        if (folderId == this.bookmarks[i].id) {
-          return this.bookmarks[i];
+      for (let bookmark of this.bookmarks) {
+        if (folderId == bookmark.id) {
+          return bookmark;
         }
       }
       return undefined;

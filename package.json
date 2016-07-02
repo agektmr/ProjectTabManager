@@ -17,7 +17,7 @@
     "concat-files": "^0.1.0",
     "del": "^2.2.0",
     "event-stream": "^3.3.2",
-    "gulp": "^3.9.0",
+    "gulp": "^3.9.1",
     "gulp-concat": "^2.6.0",
     "gulp-crisper": "^1.0.0",
     "gulp-debug": "^2.1.2",

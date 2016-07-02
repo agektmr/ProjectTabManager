@@ -16,7 +16,7 @@ limitations under the License.
 Author: Eiji Kitamura (agektmr@gmail.com)
 */
 
-var ProjectManager = (function() {
+const ProjectManager = (function() {
   'use strict';
 
   var config_ = null;
@@ -27,15 +27,15 @@ var ProjectManager = (function() {
    * @param  {Array} dst [description]
    * @return {[type]}     [description]
    */
-  var normalizeBookmarks = function(src, dst) {
+  const normalizeBookmarks = function(src, dst) {
     src = src || [];
     dst = dst || [];
-    for (let i = 0; i < src.length; i++) {
-      if (src[i].url) {
-        dst.push(src[i]);
-      } else if (src[i].children.length > 0) {
+    for (let s of src) {
+      if (s.url) {
+        dst.push(s);
+      } else if (s.children.length > 0) {
         // by recursively calling this function, append bookmarks to dst
-        normalizeBookmarks(src[i].children, dst);
+        normalizeBookmarks(s.children, dst);
       }
     }
     return dst;
@@ -133,7 +133,7 @@ var ProjectManager = (function() {
      * Rename project
      */
     rename(name) {
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         name = name + '';
         if (name.length === 0) resolve();
         this.title = name + '';
@@ -162,15 +162,14 @@ var ProjectManager = (function() {
       tabs = tabs || [];
       bookmarks = bookmarks || [];
       this.fields = [];
-      let copy = normalizeBookmarks(bookmarks, []),
-          j;
+      let copy = normalizeBookmarks(bookmarks, []), j;
 
       // Loop through tabs
-      for (let i = 0; i < tabs.length; i++) {
-        let tab = tabs[i],
-            bookmark = null;
+      for (let tab of tabs) {
+        let bookmark = null;
 
         if (tab.url.match(util.CHROME_EXCEPTION_URL)) continue;
+
         // Loop through bookmarks to find matched one
         for (j = 0; j < copy.length; j++) {
           if (util.resembleUrls(tab.url, copy[j].url)) {
@@ -180,8 +179,9 @@ var ProjectManager = (function() {
         }
         this.fields.push(new FieldEntity(tab, bookmark));
       }
-      for (j = 0; j < copy.length; j++) {
-        this.fields.push(new FieldEntity(undefined, copy[j]));
+
+      for (let c of copy) {
+        this.fields.push(new FieldEntity(undefined, c));
       }
     }
 
@@ -191,7 +191,7 @@ var ProjectManager = (function() {
      */
     addBookmark(tabId) {
       let mergeBookmark = bookmark => {
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
           this.bookmark = bookmarkManager.getFolder(bookmark.parentId);
           this.load(this.session.tabs, this.bookmark.children);
           resolve(bookmark);
@@ -199,15 +199,15 @@ var ProjectManager = (function() {
       };
 
       let url = '', title = '';
-      for (let i = 0; i < this.fields.length; i++) {
-        if (this.fields[i].tabId === tabId) {
-          title = this.fields[i].title;
-          url   = this.fields[i].url;
+      for (let field of this.fields) {
+        if (field.tabId === tabId) {
+          title = field.title;
+          url   = field.url;
           break;
         }
       }
       if (url === '') {
-        throw "Unsync session. Adding bookmark failed because relevant tab counld't be found";
+        throw 'Unsync session. Adding bookmark failed because relevant tab counld\'t be found';
       }
       if (!this.bookmark) {
         bookmarkManager.addFolder(this.title).then(folder => {
@@ -265,7 +265,7 @@ var ProjectManager = (function() {
       this.session.setId(this.id);
       this.load(this.session.tabs, undefined);
     }
-  };
+  }
 
   /**
    * [ProjectManager description]
@@ -284,7 +284,7 @@ var ProjectManager = (function() {
      * @return {[type]}       [description]
      */
     createProject(id, title) {
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         let project = this.getProjectFromId(id);
 
         if (!project || !project.session) {
@@ -294,9 +294,9 @@ var ProjectManager = (function() {
         title = title || session.title;
 
         bookmarkManager.addFolder(title).then(folder => {
-          for (let i = 0; i < session.tabs.length; i++) {
-            let title = session.tabs[i].title;
-            let url   = session.tabs[i].url;
+          for (let tab of session.tabs) {
+            let title = tab.title;
+            let url   = tab.url;
             bookmarkManager.addBookmark(folder.id, title, url);
           }
           // Create new project
@@ -318,9 +318,9 @@ var ProjectManager = (function() {
      * @return {ProjectEntity|undefined}
      */
     getProjectFromId(id) {
-      for (let i = 0; i < this.projects.length; i++) {
-        if (this.projects[i].id === id) {
-          return this.projects[i];
+      for (let project of this.projects) {
+        if (project.id === id) {
+          return project;
         }
       }
       return undefined;
@@ -332,11 +332,9 @@ var ProjectManager = (function() {
      * @return {ProjectEntity|undefined}
      */
     getProjectFromWinId(winId) {
-      let session = null;
-      for (let i = 0; i < this.projects.length; i++) {
-        session = this.projects[i].session;
-        if (session && session.winId === winId) {
-          return this.projects[i];
+      for (let project of this.projects) {
+        if (project.session && project.session.winId === winId) {
+          return project;
         }
       }
       return undefined;
@@ -348,7 +346,7 @@ var ProjectManager = (function() {
      * @return void
      */
     renameProject(id, title) {
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         let project = this.getProjectFromId(id);
         if (project) {
           project.rename(title).then(resolve);
@@ -364,7 +362,7 @@ var ProjectManager = (function() {
      * @param  {requestCallback}  callback  [description]
      */
     removeProject(id) {
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         for (let i = 0; i < this.projects.length; i++) {
           if (this.projects[i].id === id) {
             // Remove project from list first
@@ -389,11 +387,11 @@ var ProjectManager = (function() {
      * @param  {requestCallback}  callback [description]
      */
     removeSession(id) {
-      return new Promise((resolve, reject) => {
-        for (let i = 0; i < this.projects.length; i++) {
-          if (this.projects[i].id === id) {
-            this.projects[i].deassociateBookmark();
-            this.removeProject(this.projects[i].id).then(resolve);
+      return new Promise(resolve => {
+        for (let project of this.projects) {
+          if (project.id === id) {
+            project.deassociateBookmark();
+            this.removeProject(project.id).then(resolve);
             break;
           }
         }
@@ -430,7 +428,7 @@ var ProjectManager = (function() {
       if (config_.debug) console.log('[ProjectManager] Starting to generate project list');
       this.projects = [];
       let session, project, i, j,
-          sessions = sessionManager.getSessions().slice(0);
+        sessions = sessionManager.getSessions().slice(0);
 
       // Append non-bound sessions first
       for (i = 0; i < sessions.length; i++) {
@@ -443,10 +441,7 @@ var ProjectManager = (function() {
       }
       bookmarkManager.getRoot(force_reload).then(bookmarks => {
         // Loop through all sessions
-        for (i = 0; i < bookmarks.length; i++) {
-          let found = false,
-              bookmark = bookmarks[i];
-
+        for (let bookmark of bookmarks) {
           // Skip Archives folder
           if (bookmark.title === config_.archiveFolderName) continue;
 
@@ -515,7 +510,7 @@ var ProjectManager = (function() {
         callback(summary);
       });
     }
-  };
+  }
 
   return ProjectManager;
 })();

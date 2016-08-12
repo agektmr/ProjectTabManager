@@ -19,7 +19,6 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../../bower_components/paper-material/paper-material.html">
 <link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html">
 <link rel="import" href="../../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="../../bower_components/iron-selector/iron-selector.html">
@@ -36,8 +35,9 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     *:focus {
       outline: none;
     }
-    paper-material[expanded] {
-      margin: 0 0 1em 0;
+    :host([expanded]) {
+      border-top: 1px solid var(--divider-color);
+      border-bottom: 1px solid var(--divider-color);
     }
     paper-item > *:not(:first-child):not(:last-child) {
       margin-right: 0 !important;
@@ -63,49 +63,47 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     }
   </style>
   <template>
-    <paper-material elevation="[[_elevation]]" expanded$="[[expanded]]" animated>
-      <paper-item focused$="{{focused}}" tabindex="-1">
-        <paper-icon-button tabindex="-1" icon="[[_foldIcon]]" on-tap="toggle"></paper-icon-button>
-        <div class="title" on-tap="openProject" active$="[[_computeActive(winId)]]">
-          <!-- <paper-ripple></paper-ripple> -->
-          <span>[[projectTitle]]</span>
-        </div>
+    <paper-item focused$="{{focused}}" tabindex="-1">
+      <paper-icon-button tabindex="-1" icon="[[_foldIcon]]" on-tap="toggle"></paper-icon-button>
+      <div class="title" on-tap="openProject" active$="[[_computeActive(winId)]]">
+        <!-- <paper-ripple></paper-ripple> -->
+        <span>[[projectTitle]]</span>
+      </div>
+      <template is="dom-if" if="[[!_projectLinked]]" restamp>
+        <template is="dom-if" if="[[!expanded]]" restamp>
+          <paper-icon-button icon="notification:folder-special" on-tap="_onTapNewProject" tabindex="-1"></paper-icon-button>
+        </template>
+      </template>
+      <template is="dom-if" if="[[expanded]]" restamp>
         <template is="dom-if" if="[[!_projectLinked]]" restamp>
-          <template is="dom-if" if="[[!expanded]]" restamp>
-            <paper-icon-button icon="notification:folder-special" on-tap="_onTapNewProject" tabindex="-1"></paper-icon-button>
-          </template>
+          <paper-icon-button icon="icons:link" on-tap="_onTapLink" tabindex="-1"></paper-icon-button>
+          <paper-icon-button icon="notification:folder-special" on-tap="_onTapNewProject" tabindex="-1"></paper-icon-button>
         </template>
-        <template is="dom-if" if="[[expanded]]" restamp>
-          <template is="dom-if" if="[[!_projectLinked]]" restamp>
-            <paper-icon-button icon="icons:link" on-tap="_onTapLink" tabindex="-1"></paper-icon-button>
-            <paper-icon-button icon="notification:folder-special" on-tap="_onTapNewProject" tabindex="-1"></paper-icon-button>
-          </template>
-          <template is="dom-if" if="[[!_computeActive(winId)]]">
-            <paper-icon-button icon="icons:delete" on-tap="_onTapRemove" tabindex="-1"></paper-icon-button>
-          </template>
+        <template is="dom-if" if="[[!_computeActive(winId)]]">
+          <paper-icon-button icon="icons:delete" on-tap="_onTapRemove" tabindex="-1"></paper-icon-button>
         </template>
-      </paper-item>
-      <iron-collapse id="collapse" opened="[[expanded]]" tabindex="-1">
-        <div class="collapse-content">
-          <template is="dom-if" if="[[!fields.length]]">
-            <paper-item class="layout">
-              <paper-icon-button icon="icons:warning"></paper-icon-button>
-              <span class="title">{{_l10n('no_tabs')}}</span>
-            </paper-item>
-          </template>
-          <template id="repeat" is="dom-repeat" items="[[fields]]">
-            <ptm-bookmark
-              url="[[item.url]]"
-              fav-icon-url="{{item.favIconUrl}}"
-              bookmark-id="[[item.id]]"
-              tab-id="[[item.tabId]]"
-              site-title="[[item.title]]"
-              project-id="[[projectId]]"
-              on-toggle-bookmark="_toggleBookmark"></ptm-bookmark>
-          </template>
-        </div>
-      </iron-collapse>
-    </paper-material>
+      </template>
+    </paper-item>
+    <iron-collapse id="collapse" opened="[[expanded]]" tabindex="-1">
+      <div class="collapse-content">
+        <template is="dom-if" if="[[!fields.length]]">
+          <paper-item class="layout">
+            <paper-icon-button icon="icons:warning"></paper-icon-button>
+            <span class="title">{{_l10n('no_tabs')}}</span>
+          </paper-item>
+        </template>
+        <template id="repeat" is="dom-repeat" items="[[fields]]">
+          <ptm-bookmark
+            url="[[item.url]]"
+            fav-icon-url="{{item.favIconUrl}}"
+            bookmark-id="[[item.id]]"
+            tab-id="[[item.tabId]]"
+            site-title="[[item.title]]"
+            project-id="[[projectId]]"
+            on-toggle-bookmark="_toggleBookmark"></ptm-bookmark>
+        </template>
+      </div>
+    </iron-collapse>
   </template>
 </dom-module>
 

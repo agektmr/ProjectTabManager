@@ -62,7 +62,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
       <paper-dialog-scrollable>
         <p>{{_l10n('root_folder_location_help')}}</p>
         <paper-dropdown-menu id="root" label="{{_l10n('root_folder_location')}}">
-          <paper-menu class="dropdown-content" selected="[[rootParent]]">
+          <paper-menu class="dropdown-content" selected="{{rootParent}}">
             <template is="dom-repeat" items="[[rootFolders]]">
               <paper-item>{{item.title}}</paper-item>
             </template>
@@ -71,6 +71,14 @@ Author: Eiji Kitamura (agektmr@gmail.com)
         <paper-input id="rootName" value="{{rootName}}" label="{{_l10n('root_folder_name')}}"></paper-input>
         <p>{{_l10n('disable_lazy_load_help')}}</p>
         <paper-toggle-button id="lazyLoad" checked="{{lazyLoad}}">{{_l10n('disable_lazy_load')}}</paper-toggle-button>
+        <p>{{_l10n('maximum_sessions_help')}}</p>
+        <paper-dropdown-menu id="sessions" label="{{_l10n('maximum_sessions')}}">
+          <paper-menu class="dropdown-content" selected="{{maxSessIdx}}">
+            <paper-item>Unlimited</paper-item>
+            <paper-item>5</paper-item>
+            <paper-item>10</paper-item>
+          </paper-menu>
+        </paper-dropdown-menu><br/>
       </paper-dialog-scrollable>
       <div class="buttons">
         <paper-button on-tap="close" raised>{{_l10n('cancel')}}</paper-button>
@@ -106,6 +114,20 @@ Author: Eiji Kitamura (agektmr@gmail.com)
           return [];
         }
       },
+      maxSessions: {
+        type: Number,
+        value: -1
+      },
+      maxSessIdx: {
+        type: Number,
+        value: 0
+      },
+      maxSessCand: {
+        type: Array,
+        value: function() {
+          return [-1, 5, 10]
+        }
+      },
       debug: {
         type: Boolean,
         value: true
@@ -120,18 +142,21 @@ Author: Eiji Kitamura (agektmr@gmail.com)
       });
 
       // fat arrow doesn't seem to work for this
-      chrome.storage.sync.get((function(items) {
+      chrome.storage.sync.get(items => {
         if (chrome.runtime.lastError) {
           console.error(chrome.runtime.lastError.message);
         } else {
           var conf = items.config || {};
+          var maxSessions = conf.maxSessions || this.maxSessions;
           this.rootParentId = conf.rootParentId || this.rootParentId;
           this.rootParent   = this.rootParentId - 1;
           this.rootName     = conf.rootName     || this.rootName;
-          this.lazyLoad = conf.lazyLoad !== undefined ? conf.lazyLoad : this.lazyLoad;
+          this.lazyLoad     = conf.lazyLoad !== undefined ? conf.lazyLoad : this.lazyLoad;
+          this.maxSessions  = maxSessions;
+          this.maxSessIdx   = this.maxSessCand.indexOf(maxSessions);
           if (this.debug) console.log('[Config] initialization finished');
         }
-      }).bind(this));
+      });
 
       var manifest = chrome.runtime.getManifest();
       if (manifest.key !== undefined) {
@@ -143,11 +168,13 @@ Author: Eiji Kitamura (agektmr@gmail.com)
       this.$.dialog.open();
     },
     save: function() {
-      var rootParentId = (this.rootParent+1)+'';
+      let rootParentId = (this.rootParent+1)+'';
+      this.maxSessions = this.maxSessCand[this.maxSessIdx];
       chrome.storage.sync.set({config: {
         lazyLoad:     this.lazyLoad,
         rootParentId: rootParentId,
-        rootName:     this.rootName
+        rootName:     this.rootName,
+        maxSessions:  this.maxSessions
       }}, () => {
         if (chrome.runtime.lastError) {
           this.fire('show-toast', {
@@ -158,7 +185,6 @@ Author: Eiji Kitamura (agektmr@gmail.com)
           this.fire('show-toast', {
             text: 'Options saved.'
           });
-          console.log('sessions stored.', this.lazyLoad, this.rootParentId, this.rootName);
           this.close();
         }
       });

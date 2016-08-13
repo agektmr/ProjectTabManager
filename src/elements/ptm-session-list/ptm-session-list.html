@@ -27,9 +27,8 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     }
   </style>
   <template>
-    <template id="repeat" is="dom-repeat" items="[[projects]]" filter="filter" sort="sort">
+    <template id="repeat" is="dom-repeat" items="[[projects]]" filter="filter">
       <ptm-session
-        project="{{item}}"
         project-id="[[item.id]]"
         session-id="[[item.session.id]]"
         win-id="[[item.session.winId]]"
@@ -60,17 +59,17 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     filter: function(item) {
       return !!item.session;
     },
-    sort: function(item1, item2) {
-      var winId1 = item1.session && item1.session.winId ? true : false;
-      var winId2 = item2.session && item2.session.winId ? true : false;
-      if (winId1 === winId2) {
-        return 0;
-      } else if (winId1) {
-        return -1;
-      } else {
-        return 1;
-      }
-    },
+    // sort: function(item1, item2) {
+    //   var winId1 = item1.session && item1.session.winId ? true : false;
+    //   var winId2 = item2.session && item2.session.winId ? true : false;
+    //   if (winId1 === winId2) {
+    //     return 0;
+    //   } else if (winId1) {
+    //     return -1;
+    //   } else {
+    //     return 1;
+    //   }
+    // },
     _isActive: function(winId) {
       return this.activeWinId === winId;
     }

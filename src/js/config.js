@@ -23,6 +23,7 @@ class Config {
     this.rootParentId = '2';
     this.rootName = 'Project Tab Manager';
     this.lazyLoad = true;
+    this.maxSessions = -1;
     this.debug = true;
 
     let manifest = chrome.runtime.getManifest();
@@ -34,7 +35,7 @@ class Config {
 
   init() {
     return new Promise((resolve, reject) => {
-      chrome.storage.sync.get((function(items) {
+      chrome.storage.sync.get(items => {
         if (chrome.runtime.lastError) {
           console.error(chrome.runtime.lastError.message);
           reject();
@@ -45,10 +46,11 @@ class Config {
           if (conf.lazyLoad !== undefined) {
             this.lazyLoad = conf.lazyLoad;
           }
+          this.maxSessions  = conf.maxSessions || -1;
           if (this.debug) console.log('[Config] initialization finished');
           resolve();
         }
-      }).bind(this));
+      });
 
       chrome.storage.onChanged.addListener((change, areaName) => {
         if (areaName == 'sync' && 'config' in change) {
@@ -56,6 +58,7 @@ class Config {
           this.rootParentId = config.rootParentId;
           this.rootname     = config.rootname;
           this.lazyLoad     = config.lazyLoad;
+          this.maxSessions  = config.maxSessions;
           if (this.debug)
             console.log('[Config] configuration updated.', config);
         }
@@ -67,7 +70,8 @@ class Config {
     chrome.storage.sync.set({config: {
       lazyLoad:     this.lazyLoad,
       rootParentId: this.rootParentId,
-      rootName:     this.rootName
+      rootName:     this.rootName,
+      maxSessions:  this.maxSessions
     }}, () => {
       if (chrome.runtime.lastError) {
         console.error(chrome.runtime.lastError.message);
@@ -85,4 +89,4 @@ class Config {
   get summaryRemains() {
     return 60 * 60 * 24 * 30 * 2 * 1000; // 2 month ago
   }
-};
+}

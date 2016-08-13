@@ -19,7 +19,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 'use strict';
 
 var util = {
-  CHROME_EXCEPTION_URL: /^chrome(|-devtools):/,
+  CHROME_EXCEPTION_URL: /^chrome(|-devtools|-extensions):/,
   STRIP_HASH: /^(.*?)#.*$/,
   FAVICON_URL: 'http://www.google.com/s2/favicons?domain=',
 

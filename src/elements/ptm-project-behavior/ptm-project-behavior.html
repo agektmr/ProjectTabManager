@@ -23,12 +23,6 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 <script>
 var PtmProjectBehaviorImpl = {
   properties: {
-    project: {
-      type: Object,
-      value: function() {
-        return [];
-      }
-    },
     fields: {
       type: Array,
       value: function() {
@@ -111,25 +105,11 @@ var PtmProjectBehaviorImpl = {
     return winId !== null;
   },
   _toggleBookmark: function(e) {
-    var that = this;
     e.stopPropagation();
-    var field = e.model.item;
-    var index = e.model.index;
-    if (field.id === undefined || field.id === '') {
-      this.project.addBookmark(field.tabId).then(bookmark => {
-        this.set(`fields.${index}.id`, bookmark.id);
-        this.fire('show-toast', {
-          text: 'Bookmark added'
-        });
-      });
-    } else {
-      this.project.removeBookmark(field.id).then(() => {
-        this.set(`fields.${index}.id`, '');
-        this.fire('show-toast', {
-          text: 'Bookmark removed'
-        });
-      });
-    }
+    this.fire('toggle-bookmark', {
+      projectId:  this.projectId,
+      fieldIndex: e.model.index
+    });
   }
 };
 

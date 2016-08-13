@@ -115,12 +115,15 @@ Author: Eiji Kitamura (agektmr@gmail.com)
       <iron-pages id="pages" selected="[[selected]]">
         <ptm-session-list
           projects="[[projectManager.projects]]"
+          on-toggle-bookmark="_toggleBookmark"
           on-create-project="_createProject"
+          on-link-clicked="_openLinker"
           on-open-clicked="_openProject"
           on-remove-clicked="_removeSession">
         </ptm-session-list>
         <ptm-project-list
           projects="[[projectManager.projects]]"
+          on-toggle-bookmark="_toggleBookmark"
           on-open-clicked="_openProject"
           on-rename-clicked="_renameProject"
           on-remove-clicked="_removeProject">
@@ -130,6 +133,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
         </div>
         <ptm-search-list
           projects="[[searchResults]]"
+          on-toggle-bookmark="_toggleBookmark"
           on-open-clicked="_openProject">
         </ptm-search-list>
       </iron-pages>
@@ -176,7 +180,6 @@ Author: Eiji Kitamura (agektmr@gmail.com)
       ChromeI18n
     ],
     listeners: {
-      'link-clicked': '_openLinker',
       'show-toast': '_showToast',
       'reload': 'reload'
     },
@@ -234,34 +237,36 @@ Author: Eiji Kitamura (agektmr@gmail.com)
         this.$.linker.open(project);
       } else {
         this.fire('show-toast', {
-          text: this._l10n('project_to_link_not_found.')
+          text: this._l10n('project_to_link_not_found')
         });
       }
     },
     _linkProject: function(e) {
-      if (e.detail.sourceProject && e.detail.targetProject) {
-        var targetProject = e.detail.targetProject;
-        var sourceProject = e.detail.sourceProject;
-        if (!!targetProject.session) {
-          var bookmark = targetProject.bookmark;
-          targetProject.deassociateBookmark();
-          // create a dummy target project
-          targetProject = {
-            bookmark:bookmark
-          };
-        }
-        sourceProject.associateBookmark(targetProject.bookmark);
+      let srcProj = this.projectManager.getProjectFromId(e.detail.srcProjId);
+      let dstProj = this.projectManager.getProjectFromId(e.detail.dstProjId);
 
-        this.fire('reload');
-        this.fire('show-toast', {
-          text: this._l10n('project_linked')
-        });
-        this.$.linker.close();
-      } else {
+      if (!srcProj || !dstProj) {
         this.fire('show-toast', {
           text: this._l10n('failed_linking')
         });
+        return;
       }
+
+      if (!!dstProj.session) {
+        var bookmark = dstProj.bookmark;
+        dstProj.deassociateBookmark();
+        // create a dummy target project
+        dstProj = {
+          bookmark: bookmark
+        };
+      }
+      srcProj.associateBookmark(dstProj.bookmark);
+
+      this.$.linker.close();
+      this.fire('reload');
+      this.fire('show-toast', {
+        text: this._l10n('project_linked')
+      });
     },
     _unlinkProject: function(e) {
       if (e.detail.targetProject) {
@@ -323,7 +328,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
             text: this._l10n('session_removed')
           });
         });
-      }).catch(() => { return; });
+      });
     },
     _renameProject: function(e) {
       var project = this.projectManager.getProjectFromId(e.detail.id);
@@ -343,7 +348,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
               text: this._l10n('project_renamed')
             });
           });
-        }).catch(() => { return; });
+        });
       }
     },
     _removeProject: function(e) {
@@ -362,8 +367,42 @@ Author: Eiji Kitamura (agektmr@gmail.com)
         });
       }).catch(() => { return; });
     },
+    _toggleBookmark: function(e) {
+      let projectIndex = 0;
+      let project = null;
+      for (let i = 0; i < this.projectManager.projects.length; i++) {
+        if (this.projectManager.projects[i].id === e.detail.projectId) {
+          project = this.projectManager.projects[i];
+          projectIndex = i;
+          break;
+        }
+      }
+      if (project && project.fields[e.detail.fieldIndex]) {
+        let field = project.fields[e.detail.fieldIndex];
+        let path = `projectManager.projects.${projectIndex}.fields.${e.detail.fieldIndex}.id`;
+        if (field.id === undefined || field.id === '') {
+          project.addBookmark(field.tabId).then(bookmark => {
+            this.set(path, bookmark.id);
+            this.fire('show-toast', {
+              text: this._l10n('bookmark_added')
+            });
+          });
+        } else {
+          project.removeBookmark(field.id).then(() => {
+            this.set(path, '');
+            this.fire('show-toast', {
+              text: this._l10n('bookmark_removed')
+            });
+          });
+        }
+      } else {
+        this.fire('show-toast', {
+          text: this._l10n('bookmark_error')
+        });
+      }
+    },
     search: function() {
-      util.deepCopy(this.projectManager.projects).then((projects) => {
+      util.deepCopy(this.projectManager.projects).then(projects => {
         for (var i = 0; i < projects.length; i++) {
           var project = projects[i];
           for (var j = 0; j < project.fields.length; j++) {

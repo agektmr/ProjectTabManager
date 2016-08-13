@@ -70,19 +70,17 @@ Author: Eiji Kitamura (agektmr@gmail.com)
           <!-- <paper-ripple></paper-ripple> -->
           <span>[[projectTitle]]</span>
         </div>
-        <template is="dom-if" if="[[!_projectLinked]]" restamp>
-          <template is="dom-if" if="[[!expanded]]" restamp>
-            <paper-icon-button icon="notification:folder-special" on-tap="_onTapNewProject" tabindex="-1"></paper-icon-button>
+        <template is="dom-if" if="[[_projectLinked]]">
+          <template is="dom-if" if="[[expanded]]">
+            <template is="dom-if" if="[[!_computeActive(winId)]]">
+              <paper-icon-button icon="icons:delete" on-tap="_onTapRemove" tabindex="-1"></paper-icon-button>
+            </template>
           </template>
         </template>
-        <template is="dom-if" if="[[expanded]]" restamp>
-          <template is="dom-if" if="[[!_projectLinked]]" restamp>
-            <paper-icon-button icon="icons:link" on-tap="_onTapLink" tabindex="-1"></paper-icon-button>
-            <paper-icon-button icon="notification:folder-special" on-tap="_onTapNewProject" tabindex="-1"></paper-icon-button>
-          </template>
-          <template is="dom-if" if="[[!_computeActive(winId)]]">
-            <paper-icon-button icon="icons:delete" on-tap="_onTapRemove" tabindex="-1"></paper-icon-button>
-          </template>
+        <template is="dom-if" if="[[!_projectLinked]]">
+          <paper-icon-button icon="icons:delete" on-tap="_onTapRemove" tabindex="-1"></paper-icon-button>
+          <paper-icon-button icon="icons:link" on-tap="_onTapLink" tabindex="-1"></paper-icon-button>
+          <paper-icon-button icon="notification:folder-special" on-tap="_onTapNewProject" tabindex="-1"></paper-icon-button>
         </template>
       </paper-item>
       <iron-collapse id="collapse" opened="[[expanded]]" tabindex="-1">
@@ -133,19 +131,19 @@ Author: Eiji Kitamura (agektmr@gmail.com)
       PtmProjectBehavior
     ],
     _onTapLink: function(e) {
-      // e.stopPropagation();
+      e.stopPropagation();
       this.fire('link-clicked', {
         id: this.projectId
       });
     },
     _onTapNewProject: function(e) {
-      // e.stopPropagation();
+      e.stopPropagation();
       this.fire('create-project', {
         id: this.projectId
       });
     },
     _onTapRemove: function(e) {
-      // e.stopPropagation();
+      e.stopPropagation();
       this.fire('remove-clicked', {
         id: this.projectId
       });

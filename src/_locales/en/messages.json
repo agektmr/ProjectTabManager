@@ -135,7 +135,7 @@
     "message": "Failed unlinking a project"
   },
   "linked_project": {
-    "message": "Re-linked with this project?"
+    "message": "Re-link with this project?"
   },
   "confirm_breaking_link": {
     "message": "This project is already linked with another session. Are you sure you want to unlink and re-link it with this session? (unlinked session will remain)"

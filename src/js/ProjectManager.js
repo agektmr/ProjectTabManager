@@ -53,7 +53,7 @@ const ProjectManager = (function() {
       this.id         = bookmark && bookmark.id || undefined;
       this.tabId      = tab && tab.id || undefined;
       // this.index      = tab && tab.index || undefined; // TODO: what if index==0
-      this.title      = tab && tab.title || bookmark.title;
+      this.title      = tab && tab.title || bookmark && bookmark.title || '';
       this.url        = url;
       this.pinned     = tab && tab.pinned || false;
       this.favIconUrl = tab && tab.favIconUrl;
@@ -86,6 +86,11 @@ const ProjectManager = (function() {
      */
     open() {
       sessionManager.openingProject = this.id;
+
+      chrome.browserAction.setBadgeText({
+        text: this.title.substr(0, 4).trim() || ''
+      });
+
       // If there's no fields, open an empty window
       if (this.fields.length === 0) {
         chrome.windows.create({
@@ -275,6 +280,8 @@ const ProjectManager = (function() {
     constructor(config) {
       config_ = config;
       this.projects = [];
+
+      chrome.windows.onFocusChanged.addListener(this.setBadgeText.bind(this));
     }
 
     /**
@@ -430,31 +437,43 @@ const ProjectManager = (function() {
       let session, project, i, j,
         sessions = sessionManager.getSessions().slice(0);
 
-      // Append non-bound sessions first
-      for (i = 0; i < sessions.length; i++) {
-        // Leave bound sessions
-        if (sessions[i].id && sessions[i].id.indexOf('-') === -1) continue;
-        session = sessions.splice(i--, 1)[0];
-        project = new ProjectEntity(session, null);
-        this.projects.push(project);
-        if (config_.debug) console.log('[ProjectManager] Project %s: %o created non-bound session: %o', project.id, project, session);
-      }
       bookmarkManager.getRoot(force_reload).then(bookmarks => {
-        // Loop through all sessions
-        for (let bookmark of bookmarks) {
-          // Skip Archives folder
-          if (bookmark.title === config_.archiveFolderName) continue;
+        let boundId = [];
 
-          session = undefined;
-          for (j = 0; j < sessions.length; j++) {
-            if (sessions[j].id === bookmark.id) {
-              session = sessions.splice(j, 1)[0];
-              break;
+        // Append non-bound sessions first
+        for (let session of sessions) {
+          if (session.id && session.id.indexOf('-') === -1) {
+            // This is bound session
+            let found = false;
+            // Look for bound bookmark
+            for (let bookmark of bookmarks) {
+              if (bookmark.id === session.id) {
+                project = new ProjectEntity(session, bookmark);
+                this.projects.push(project);
+                boundId.push(bookmark.id);
+                if (config_.debug) console.log('[ProjectManager] Project %s: %o created from session: %o and bookmark: %o', project.id, project, session, bookmark);
+                found = true;
+                break;
+              }
+            }
+            if (found) {
+              continue;
             }
           }
-          let project = new ProjectEntity(session, bookmark);
+
+          // If session is not bound or matching bookmark was not found
+          project = new ProjectEntity(session, null);
           this.projects.push(project);
-          if (config_.debug) console.log('[ProjectManager] Project %s: %o created from session: %o and bookmark: %o', project.id, project, session, bookmark);
+          if (config_.debug) console.log('[ProjectManager] Project %s: %o created non-bound session: %o', project.id, project, session);
+        }
+
+        // Add rest of bookmarks
+        for (let bookmark of bookmarks) {
+          if (boundId.includes(bookmark.id)) continue;
+          if (bookmark.title === config_.archiveFolderName) continue;
+          project = new ProjectEntity(null, bookmark);
+          this.projects.push(project);
+          if (config_.debug) console.log('[ProjectManager] Project %s: %o created non-bound bookmark: %o', project.id, project, bookmark);
         }
 
         if (typeof callback === 'function') callback(this);
@@ -467,6 +486,22 @@ const ProjectManager = (function() {
      */
     openBookmarkEditWindow(bookmarkId) {
       bookmarkManager.openEditWindow(bookmarkId);
+    }
+
+    /**
+     * Sets badge text
+     * @param {String} winId Window Id
+     */
+    setBadgeText(winId) {
+      let project = this.getProjectFromWinId(winId);
+      console.log(`[ProjectManager] Window changed ${winId}:`, project);
+      if (project) {
+        chrome.browserAction.setBadgeText({
+          text: project.title.substr(0, 4).trim() || ''
+        });
+      } else {
+        chrome.browserAction.setBadgeText({ text: ''});
+      }
     }
 
     /**

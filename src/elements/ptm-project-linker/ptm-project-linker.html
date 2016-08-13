@@ -125,14 +125,14 @@ Author: Eiji Kitamura (agektmr@gmail.com)
           cancel: this._l10n('cancel')
         }).then(() => {
           this.fire('link-project', {
-            sourceProject: this.linkingProject,
-            targetProject: e.model.item
+            srcProjId: this.linkingProject.id,
+            dstProjId: e.model.item.id
           });
-        }).catch(() => { return; });
+        });
       } else {
         this.fire('link-project', {
-          sourceProject: this.linkingProject,
-          targetProject: e.model.item
+          srcProjId: this.linkingProject.id,
+          dstProjId: e.model.item.id
         });
       }
     },

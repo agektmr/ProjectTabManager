@@ -29,7 +29,6 @@ Author: Eiji Kitamura (agektmr@gmail.com)
   <template>
     <template id="repeat" is="dom-repeat" items="[[projects]]" filter="filter">
       <ptm-project
-        project="{{item}}"
         project-id="[[item.id]]"
         project-title="[[item.title]]"
         fields="[[item.fields]]">

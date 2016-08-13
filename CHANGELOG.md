@@ -1,5 +1,7 @@
 ## Version 4.0.0
-* Full rewrite using Polymer and Material Design.
+* New design + Polymer.
+* Added max session settings.
+* History feature is removed.
 
 ## Version 3.0.1
 * Fixed critical bug for existing users that prevents PTM to be opened.

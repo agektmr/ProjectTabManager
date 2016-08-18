@@ -113,6 +113,12 @@
   "disable_lazy_load_help": {
     "message": "レイジーロードは、複数のタブを同時に開く際、アクティブなタブのみをロードします"
   },
+  "maximum_sessions": {
+    "message": "最大未リンクセッション数"
+  },
+  "maximum_sessions_help": {
+    "message": "どのプロジェクトにもリンクされていないセッションの最大数。拡張機能の起動時に、古いものから順に自動削除されます。"
+  },
   "link_session_to_a_project": {
     "message": "セッションを既存プロジェクトにリンク"
   },

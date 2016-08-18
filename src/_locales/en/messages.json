@@ -113,6 +113,12 @@
   "disable_lazy_load_help": {
     "message": "Lazy load prevents simultaneous load of multiple tabs when opening a project."
   },
+  "maximum_sessions": {
+    "message": "Max unlinked sessions"
+  },
+  "maximum_sessions_help": {
+    "message": "Maximum number of sessions not linked to any projects will be deleted from oldest when launching the extension."
+  },
   "link_session_to_a_project": {
     "message": "Link session to an existing project"
   },

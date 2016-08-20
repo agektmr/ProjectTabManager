@@ -22,7 +22,7 @@ class Config {
   constructor() {
     this.rootParentId = '2';
     this.rootName = 'Project Tab Manager';
-    this.lazyLoad = true;
+    this.lazyLoad = false;
     this.maxSessions = -1;
     this.debug = true;
 
@@ -40,14 +40,15 @@ class Config {
           console.error(chrome.runtime.lastError.message);
           reject();
         } else {
-          let conf = items.config || {};
-          this.rootParentId = conf.rootParentId || '2';
-          this.rootName     = conf.rootName     || 'Project Tab Manager';
-          if (conf.lazyLoad !== undefined) {
-            this.lazyLoad = conf.lazyLoad;
+          if (items.config) {
+            this.rootParentId = items.config.rootParentId;
+            this.rootName     = items.config.rootName;
+            this.lazyLoad     = items.config.lazyLoad;
+            this.maxSessions  = items.config.maxSessions;
+          } else {
+            this.sync();
           }
-          this.maxSessions  = conf.maxSessions || -1;
-          if (this.debug) console.log('[Config] initialization finished');
+          if (this.debug) console.log('[Config] initialization finished', this);
           resolve();
         }
       });

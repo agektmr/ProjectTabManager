@@ -76,12 +76,16 @@ const SessionManager = (function() {
      * Synchronize project status to chrome.storage. Restores when on initialization.
      */
     storeSessions() {
-      chrome.storage.local.set(sessionManager.export(), () => {
-        if (chrome.runtime.lastError) {
-          console.error(chrome.runtime.lastError.message);
-        } else {
-          if (config_.debug) console.log('[UpdateManager] sessions stored.', sessionManager.sessions);
-        }
+      return new Promise(function(resolve, reject) {
+        chrome.storage.local.set(sessionManager.export(), () => {
+          if (chrome.runtime.lastError) {
+            console.error(chrome.runtime.lastError.message);
+            reject();
+          } else {
+            if (config_.debug) console.log('[UpdateManager] sessions stored.', sessionManager.sessions);
+            resolve();
+          }
+        });
       });
     },
 
@@ -616,17 +620,18 @@ const SessionManager = (function() {
     /**
      * Removes session of given project id
      * @param  {String} projectId [description]
+     * @return Promise A promise that resolves with session object
      */
     removeSessionFromProjectId(projectId) {
       for (let i = 0; i < this.sessions.length; i++) {
         if (this.sessions[i].id === projectId) {
-          this.sessions.splice(i, 1);
+          let session = this.sessions.splice(i, 1);
           if (config_.debug) console.log('[SessionManager] removed session of project id:', projectId);
           UpdateManager.storeSessions();
-          return true;
+          return Promise.resolve(session);
         }
       }
-      return false;
+      return Promise.reject();
     }
 
     /**
@@ -637,13 +642,13 @@ const SessionManager = (function() {
     removeSessionFromWinId(winId) {
       for (let i = 0; i < this.sessions.length; i++) {
         if (this.sessions[i].winId === winId) {
-          this.sessions.splice(i, 1);
+          let session = this.sessions.splice(i, 1);
           if (config_.debug) console.log('[SessionManager] removed session of window id:', winId);
           UpdateManager.storeSessions();
-          return true;
+          return Promise.resolve(session);
         }
       }
-      return false;
+      return Promise.reject();
     }
 
     unsetWinId(winId) {

@@ -153,11 +153,14 @@ const BookmarkManager = (function() {
      */
     archiveFolder(bookmarkId) {
       return new Promise((resolve, reject) => {
-        getFolder(this.rootId, config_.archiveFolderName).then(archiveFolder => {
+        getFolder(this.rootId, config_.archiveFolderName)
+        .then(archiveFolder => {
           if (archiveFolder) {
             chrome.bookmarks.move(bookmarkId, {parentId: archiveFolder.id}, bookmark => {
               if (config_.debug) console.log('[BookmarkManager] archived a bookmark', bookmark);
-              this.load().then(() => resolve(bookmark), reject);
+              this.load().then(() => {
+                resolve(bookmark)
+              }, reject);
             });
           }
         }, reject);

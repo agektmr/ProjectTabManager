@@ -35,6 +35,10 @@ PTM automatically tracks all windows you open in Chrome. You can resume those wi
 ## The Developer
 My name is Eiji Kitamura. Find me on [my blog](http://blog.agektmr.com), [Google+](http://google.com/+agektmr), [Twitter](http://twitter.com/agektmr) or [github](https://github.com/agektmr).
 
+Special thanks to
+* @sh_sk for initial design of PTM.
+* @HBonsai, @sato4yoshida for reviewing earlier version of 4.0.
+
 ## Feedback
 I'm grateful if you could give [a review on Chrome Web Store](https://chrome.google.com/webstore/support/iapdnheekciiecjijobcglkcgeckpoia).
 

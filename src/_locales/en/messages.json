@@ -42,13 +42,19 @@
     "message": "Add from existing tabs"
   },
   "description": {
-    "message": "Have too many tabs opened on Chrome? This extension helps you organize your tabs on windows per projects."
+    "message": "Project Tab Manager is an extension for Google Chrome that helps you focus on a single project. It preserves each windows as projects, not only you can restore them anytime, you can synchronize projects across different devices using same Chrome profile."
   },
   "bookmark": {
     "message": "Toggle bookmark"
   },
   "no_bookmarks": {
     "message": "No bookmarks"
+  },
+  "bookmark_added": {
+    "message": "Bookmark added"
+  },
+  "bookmark_removed": {
+    "message": "Bookmark removed"
   },
   "no_tabs": {
     "message": "No tabs"
@@ -118,6 +124,9 @@
   },
   "maximum_sessions_help": {
     "message": "Maximum number of sessions not linked to any projects will be deleted from oldest when launching the extension."
+  },
+  "unlimited": {
+    "message": "Unlimited"
   },
   "link_session_to_a_project": {
     "message": "Link session to an existing project"

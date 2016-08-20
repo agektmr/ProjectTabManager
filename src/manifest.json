@@ -1,5 +1,6 @@
 {
   "name": "Project Tab Manager",
+  "short_name": "PTM",
   "description": "__MSG_description__",
   "manifest_version": 2,
   "version": "4.0.0",
@@ -27,8 +28,8 @@
   "commands": {
     "_execute_browser_action": {
       "suggested_key": {
-        "default": "Ctrl+Shift+P",
-        "mac": "MacCtrl+Shift+P"
+        "default": "Ctrl+P",
+        "mac": "MacCtrl+P"
       }
     }
   }

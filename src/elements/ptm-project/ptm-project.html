@@ -73,7 +73,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
         </div>
         <template is="dom-if" if="[[expanded]]">
           <paper-icon-button icon="create" on-tap="_onTapRename" tabindex="-1"></paper-icon-button>
-          <template is="dom-if" if="[[!_isNotRemovable()]]">
+          <template is="dom-if" if="[[!_computeActive(winId)]]">
             <paper-icon-button icon="delete" on-tap="_onTapRemove" tabindex="-1"></paper-icon-button>
           </template>
         </template>
@@ -105,22 +105,6 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     is: 'ptm-project',
     behaviors: [
       PtmProjectBehavior
-    ],
-    _isNotRemovable: function() {
-      // TODO: Needs this to be correctly reflected
-      return this.project && this.project.session && this.project.session.winId ? true : false;
-    },
-    _onTapRename: function(e) {
-      e.stopPropagation();
-      this.fire('rename-clicked', {
-        id: this.projectId
-      });
-    },
-    _onTapRemove: function(e) {
-      e.stopPropagation();
-      this.fire('remove-clicked', {
-        id: this.projectId
-      });
-    }
+    ]
   });
 </script>

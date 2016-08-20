@@ -42,13 +42,19 @@
     "message": "開いているタブから追加"
   },
   "description": {
-    "message": "Chromeでタブを開きすぎていませんか？このExtensionを使うことで、ウィンドウごとにタブを保存することができるようになります。"
+    "message": "Project Tab Manager はあなたの Google Chrome を、ひとつのプロジェクトに集中しやすい環境にするための拡張機能です。ウィンドウひとつひとつをプロジェクトとして記憶し、いつでもタブのセットを復元できるだけでなく、別の Chrome 環境でも同じプロジェクトを復元することができます。"
   },
   "bookmark": {
     "message": "ブックマークを追加・削除"
   },
   "no_bookmarks": {
     "message": "ブックマークがありません"
+  },
+  "bookmark_added": {
+    "message": "ブックマークを追加しました"
+  },
+  "bookmark_removed": {
+    "message": "ブックマークを削除しました"
   },
   "no_tabs": {
     "message": "タブがありません"
@@ -118,6 +124,9 @@
   },
   "maximum_sessions_help": {
     "message": "どのプロジェクトにもリンクされていないセッションの最大数。拡張機能の起動時に、古いものから順に自動削除されます。"
+  },
+  "unlimited": {
+    "message": "無制限"
   },
   "link_session_to_a_project": {
     "message": "セッションを既存プロジェクトにリンク"

@@ -135,6 +135,16 @@ const ProjectManager = (function() {
     }
 
     /**
+     * Closes the project window
+     * @return Promise returns promise object
+     */
+    close() {
+      if (this.session.winId) {
+        return chrome.windows.remove(this.session.winId);
+      }
+    }
+
+    /**
      * Rename project
      */
     rename(name) {
@@ -369,23 +379,30 @@ const ProjectManager = (function() {
      * @param  {requestCallback}  callback  [description]
      */
     removeProject(id) {
-      return new Promise(resolve => {
-        for (let i = 0; i < this.projects.length; i++) {
-          if (this.projects[i].id === id) {
-            // Remove project from list first
-            let project = this.projects.splice(i, 1)[0];
-            // Then remove bookmark if exists (otherwise non-bound session)
-            if (project.bookmark) {
-              bookmarkManager.archiveFolder(id).then(() => resolve(project));
-              if (config_.debug) console.log('[ProjectManager] removed project %s from bookmark', id);
-            } else {
-              // non-bound session should be removed from session list as well
+      for (let i = 0; i < this.projects.length; i++) {
+        if (this.projects[i].id === id) {
+          // Remove project from list first
+          let project = this.projects.splice(i, 1)[0];
+          // Then remove bookmark if exists (otherwise non-bound session)
+          if (project.bookmark) {
+            return bookmarkManager.archiveFolder(id)
+            .then(() => {
+              // Session might be non bound. Don't return promise directly.
               sessionManager.removeSessionFromProjectId(id);
-              resolve();
-            }
+              return Promise.resolve();
+            }).then(() => {
+              if (config_.debug) console.log('[ProjectManager] removed project %s from bookmark', id);
+              return project;
+            }).catch(() => {
+              if (config_.debug) console.log('[ProjectManager] failed to remove project %s from bookmark', id);
+              return project;
+            });
+          } else {
+            // non-bound session should be removed from session list as well
+            return sessionManager.removeSessionFromProjectId(id);
           }
         }
-      });
+      }
     }
 
     /**
@@ -394,15 +411,11 @@ const ProjectManager = (function() {
      * @param  {requestCallback}  callback [description]
      */
     removeSession(id) {
-      return new Promise(resolve => {
-        for (let project of this.projects) {
-          if (project.id === id) {
-            project.deassociateBookmark();
-            this.removeProject(project.id).then(resolve);
-            break;
-          }
-        }
-      });
+      let project = this.getProjectFromId(id);
+      if (project.bookmark) {
+        project.deassociateBookmark();
+      }
+      return sessionManager.removeSessionFromProjectId(id);
     }
 
     /**

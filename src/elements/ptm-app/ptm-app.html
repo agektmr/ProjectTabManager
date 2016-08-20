@@ -19,6 +19,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../../bower_components/iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-header-panel/paper-header-panel.html">
@@ -95,7 +96,6 @@ Author: Eiji Kitamura (agektmr@gmail.com)
             <paper-material class="dropdown-content">
               <paper-item on-tap="reload">{{_l10n('reload')}}</paper-item>
               <paper-item on-tap="manageBookmarks">{{_l10n('manage_bookmarks')}}</paper-item>
-              <!-- <paper-item on-tap="openHistory">{{_l10n('history')}}</paper-item> -->
               <paper-item on-tap="openSettings">{{_l10n('settings')}}</paper-item>
               <paper-item on-tap="openHelp">{{_l10n('help')}}</paper-item>
             </paper-material>
@@ -119,6 +119,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
           on-create-project="_createProject"
           on-link-clicked="_openLinker"
           on-open-clicked="_openProject"
+          on-rename-clicked="_renameProject"
           on-remove-clicked="_removeSession">
         </ptm-session-list>
         <ptm-project-list
@@ -156,6 +157,10 @@ Author: Eiji Kitamura (agektmr@gmail.com)
         type: Number,
         value: 0
       },
+      shiftKey: {
+        type: Boolean,
+        value: false
+      },
       toastText: {
         type: String,
         value: ''
@@ -188,6 +193,16 @@ Author: Eiji Kitamura (agektmr@gmail.com)
       this.$.toast.show();
     },
     ready: function() {
+      this.addEventListener('keydown', e => {
+        if (e.keyCode === 16) {
+          this.shiftKey = true;
+        }
+      });
+      this.addEventListener('keyup', e => {
+        if (e.keyCode === 16) {
+          this.shiftKey = false;
+        }
+      })
       this.fire('reload', {
         forceReload: false
       });
@@ -208,15 +223,12 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     manageBookmarks: function() {
       this.projectManager.openBookmarkEditWindow();
     },
-    openHistory: function() {
-
-    },
     openSettings: function() {
       this.$.options.open();
       this.$.menu.close();
     },
     openHelp: function() {
-
+      chrome.tabs.create({url: chrome.extension.getURL('/README.html')});
     },
     _queryChanged: function(newValue, oldValue) {
       if (oldValue != newValue) {
@@ -285,9 +297,13 @@ Author: Eiji Kitamura (agektmr@gmail.com)
       }
     },
     _openProject: function(e) {
-      var project = this.projectManager.getProjectFromId(e.detail.id);
+      let current = this.projectManager.getActiveProject();
+      let project = this.projectManager.getProjectFromId(e.detail.id);
       if (project) {
         project.open();
+        if (this.shiftKey) {
+          current.close();
+        }
       } else {
         this.fire('show-toast', {
           text: this._l10n('failed_opening')
@@ -326,6 +342,11 @@ Author: Eiji Kitamura (agektmr@gmail.com)
           this.fire('reload');
           this.fire('show-toast', {
             text: this._l10n('session_removed')
+          });
+        }).catch(() => {
+          this.fire('reload');
+          this.fire('show-toast', {
+            text: 'Failed to remove the session'
           });
         });
       });

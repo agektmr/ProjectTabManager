@@ -60,7 +60,6 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     <paper-dialog id="dialog" modal>
       <h2>{{_l10n('settings')}}</h2>
       <paper-dialog-scrollable>
-        <p>{{_l10n('root_folder_location_help')}}</p>
         <paper-dropdown-menu id="root" label="{{_l10n('root_folder_location')}}">
           <paper-menu class="dropdown-content" selected="{{rootParent}}">
             <template is="dom-repeat" items="[[rootFolders]]">
@@ -69,16 +68,17 @@ Author: Eiji Kitamura (agektmr@gmail.com)
           </paper-menu>
         </paper-dropdown-menu><br/>
         <paper-input id="rootName" value="{{rootName}}" label="{{_l10n('root_folder_name')}}"></paper-input>
-        <p>{{_l10n('disable_lazy_load_help')}}</p>
+        <p>{{_l10n('root_folder_location_help')}}</p>
         <paper-toggle-button id="lazyLoad" checked="{{lazyLoad}}">{{_l10n('disable_lazy_load')}}</paper-toggle-button>
-        <p>{{_l10n('maximum_sessions_help')}}</p>
+        <p>{{_l10n('disable_lazy_load_help')}}</p>
         <paper-dropdown-menu id="sessions" label="{{_l10n('maximum_sessions')}}">
           <paper-menu class="dropdown-content" selected="{{maxSessIdx}}">
-            <paper-item>Unlimited</paper-item>
+            <paper-item>{{_l10n('unlimited')}}</paper-item>
             <paper-item>5</paper-item>
             <paper-item>10</paper-item>
           </paper-menu>
         </paper-dropdown-menu><br/>
+        <p>{{_l10n('maximum_sessions_help')}}</p>
       </paper-dialog-scrollable>
       <div class="buttons">
         <paper-button on-tap="close" raised>{{_l10n('cancel')}}</paper-button>
@@ -94,7 +94,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     properties: {
       lazyLoad: {
         type: Boolean,
-        value: true
+        value: false
       },
       rootName: {
         type: String,

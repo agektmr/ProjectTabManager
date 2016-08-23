@@ -42,7 +42,7 @@
     "message": "開いているタブから追加"
   },
   "description": {
-    "message": "Project Tab Manager はあなたの Google Chrome を、ひとつのプロジェクトに集中しやすい環境にするための拡張機能です。ウィンドウひとつひとつをプロジェクトとして記憶し、いつでもタブのセットを復元できるだけでなく、別の Chrome 環境でも同じプロジェクトを復元することができます。"
+    "message": "Project Tab Manager はあなたの Google Chrome を、ひとつのプロジェクトに集中しやすい環境にするための拡張機能です。"
   },
   "bookmark": {
     "message": "ブックマークを追加・削除"

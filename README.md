@@ -1,8 +1,6 @@
 # Welcome to Project Tab Manager!
 
-Thank you for installing Project Tab Manager.
-
-Project Tab Manager helps you manage flood of tabs. Treat windows as projects and focus on what you are focusing on. Close windows and resume anytime.
+Project Tab Manager is an extension for Google Chrome that helps you focus on a single project. It preserves each windows as projects, not only you can restore them anytime, you can synchronize projects across different devices using same Chrome profile.
 
 ## Getting Started
 PTM automatically tracks all windows you open in Chrome. You can resume those windows anytime you want. See how it works:
@@ -19,9 +17,8 @@ PTM automatically tracks all windows you open in Chrome. You can resume those wi
 <img src="https://raw.githubusercontent.com/agektmr/ProjectTabManager/master/assets/readme_6.png" width="320" height="207" />
 ### 6. Feel free to close the window. You can restore the state anytime!
 
-### There are just 2 rules to remember:
-- **Closing window enables you to resume project status whenever you want**
-- **Closing a tab eliminates the page from the project unless you star it**
+### 1 rule to remember:
+- **Close windows not tabs unless you want it to be forgotten.**
 
 ### Keyboard Navigation
 
@@ -36,8 +33,8 @@ PTM automatically tracks all windows you open in Chrome. You can resume those wi
 My name is Eiji Kitamura. Find me on [my blog](http://blog.agektmr.com), [Google+](http://google.com/+agektmr), [Twitter](http://twitter.com/agektmr) or [github](https://github.com/agektmr).
 
 Special thanks to
-* @sh_sk for initial design of PTM.
-* @HBonsai, @sato4yoshida for reviewing earlier version of 4.0.
+* [@sh_sk](https://twitter.com/sh_sk) for initial design of PTM.
+* [@HBonsai](https://twitter.com/HBonsai), [@sato4yoshida](https://twitter.com/sato4yoshida) for reviewing earlier version of 4.0.
 
 ## Feedback
 I'm grateful if you could give [a review on Chrome Web Store](https://chrome.google.com/webstore/support/iapdnheekciiecjijobcglkcgeckpoia).

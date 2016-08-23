@@ -49,6 +49,14 @@ var PtmProjectBehaviorImpl = {
       value: false,
       reflectToAttribute: true
     },
+    initialized: {
+      type: Boolean,
+      computed: '_computeInitialized(expanded, _initialized)'
+    },
+    _initialized: {
+      type: Boolean,
+      value: false
+    },
     _foldIcon: {
       type: String,
       computed: '_computeFoldIcon(expanded)'
@@ -74,6 +82,12 @@ var PtmProjectBehaviorImpl = {
   ],
   ready: function() {
     this.keyEventTarget = this;
+    setTimeout(() => {
+      this._initialized = true;
+    }, 0);
+  },
+  attached: function() {
+    // this.initialized = true;
   },
   toggle: function(e) {
     e.stopPropagation();
@@ -129,6 +143,9 @@ var PtmProjectBehaviorImpl = {
       projectId:  this.projectId,
       fieldIndex: e.model.index
     });
+  },
+  _computeInitialized: function(expanded, initialized) {
+    return expanded || initialized;
   }
 };
 

@@ -42,7 +42,7 @@
     "message": "Add from existing tabs"
   },
   "description": {
-    "message": "Project Tab Manager is an extension for Google Chrome that helps you focus on a single project. It preserves each windows as projects, not only you can restore them anytime, you can synchronize projects across different devices using same Chrome profile."
+    "message": "Project Tab Manager is an extension for Google Chrome that helps you focus on a single project."
   },
   "bookmark": {
     "message": "Toggle bookmark"

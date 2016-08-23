@@ -110,7 +110,7 @@ gulp.task('replace', function() {
 });
 
 gulp.task('zip', function() {
-  return gulp.src('app/*')
+  return gulp.src('app/**/*')
     .pipe($.zip('app.zip'))
     .pipe(gulp.dest('.'));
 });

@@ -92,15 +92,17 @@ Author: Eiji Kitamura (agektmr@gmail.com)
               <span class="title">{{_l10n('no_tabs')}}</span>
             </paper-item>
           </template>
-          <template id="repeat" is="dom-repeat" items="[[fields]]">
-            <ptm-bookmark
-              url="[[item.url]]"
-              fav-icon-url="{{item.favIconUrl}}"
-              bookmark-id="[[item.id]]"
-              tab-id="[[item.tabId]]"
-              site-title="[[item.title]]"
-              project-id="[[projectId]]"
-              on-toggle-bookmark="_toggleBookmark"></ptm-bookmark>
+          <template is="dom-if" if="[[initialized]]">
+            <template id="repeat" is="dom-repeat" items="[[fields]]">
+              <ptm-bookmark
+                url="[[item.url]]"
+                fav-icon-url="{{item.favIconUrl}}"
+                bookmark-id="[[item.id]]"
+                tab-id="[[item.tabId]]"
+                site-title="[[item.title]]"
+                project-id="[[projectId]]"
+                on-toggle-bookmark="_toggleBookmark"></ptm-bookmark>
+            </template>
           </template>
         </div>
       </iron-collapse>

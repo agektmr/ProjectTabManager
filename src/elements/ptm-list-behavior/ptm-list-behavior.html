@@ -27,6 +27,9 @@ var PtmListBehavior = {
       type: Number,
       value: 0
     }
+  },
+  _computeWinId: function(session) {
+    return session && session.winId || null;
   }
 };
 </script>

@@ -57,6 +57,10 @@ var PtmProjectBehaviorImpl = {
       type: Boolean,
       value: false
     },
+    _active: {
+      type: Boolean,
+      computed: '_computeActive(winId)'
+    },
     _foldIcon: {
       type: String,
       computed: '_computeFoldIcon(expanded)'

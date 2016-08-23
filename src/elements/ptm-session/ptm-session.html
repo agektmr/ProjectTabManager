@@ -66,22 +66,22 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     <paper-material elevation="[[_elevation]]" expanded$="[[expanded]]" animated>
       <paper-item focused$="{{focused}}" tabindex="-1">
         <paper-icon-button tabindex="-1" icon="[[_foldIcon]]" on-tap="toggle"></paper-icon-button>
-        <div class="title" on-tap="openProject" active$="[[_computeActive(winId)]]">
+        <div class="title" on-tap="openProject" active$="[[_active]]">
           <!-- <paper-ripple></paper-ripple> -->
           <span>[[projectTitle]]</span>
         </div>
         <template is="dom-if" if="[[_projectLinked]]">
           <template is="dom-if" if="[[expanded]]">
-            <paper-icon-button icon="create" on-tap="_onTapRename" tabindex="-1"></paper-icon-button>
-            <template is="dom-if" if="[[!_computeActive(winId)]]">
-              <paper-icon-button icon="icons:delete" on-tap="_onTapRemove" tabindex="-1"></paper-icon-button>
+            <paper-icon-button icon="create" on-tap="_onTapRename" tabindex="-1" title="[[_l10n('edit')]]"></paper-icon-button>
+            <template is="dom-if" if="[[!_active]]">
+              <paper-icon-button icon="icons:delete" on-tap="_onTapRemove" tabindex="-1" title="[[_l10n('remove')]]"></paper-icon-button>
             </template>
           </template>
         </template>
         <template is="dom-if" if="[[!_projectLinked]]">
-          <paper-icon-button icon="icons:delete" on-tap="_onTapRemove" tabindex="-1"></paper-icon-button>
-          <paper-icon-button icon="icons:link" on-tap="_onTapLink" tabindex="-1"></paper-icon-button>
-          <paper-icon-button icon="notification:folder-special" on-tap="_onTapNewProject" tabindex="-1"></paper-icon-button>
+          <paper-icon-button icon="icons:delete" on-tap="_onTapRemove" tabindex="-1" title="[[_l10n('remove')]]"></paper-icon-button>
+          <paper-icon-button icon="icons:link" on-tap="_onTapLink" tabindex="-1" title="[[_l10n('link_session_to_a_project')]]"></paper-icon-button>
+          <paper-icon-button icon="notification:folder-special" on-tap="_onTapNewProject" tabindex="-1" title="[[_l10n('create_a_new_project')]]"></paper-icon-button>
         </template>
       </paper-item>
       <iron-collapse id="collapse" opened="[[expanded]]" tabindex="-1">

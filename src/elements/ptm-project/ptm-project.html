@@ -67,14 +67,14 @@ Author: Eiji Kitamura (agektmr@gmail.com)
     <paper-material elevation="[[_elevation]]" expanded$="[[expanded]]" animated>
       <paper-item focused$="{{focused}}" tabindex="-1">
         <paper-icon-button tabindex="-1" icon="[[_foldIcon]]" on-tap="toggle"></paper-icon-button>
-        <div class="title" on-tap="openProject" active$="[[_isNotRemovable(projectId)]]">
+        <div class="title" on-tap="openProject" active$="[[_active]]">
           <!-- <paper-ripple></paper-ripple> -->
           <span>{{projectTitle}}</span>
         </div>
         <template is="dom-if" if="[[expanded]]">
-          <paper-icon-button icon="create" on-tap="_onTapRename" tabindex="-1"></paper-icon-button>
-          <template is="dom-if" if="[[!_computeActive(winId)]]">
-            <paper-icon-button icon="delete" on-tap="_onTapRemove" tabindex="-1"></paper-icon-button>
+          <paper-icon-button icon="create" on-tap="_onTapRename" tabindex="-1" title="[[_l10n('edit')]]"></paper-icon-button>
+          <template is="dom-if" if="[[!_active]]">
+            <paper-icon-button icon="delete" on-tap="_onTapRemove" tabindex="-1" title="[[_l10n('remove')]]"></paper-icon-button>
           </template>
         </template>
       </paper-item>

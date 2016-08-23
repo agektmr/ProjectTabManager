@@ -31,7 +31,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
       <ptm-project
         project-id="[[item.id]]"
         project-title="[[item.title]]"
-        win-id="[[item.session.winId]]"
+        win-id="[[_computeWinId(item.session)]]"
         fields="[[item.fields]]">
       </ptm-project>
     </template>

@@ -1,3 +1,6 @@
+## Version 4.0.1
+* Fixed critical bug that deletes all sessions when max unlinked sessions option is set to `Unlimited`.
+
 ## Version 4.0.0
 * New design + Polymer.
 * Added max session settings.

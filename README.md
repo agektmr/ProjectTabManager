@@ -4,15 +4,25 @@ Project Tab Manager is an extension for Google Chrome that helps you focus on a 
 PTM automatically tracks all windows you open in Chrome. You can resume those windows anytime you want. See how it works:
 
 1. Click on PTM icon  
+<div class="img">
 <img src="https://raw.githubusercontent.com/agektmr/ProjectTabManager/master/assets/readme_0.png" style="width:227px; height:46px;" />
-2. Do you see a list of dates? They represent a session per window. Try closing one of the window, you'll be able to restore the window and its tabset by clicking on the session entry.  
+</div>
+2. Do you see a list of dates? They represent sessions per window. Try closing one of the window, you'll be able to restore the window and its tabset by clicking on the session entry.  
+<div class="img">
 <img src="https://raw.githubusercontent.com/agektmr/ProjectTabManager/master/assets/readme_1.png" style="width:321px; height:181px;" />
+</div>
 3. You can create a project out of the session by clicking on the folder icon next to the session name.  
+<div class="img">
 <img src="https://raw.githubusercontent.com/agektmr/ProjectTabManager/master/assets/readme_3.png" style="width:290px; height:269px;" />
+</div>
 4. Check out Chrome's bookmark folder. The project is stored as Chrome's standard bookmarks. So they are synced across devices and even accessible from Chrome for Android or for iOS.  
+<div class="img">
 <img src="https://raw.githubusercontent.com/agektmr/ProjectTabManager/master/assets/readme_5.png" style="width:533px; height:111px;" />
+</div>
 5. The stars indicate if they are temporary sessions or synced bookmarks. Adding / modifying tab's URLs will be locally tracked, but not synced. Add stars to sync.  
+<div class="img">
 <img src="https://raw.githubusercontent.com/agektmr/ProjectTabManager/master/assets/readme_6.png" style="width:320px; height:207px;" />
+</div>
 6. Feel free to close the window. You can restore the state anytime!
 
 ## 1 rule to remember:

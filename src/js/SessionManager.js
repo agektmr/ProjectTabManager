@@ -854,7 +854,7 @@ console.log('current window id:', win.id);
               if (session.id.indexOf('-') === 0) {
                 // Unbound session
                 unboundSessions++;
-                if (this.maxSessions === 0 || unboundSessions <= this.maxSessions) {
+                if (this.maxSessions === -1 || unboundSessions <= this.maxSessions) {
                   // `push` not `unshift`
                   this.sessions.push(session);
                   if (config_.debug) console.log('[SessionManager] A session without open window.', session);

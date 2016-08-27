@@ -507,14 +507,12 @@ const ProjectManager = (function() {
      */
     setBadgeText(winId) {
       let project = this.getProjectFromWinId(winId);
-      console.log(`[ProjectManager] Window changed ${winId}:`, project);
+      let text = '';
       if (project) {
-        chrome.browserAction.setBadgeText({
-          text: project.title.substr(0, 4).trim() || ''
-        });
-      } else {
-        chrome.browserAction.setBadgeText({ text: ''});
+        text = project.title.substr(0, 4).trim() || '';
       }
+      if (config_.debug) console.log(`[ProjectManager] Badge set to "${project.title}"`, project);
+      chrome.browserAction.setBadgeText({text: text});
     }
 
     /**

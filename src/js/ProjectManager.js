@@ -86,10 +86,7 @@ const ProjectManager = (function() {
      */
     open() {
       sessionManager.openingProject = this.id;
-
-      chrome.browserAction.setBadgeText({
-        text: this.title.substr(0, 4).trim() || ''
-      });
+      this.setBadgeText();
 
       // If there's no fields, open an empty window
       if (this.fields.length === 0) {
@@ -159,10 +156,15 @@ const ProjectManager = (function() {
             if (this.session) {
               this.session.setId(folder.id);
             }
-            resolve();
+            this.setBadgeText();
+            resolve(folder);
           });
         } else {
-          bookmarkManager.renameFolder(this.id, name).then(resolve);
+          bookmarkManager.renameFolder(this.id, name)
+          .then(folder => {
+            this.setBadgeText();
+            resolve(folder);
+          });
         }
       });
     }
@@ -280,6 +282,16 @@ const ProjectManager = (function() {
       this.session.setId(this.id);
       this.load(this.session.tabs, undefined);
     }
+
+    /**
+     * Sets badge text
+     * @param {String} winId Window Id
+     */
+    setBadgeText() {
+      let text = this.title.substr(0, 4).trim() || '';
+      if (config_.debug) console.log(`[ProjectEntiry] Badge set to "${text}"`, this);
+      chrome.browserAction.setBadgeText({text: text});
+    }
   }
 
   /**
@@ -291,7 +303,14 @@ const ProjectManager = (function() {
       config_ = config;
       this.projects = [];
 
-      chrome.windows.onFocusChanged.addListener(this.setBadgeText.bind(this));
+      chrome.windows.onFocusChanged.addListener(winId => {
+        let project = this.getProjectFromWinId(winId);
+        if (project) {
+          project.setBadgeText();
+        } else {
+          chrome.browserAction.setBadgeText({text: ''});
+        }
+      });
     }
 
     /**
@@ -415,7 +434,8 @@ const ProjectManager = (function() {
       if (project.bookmark) {
         project.deassociateBookmark();
       }
-      return sessionManager.removeSessionFromProjectId(id);
+      let sessionId = project.session.id;
+      return sessionManager.removeSessionFromId(sessionId);
     }
 
     /**

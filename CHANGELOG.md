@@ -1,3 +1,7 @@
+## Version 4.0.2
+* Removing linked session has been only unlinking the project and required to then remove the session. It's now unlink and remove the session.
+* Badge displays improvement.
+
 ## Version 4.0.1
 * Fixed critical bug that deletes all sessions when max unlinked sessions option is set to `Unlimited`.
 

@@ -392,6 +392,7 @@ const SessionManager = (function() {
       chrome.windows.onFocusChanged.addListener(this.onwindowfocuschanged.bind(this));
       chrome.windows.onRemoved.addListener(this.onwindowremoved.bind(this));
     }
+
     /**
      * Adds Project
      * @param {chrome.tabs.Tab} tab - adds a tab to project
@@ -615,6 +616,23 @@ const SessionManager = (function() {
         this.sessions.unshift(session);
         UpdateManager.storeSessions();
       }
+    }
+
+    /**
+     * Removes session of given id
+     * @param  {String} id [description]
+     * @return Promise A promise that resolves with session object
+     */
+    removeSessionFromId(id) {
+      for (let i = 0; i < this.sessions.length; i++) {
+        if (this.sessions[i].id === id) {
+          let session = this.sessions.splice(i, 1);
+          if (config_.debug) console.log(`[SessionManager] removed session of id:`, id);
+          UpdateManager.storeSessions();
+          return Promise.resolve(session);
+        }
+      }
+      return Promise.reject();
     }
 
     /**

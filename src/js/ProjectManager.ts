@@ -18,7 +18,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 
 import config_ from './Config';
 import util from './Utilities';
-import sessionManager from './SessionManager';
+import { SessionEntity, TabEntity, sessionManager } from './SessionManager';
 import bookmarkManager from './BookmarkManager';
 
 /**
@@ -55,7 +55,7 @@ class FieldEntity {
   pinned: boolean = false
   favIconUrl: string = ''
 
-  constructor(tab: chrome.tabs.Tab, bookmark: chrome.bookmarks.BookmarkTreeNode) {
+  constructor(tab: TabEntity, bookmark: chrome.bookmarks.BookmarkTreeNode) {
     let url         = util.unlazify(tab && tab.url || bookmark.url);
 
     this.id         = bookmark && bookmark.id || undefined;
@@ -119,7 +119,7 @@ class ProjectEntity {
 
     // If there's no session, open from bookmark
     } else if (this.bookmark) {
-      if (config_.debug) console.log('[ProjectEntity] Opening bookmarks', this.bookmark);
+      util.log('[ProjectEntity] Opening bookmarks', this.bookmark);
 
       let bookmarks = normalizeBookmarks(this.bookmark.children, []);
 
@@ -186,7 +186,7 @@ class ProjectEntity {
    * @param  {Array}            bookmarks Array of chrome.bookmarks.BookmarkTreeNode
    */
   public load(
-    tabs: Array<chrome.tabs.Tab> = [],
+    tabs: Array<TabEntity> = [],
     bookmarks: Array<chrome.bookmarks.BookmarkTreeNode> = []
   ) {
     this.fields = [];
@@ -253,7 +253,7 @@ class ProjectEntity {
    * Removes bookmark of given bookmark id
    * @param {Integer}         bookmarkId
    */
-  public removeBookmark(bookmarkId: number) {
+  public removeBookmark(bookmarkId: string) {
     return bookmarkManager.removeBookmark(bookmarkId);
   }
 
@@ -265,7 +265,7 @@ class ProjectEntity {
    */
   public associateBookmark(folder: chrome.bookmarks.BookmarkTreeNode) {
     this.id = folder.id; // Overwrite project id
-    if (config_.debug) console.log('[ProjectEntity] associated bookmark', folder);
+    util.log('[ProjectEntity] associated bookmark', folder);
     this.bookmark = folder;
     this.session.setId(this.id); // Overwrite project id
     this.load(this.session.tabs, this.bookmark.children);
@@ -278,7 +278,7 @@ class ProjectEntity {
    */
   public deassociateBookmark() {
     this.id = `-${this.session.id}`;
-    if (config_.debug) console.log('[ProjectEntity] deassociated bookmark', this.bookmark);
+    util.log('[ProjectEntity] deassociated bookmark', this.bookmark);
     this.bookmark = null;
     this.title = this.session.title;
     this.session.setId(this.id);
@@ -291,7 +291,7 @@ class ProjectEntity {
    */
   public setBadgeText() {
     let text = this.title.substr(0, 4).trim() || '';
-    if (config_.debug) console.log(`[ProjectEntiry] Badge set to "${text}"`, this);
+    util.log(`[ProjectEntiry] Badge set to "${text}"`, this);
     chrome.browserAction.setBadgeText({text: text});
   }
 }
@@ -299,7 +299,7 @@ class ProjectEntity {
 /**
  * [ProjectManager description]
  */
-class ProjectManager {
+export class ProjectManager {
   projects: Array<ProjectEntity> = []
 
   constructor() {
@@ -340,7 +340,7 @@ class ProjectManager {
       // Add the new project to list
       this.projects.unshift(newProject);
 
-      if (config_.debug) console.log('[ProjectManager] created new project', newProject);
+      util.log('[ProjectManager] created new project', newProject);
       resolve(newProject);
     });
   }
@@ -399,10 +399,10 @@ class ProjectManager {
           await bookmarkManager.archiveFolder(id);
           // Session might be non bound. Don't return promise directly.
           sessionManager.removeSessionFromProjectId(id);
-          if (config_.debug) console.log('[ProjectManager] removed project %s from bookmark', id);
+          util.log('[ProjectManager] removed project %s from bookmark', id);
           return Promise.resolve(project);
-        } catch() {
-          if (config_.debug) console.log('[ProjectManager] failed to remove project %s from bookmark', id);
+        } catch(e) {
+          util.log('[ProjectManager] failed to remove project %s from bookmark', id);
           return Promise.resolve(project);
         };
       } else {
@@ -410,7 +410,7 @@ class ProjectManager {
         return sessionManager.removeSessionFromProjectId(id);
       }
     } else {
-      return Promise.reject();
+      throw '[ProjectManager] Project not found';
     }
   }
 
@@ -435,7 +435,7 @@ class ProjectManager {
     let winId = sessionManager.getCurrentWindowId();
     if (winId) {
       let project = this.getProjectFromWinId(winId);
-      if (config_.debug) console.log('[SessionManager] Got active project', project);
+      util.log('[SessionManager] Got active project', project);
       return project;
     } else {
       return undefined;
@@ -455,7 +455,7 @@ class ProjectManager {
    * @return {[type]} [description]
    */
   public async update(force_reload: boolean, callback?: Function) {
-    if (config_.debug) console.log('[ProjectManager] Starting to generate project list');
+    util.log('[ProjectManager] Starting to generate project list');
     this.projects = [];
     let session, project, i, j,
       sessions = sessionManager.getSessions().slice(0);
@@ -476,7 +476,7 @@ class ProjectManager {
           project = new ProjectEntity(session, bookmark);
           this.projects.push(project);
           boundId.push(bookmark.id);
-          if (config_.debug) console.log('[ProjectManager] Project %s: %o created from session: %o and bookmark: %o', project.id, project, session, bookmark);
+          util.log('[ProjectManager] Project %s: %o created from session: %o and bookmark: %o', project.id, project, session, bookmark);
           continue;
         }
       }
@@ -484,7 +484,7 @@ class ProjectManager {
       // If session is not bound or matching bookmark was not found
       project = new ProjectEntity(session, null);
       this.projects.push(project);
-      if (config_.debug) console.log('[ProjectManager] Project %s: %o created non-bound session: %o', project.id, project, session);
+      util.log('[ProjectManager] Project %s: %o created non-bound session: %o', project.id, project, session);
     }
 
     // Add rest of bookmarks
@@ -493,7 +493,7 @@ class ProjectManager {
       if (bookmark.title === config_.archiveFolderName) continue;
       project = new ProjectEntity(null, bookmark);
       this.projects.push(project);
-      if (config_.debug) console.log('[ProjectManager] Project %s: %o created non-bound bookmark: %o', project.id, project, bookmark);
+      util.log('[ProjectManager] Project %s: %o created non-bound bookmark: %o', project.id, project, bookmark);
     }
 
     if (typeof callback === 'function') callback(this);
@@ -503,7 +503,7 @@ class ProjectManager {
    * [openBookmarkEditWindow description]
    * @param  {String} bookmarkId
    */
-  public openBookmarkEditWindow(bookmarkId) {
+  public openBookmarkEditWindow(bookmarkId: string) {
     bookmarkManager.openEditWindow(bookmarkId);
   }
 
@@ -514,7 +514,7 @@ class ProjectManager {
   public setBadgeText(winId: number) {
     let project = this.getProjectFromWinId(winId);
     let text = project && project.title.substr(0, 4).trim() || '';
-    if (config_.debug) console.log(`[ProjectManager] Badge set to "${project.title}"`, project);
+    util.log(`[ProjectManager] Badge set to "${project.title}"`, project);
     chrome.browserAction.setBadgeText({text: text});
   }
 
@@ -526,7 +526,7 @@ class ProjectManager {
    */
   public getTimeTable(date: string, callback: Function) {
     sessionManager.getTimeTable(date, table => {
-      table.forEach(session => {
+      table.forEach((session: SessionEntity) => {
         if (session.id) {
           let project = this.getProjectFromId(session.id);
           let _session = sessionManager.getSessionFromProjectId(session.id);
@@ -561,6 +561,4 @@ class ProjectManager {
   }
 }
 
-const projectManager = new ProjectManager();
-
-export default projectManager;
+export default ProjectManager;

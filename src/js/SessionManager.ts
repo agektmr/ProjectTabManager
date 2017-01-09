@@ -18,14 +18,23 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 
 import config_ from './Config';
 import util from './Utilities';
+import db from './iDB';
 
-const UpdateManager = {
+interface UpdateManager {
+  queue: Array<chrome.tabs.Tab>;
+  restoreSessions(): Promise<Array<SessionEntity>>;
+  storeSessions(): Promise<undefined>;
+  tabLoading(tab: chrome.tabs.Tab): void;
+  tabComplete(tab: chrome.tabs.Tab): void;
+}
+
+const UpdateManager: UpdateManager = {
   queue: [],
 
   /**
    * [initialize description]
    */
-  restoreSessions(): Promise<Array<SessionEntity>> {
+  restoreSessions() {
     return new Promise(resolve => {
       // restore projects from chrome.storage.local
       chrome.storage.local.get(items => {
@@ -34,7 +43,7 @@ const UpdateManager = {
           throw '[UpdateManager] chrome.storage.local.get error';
         } else {
           let sessions = items['sessions'] || items['projects'] || []; // 'projects' is a transitional solution
-          if (config_.debug) console.log('[UpdateManager] restoring sessions from storage.', sessions);
+          util.log('[UpdateManager] restoring sessions from storage.', sessions);
           resolve(sessions);
         }
       });
@@ -44,14 +53,14 @@ const UpdateManager = {
   /**
    * Synchronize project status to chrome.storage. Restores when on initialization.
    */
-  storeSessions(): Promise<undefined> {
+  storeSessions() {
     return new Promise(function(resolve, reject) {
       chrome.storage.local.set(sessionManager.export(), () => {
         if (chrome.runtime.lastError) {
           console.error(chrome.runtime.lastError.message);
           reject();
         } else {
-          if (config_.debug) console.log('[UpdateManager] sessions stored.', sessionManager.sessions);
+          util.log('[UpdateManager] sessions stored.', sessionManager.sessions);
           resolve();
         }
       });
@@ -62,24 +71,24 @@ const UpdateManager = {
    * Add sync status to queue so that synchronization only happens when all status is clear.
    * @param {chrome.tabs.Tab} tab
    */
-  tabLoading(tab: chrome.tabs.Tab): void {
+  tabLoading(tab: chrome.tabs.Tab) {
     let index = UpdateManager.queue.findIndex(_tab => {
       return _tab.id === tab.id;
     });
     if (index > -1) {
       UpdateManager.queue[index] = tab;
-      if (config_.debug) console.log('[UpdateManager] tab %o loading. %d in total', tab, UpdateManager.queue.length);
+      util.log('[UpdateManager] tab %o loading. %d in total', tab, UpdateManager.queue.length);
       return;
     }
     UpdateManager.queue.push(tab);
-    if (config_.debug) console.log('[UpdateManager] added tab %o. %d in total.', tab, UpdateManager.queue.length);
+    util.log('[UpdateManager] added tab %o. %d in total.', tab, UpdateManager.queue.length);
   },
 
   /**
    * Removes completed sync status and kick start synchronization when all queue's gone.
    * @param {chrome.tabs.Tab} tab
    */
-  tabComplete(tab: chrome.tabs.Tab): void {
+  tabComplete(tab: chrome.tabs.Tab) {
     let index = UpdateManager.queue.findIndex(_tab => {
       return _tab.id === tab.id;
     });
@@ -87,10 +96,10 @@ const UpdateManager = {
       UpdateManager.queue.splice(index, 1);
     }
     if (UpdateManager.queue.length === 0) {
-      if (config_.debug) console.log('[UpdateManager] Queue cleared. Storing session.');
+      util.log('[UpdateManager] Queue cleared. Storing session.');
       UpdateManager.storeSessions();
     } else {
-      if (config_.debug) console.log('[UpdateManager] tab %o sync completed. %o remaining', tab, UpdateManager.queue);
+      util.log('[UpdateManager] tab %o sync completed. %o remaining', tab, UpdateManager.queue);
     }
   }
 }
@@ -99,19 +108,19 @@ const UpdateManager = {
  *  Tab entity which represents chrome.tabs.Tab
  *  @param {chrome.tabs.Tab} tab
  **/
-class TabEntity {
+export class TabEntity {
   id: number
   title: string
   url: string
   pinned: boolean
   favIconUrl: string
   constructor(tab: chrome.tabs.Tab) {
-    let url =         util.unlazify(tab.url);
+    let url = util.unlazify(tab.url);
 
-    this.id =         tab.id;
-    this.title =      tab.title;
-    this.url =        url;
-    this.pinned =     tab.pinned || false;
+    this.id = tab.id;
+    this.title = tab.title;
+    this.url = url;
+    this.pinned = tab.pinned || false;
     this.favIconUrl = tab.favIconUrl;
   }
 }
@@ -121,37 +130,26 @@ class TabEntity {
  * @param {chrome.windows.Window} win
  */
 export class SessionEntity {
-  id: string
-  winId: number
-  title: string
-  tabs: Array<TabEntity>
+  id: string = null
+  winId: number = null
+  title: string = ''
+  tabs: Array<TabEntity> = []
   constructor(target: chrome.windows.Window|SessionEntity) {
     // if target.focused is set, target is chrome.windows.Window object
-    if (target.focused !== undefined) {
+    if ('focused' in target) {
       this.id     = '-'+target.id; // project id for non-bound session can be anything as long as it's unique.
-      this.winId  = target.id;
+      this.winId  = <number>target.id;
       this.title  = (new Date()).toLocaleString();
-
-    // if project id is null, this is non-bound session (transitional solution)
-    } else if (target.id === null) {
-      this.id     = '-'+Math.floor(Math.random() * 100000);
-      this.winId  = null;
-      this.title  = (new Date()).toLocaleString();
-
     // otherwise, target is SessionEntity object recovering from previous session
     } else {
-      this.id     = target.id;
-      this.winId  = null;
+      this.id     = <string>target.id;
       this.title  = target.title;
     }
 
-    this.tabs   = [];
-    if (target.tabs) {
-      for (let tab of target.tabs) {
-        this.addTab(tab);
-      }
+    for (let tab of target.tabs) {
+      this.addTab(tab);
     }
-    if (config_.debug) console.log('[SessionEntity] Created a new session entity %o based on %o', this, target);
+    util.log('[SessionEntity] Created a new session entity %o based on %o', this, target);
   }
 
   /**
@@ -165,10 +163,14 @@ export class SessionEntity {
    * Adds tab entity of given chrome.tabs.Tab
    * @param {chrome.tabs.Tab} tab
    */
-  public addTab(tab: chrome.tabs.Tab): void {
+  public addTab(tab: chrome.tabs.Tab|TabEntity): void {
     if (tab && !tab.url.match(util.CHROME_EXCEPTION_URL)) {
       // Create new tab entity
-      this.tabs.push(new TabEntity(tab));
+      if (tab instanceof TabEntity) {
+        this.tabs.push(tab);
+      } else {
+        this.tabs.push(new TabEntity(tab));
+      }
       this.sortTabs();
     }
   }
@@ -197,7 +199,7 @@ export class SessionEntity {
     if (index > -1) {
       let newTab = new TabEntity(tab);
       let oldTab = this.tabs.splice(index, 1, newTab)[0];
-      if (config_.debug) console.log('[SessionEntity] updating tab %o to %o', oldTab, newTab);
+      util.log('[SessionEntity] updating tab %o to %o', oldTab, newTab);
       return;
     } else {
       this.addTab(tab);
@@ -211,10 +213,10 @@ export class SessionEntity {
    **/
   public removeTab(tabId: number): boolean {
     let index = this.tabs.findIndex(_tab => {
-      return _tab.id === tabId.id;
+      return _tab.id === tabId;
     });
     if (index > -1) {
-      if (config_.debug) console.log('[SessionEntity] removed tab %d from session %s', this.tabs[i].id, this.id);
+      util.log('[SessionEntity] removed tab %d from session %s', this.tabs[index].id, this.id);
       // Remove TabEntity
       this.tabs.splice(index, 1);
       if (this.tabs.length > 0) {
@@ -263,7 +265,7 @@ export class SessionEntity {
    * [openSession description]
    */
   public openTabs(): void {
-    if (config_.debug) console.log('[SessionEntity] Opening a session', this);
+    util.log('[SessionEntity] Opening a session', this);
     // open first tab with window
     chrome.windows.create({
       url: this.tabs[0] && this.tabs[0].url || null,
@@ -307,14 +309,14 @@ export class SessionEntity {
    */
   public setId(projectId: string): void {
     this.id = projectId;
-    if (config_.debug) console.log('[SessionEntity] Assigned project %s to session %o', projectId, this);
+    util.log('[SessionEntity] Assigned project %s to session %o', projectId, this);
   }
 
   /**
    * Unsets project id of this session
    */
   public unsetId(): void {
-    if (config_.debug) console.log('[SessionEntity] Removed project %s from session %o', this.id, this);
+    util.log('[SessionEntity] Removed project %s from session %o', this.id, this);
     this.id = null;
   }
 
@@ -324,14 +326,14 @@ export class SessionEntity {
    */
   public setWinId(winId: number): void {
     this.winId = winId;
-    if (config_.debug) console.log('[SessionEntity] Assigned window %s to session %o', this.winId, this);
+    util.log('[SessionEntity] Assigned window %s to session %o', this.winId, this);
   }
 
   /**
    * [unsetWinId description]
    */
   public unsetWinId(): void {
-    if (config_.debug) console.log('[SessionEntity] Removed window %s from session %o', this.winId, this);
+    util.log('[SessionEntity] Removed window %s from session %o', this.winId, this);
     this.winId = null;
   }
 }
@@ -356,7 +358,7 @@ const getWindowInfo = function(winId: number): Promise<chrome.windows.Window> {
     } else {
       chrome.windows.get(winId, {populate:true}, function(win) {
         if (chrome.runtime.lastError) {
-          if (config_.debug) console.log(`[SessionManager] window of id ${winId} not open`);
+          util.log(`[SessionManager] window of id ${winId} not open`);
           resolve(undefined);
         }
         if (!win || win.type !== 'normal') {
@@ -410,7 +412,7 @@ class SessionManager {
    * @param {chrome.tabs.Tab} tab - adds a tab to project
    */
   private oncreated(tab: chrome.tabs.Tab) {
-    if (config_.debug) console.log('[SessionManager] chrome.tabs.onCreated', tab);
+    util.log('[SessionManager] chrome.tabs.onCreated', tab);
     if (tab.url.match(util.CHROME_EXCEPTION_URL)) return;
     let session = this.getSessionFromWinId(tab.windowId);
     if (session) session.updateTab(tab);
@@ -423,7 +425,7 @@ class SessionManager {
    * @param  {chrome.tabs.Tab}  tab         third argument of chrome.tabs.onUpdated.addListener
    */
   private onupdated(tabId: number, changeInfo: chrome.tabs.TabChangeInfo, tab: chrome.tabs.Tab) {
-    if (config_.debug) console.log('[SessionManager] chrome.tabs.onUpdated', tabId, changeInfo, tab);
+    util.log('[SessionManager] chrome.tabs.onUpdated', tabId, changeInfo, tab);
     if (!tab.url.match(util.CHROME_EXCEPTION_URL)) {
       if (tab.status === 'complete') {
         this.oncreated.call(this, tab);
@@ -434,7 +436,7 @@ class SessionManager {
     } else {
       let session = this.getSessionFromWinId(tab.windowId);
       if (session) session.removeTab(tabId);
-      if (config_.debug) console.log('[SessionManager] removing a tab which transitioned to url starting with "chrome://"');
+      util.log('[SessionManager] removing a tab which transitioned to url starting with "chrome://"');
     }
   }
 
@@ -445,22 +447,22 @@ class SessionManager {
    */
   private onremoved(tabId: number, removeInfo: chrome.tabs.TabRemoveInfo) {
     let winId = removeInfo.windowId;
-    if (config_.debug) console.log('[SessionManager] chrome.tabs.onRemoved', tabId, removeInfo);
+    util.log('[SessionManager] chrome.tabs.onRemoved', tabId, removeInfo);
 
     let session = this.getSessionFromWinId(winId);
 
     // When closing the window, remove session.
     if (removeInfo.isWindowClosing && session) {
-      if (config_.debug) console.log('[SessionManager] Skip removing tab', removeInfo);
+      util.log('[SessionManager] Skip removing tab', removeInfo);
     } else if (session) {
       session.removeTab(tabId);
       if (session.tabs.length === 0) {
-        if (config_.debug) console.log('[SessionManager] removing the session %o itself since all tabs are closing', session);
+        util.log('[SessionManager] removing the session %o itself since all tabs are closing', session);
         this.removeSessionFromProjectId(session.id);
       }
       UpdateManager.storeSessions();
     } else {
-      if (config_.debug) console.log('[SessionManager] tab %s being removed was not in the session being tracked', tabId);
+      util.log('[SessionManager] tab %s being removed was not in the session being tracked', tabId);
     }
   }
 
@@ -470,11 +472,11 @@ class SessionManager {
    * @param  {Object} moveInfo [description]
    */
   private onmoved(tabId: number, moveInfo: chrome.tabs.TabMoveInfo) {
-    if (config_.debug) console.log('[SessionManager] chrome.tabs.onMoved', tabId, moveInfo);
+    util.log('[SessionManager] chrome.tabs.onMoved', tabId, moveInfo);
     let session = this.getSessionFromWinId(moveInfo.windowId);
     if (session) {
       session.sortTabs();
-      if (config_.debug) console.log('[SessionManager] moved tab from %d to %d', moveInfo.fromIndex, moveInfo.toIndex);
+      util.log('[SessionManager] moved tab from %d to %d', moveInfo.fromIndex, moveInfo.toIndex);
     }
     UpdateManager.storeSessions();
   }
@@ -485,7 +487,7 @@ class SessionManager {
    * @param  {Integer} removedTabId [description]
    */
   private onreplaced(addedTabId: number, removedTabId: number) {
-    if (config_.debug) console.log('[SessionManager] chrome.tabs.onReplaced', addedTabId, removedTabId);
+    util.log('[SessionManager] chrome.tabs.onReplaced', addedTabId, removedTabId);
     this.removeTab(removedTabId);
     UpdateManager.storeSessions();
   }
@@ -496,7 +498,7 @@ class SessionManager {
    * @param  {Object} attachInfo [description]
    */
   private async onattached(tabId: number, attachInfo: chrome.tabs.TabAttachInfo) {
-    if (config_.debug) console.log('[SessionManager] chrome.tabs.onAttached', tabId, attachInfo);
+    util.log('[SessionManager] chrome.tabs.onAttached', tabId, attachInfo);
     let win = await getWindowInfo(attachInfo.newWindowId);
     if (win === undefined) return;
     let session = this.getSessionFromWinId(attachInfo.newWindowId);
@@ -507,7 +509,7 @@ class SessionManager {
     }
     chrome.tabs.get(tabId, tab => {
       session.addTab(tab);
-      if (config_.debug) console.log('[SessionManager] added tab %d to window', tabId, attachInfo.newWindowId);
+      util.log('[SessionManager] added tab %d to window', tabId, attachInfo.newWindowId);
       UpdateManager.storeSessions();
     });
   }
@@ -518,14 +520,14 @@ class SessionManager {
    * @param  {Object} detachInfo [description]
    */
   private ondetached(tabId: number, detachInfo: chrome.tabs.TabDetachInfo) {
-    if (config_.debug) console.log('[SessionManager] chrome.tabs.onDetached', tabId, detachInfo);
+    util.log('[SessionManager] chrome.tabs.onDetached', tabId, detachInfo);
     let oldSession = this.getSessionFromWinId(detachInfo.oldWindowId);
     if (!oldSession) return;
     oldSession.removeTab(tabId);
     if (oldSession.tabs.length === 0) {
       this.removeSessionFromWinId(oldSession.winId);
     }
-    if (config_.debug) console.log('[SessionManager] removed tab %d from window', tabId, detachInfo.oldWindowId);
+    util.log('[SessionManager] removed tab %d from window', tabId, detachInfo.oldWindowId);
     UpdateManager.storeSessions();
   }
 
@@ -534,7 +536,7 @@ class SessionManager {
    * @param  {Integer} activeInfo [description]
    */
   private async onactivated(activeInfo: chrome.tabs.TabActiveInfo) {
-    if (config_.debug) console.log('[SessionManager] chrome.tabs.onActivated', activeInfo);
+    util.log('[SessionManager] chrome.tabs.onActivated', activeInfo);
     let win = await getWindowInfo(activeInfo.windowId);
     if (win === undefined) return;
     this.activeInfo.tabId    = activeInfo.tabId; // not used
@@ -545,11 +547,11 @@ class SessionManager {
     // ignore windows that are devtools, chrome extension, etc
     if (_win.type !== 'normal' || _win.id === chrome.windows.WINDOW_ID_NONE) return;
 
-    if (config_.debug) console.log('[SessionManager] chrome.windows.onCreated', _win);
+    util.log('[SessionManager] chrome.windows.onCreated', _win);
     let win = await getWindowInfo(_win.id);
     // If this is a project intentionally opened
     if (this.openingProject) {
-      if (config_.debug) console.log('[SessionManager] Intentionally opened window', win);
+      util.log('[SessionManager] Intentionally opened window', win);
       let session = this.getSessionFromProjectId(this.openingProject);
       if (session) {
         // If session found, update its winId
@@ -566,7 +568,7 @@ class SessionManager {
       this.setActiveSession(win.id, session);
       this.openingProject = '';
     } else {
-      if (config_.debug) console.log('[SessionManager] Unintentionally opened window', win);
+      util.log('[SessionManager] Unintentionally opened window', win);
       // Loop through existing sessions to see if there's an identical one
       // This happens when
       // * Restoring previous session (Chrome's native feature)
@@ -577,7 +579,7 @@ class SessionManager {
         if (this.compareTabs(win, session)) {
           // set project id and title to this session and make it bound session
           session.setWinId(win.id);
-          if (config_.debug) console.log('[SessionManager] Associated with a previous session', session);
+          util.log('[SessionManager] Associated with a previous session', session);
           this.setActiveSession(win.id, session);
           UpdateManager.storeSessions();
           return;
@@ -596,7 +598,7 @@ class SessionManager {
    * @param  {Integer} winId [description]
    */
   private onwindowfocuschanged(winId: number) {
-    if (config_.debug) console.log('[SessionManager] chrome.windows.onFocusChanged', winId);
+    util.log('[SessionManager] chrome.windows.onFocusChanged', winId);
     // Put in database only if active session exists
     if (this.activeInfo.start !== null) {
       this.activeInfo.end = (new Date()).getTime();
@@ -613,7 +615,7 @@ class SessionManager {
    */
   private onwindowremoved(winId: number) {
     if (winId === chrome.windows.WINDOW_ID_NONE) return;
-    if (config_.debug) console.log('[SessionManager] chrome.windows.onRemoved', winId);
+    util.log('[SessionManager] chrome.windows.onRemoved', winId);
     let session = this.getSessionFromWinId(winId);
     if (!session) return;
     // Move session to the top of the list
@@ -635,7 +637,7 @@ class SessionManager {
     });
     if (index > -1) {
       let session = this.sessions.splice(index, 1)[0];
-      if (config_.debug) console.log(`[SessionManager] removed session of id:`, id);
+      util.log(`[SessionManager] removed session of id:`, id);
       UpdateManager.storeSessions();
       return Promise.resolve(session);
     } else {
@@ -656,7 +658,7 @@ class SessionManager {
     });
     if (index > -1) {
       let session = this.sessions.splice(index, 1)[0];
-      if (config_.debug) console.log('[SessionManager] removed session of project id:', projectId);
+      util.log('[SessionManager] removed session of project id:', projectId);
       UpdateManager.storeSessions();
       return Promise.resolve(session);
     } else {
@@ -675,7 +677,7 @@ class SessionManager {
     });
     if (index > -1) {
       let session = this.sessions.splice(index, 1)[0];
-      if (config_.debug) console.log('[SessionManager] removed session of window id:', winId);
+      util.log('[SessionManager] removed session of window id:', winId);
       UpdateManager.storeSessions();
       return Promise.resolve(session);
     } else {
@@ -745,7 +747,7 @@ class SessionManager {
       this.activeInfo.end       = null;
       this.activeInfo.windowId  = winId;
     }
-    if (config_.debug) console.log('[SessionManager] active session info updated', this.activeInfo);
+    util.log('[SessionManager] active session info updated', this.activeInfo);
   }
 
   /**
@@ -756,7 +758,7 @@ class SessionManager {
     let winId = this.getCurrentWindowId();
     if (!winId) return undefined;
     let session = this.getSessionFromWinId(winId);
-    if (config_.debug) console.log('[SessionManager] Got active session', session);
+    util.log('[SessionManager] Got active session', session);
     return session;
   }
 
@@ -810,7 +812,7 @@ class SessionManager {
       }
     }
 
-    if (config_.debug) console.log('[SessionManager] %d/%d similar tabs found between window %d:%o and project %s:%o', similar, count, win.id, win, session.id, session);
+    util.log('[SessionManager] %d/%d similar tabs found between window %d:%o and project %s:%o', similar, count, win.id, win, session.id, session);
     // similarity threshold is hardcoded as 80%
     return similar > 0 && similar/count >= 0.8 ? true : false;
   }
@@ -821,7 +823,7 @@ class SessionManager {
    * @return Array<SessionEntity>
    */
   public cleanSessions(sessions: Array<SessionEntity>): Array<SessionEntity> {
-    if (config_.debug) console.log('[SessionManager] Cleaning sessions: %o', sessions);
+    util.log('[SessionManager] Cleaning sessions: %o', sessions);
     let projects = [];
     for (let i = 0; i < sessions.length; i++) {
       let id = sessions[i].id;
@@ -831,7 +833,7 @@ class SessionManager {
         projects.push(id);
       }
     }
-    if (config_.debug) console.log('[SessionManager] Cleaning done: %o', sessions);
+    util.log('[SessionManager] Cleaning done: %o', sessions);
     return sessions;
   }
 
@@ -857,16 +859,16 @@ class SessionManager {
       var prevSessions = sessions;
 
       chrome.windows.getAll({populate: true}, windows => {
-        if (config_.debug) console.log('[SessionManager] Resuming sessions from windows', windows);
+        util.log('[SessionManager] Resuming sessions from windows', windows);
 
         // Loop through all open windows
-        if (config_.debug) console.log('[SessionManager] Looping through windows.');
+        util.log('[SessionManager] Looping through windows.');
         Array.prototype.forEach.call(windows, win => {
           this.restoreSession(win, prevSessions);
         });
 
         // Loop through left sessions from previous ones to create unopened sessions
-        if (config_.debug) console.log('[SessionManager] Looping through left previous sessions.');
+        util.log('[SessionManager] Looping through left previous sessions.');
         let unboundSessions = 0;
         for (let i = 0; i < prevSessions.length; i++) {
           let session = new SessionEntity(prevSessions[i]);
@@ -879,16 +881,16 @@ class SessionManager {
             if (this.maxSessions === -1 || unboundSessions <= this.maxSessions) {
               // `push` not `unshift`
               this.sessions.push(session);
-              if (config_.debug) console.log('[SessionManager] A session without open window.', session);
+              util.log('[SessionManager] A session without open window.', session);
             } else {
-              if (config_.debug) console.log('[SessionManager] Max session number exceeded. Eliminating an old session.', session);
+              util.log('[SessionManager] Max session number exceeded. Eliminating an old session.', session);
             }
           } else {
             this.sessions.push(session);
           }
           prevSessions.splice(i--, 1);
         }
-        if (config_.debug) console.log('[SessionManager] Session list created.', sessionManager.sessions);
+        util.log('[SessionManager] Session list created.', sessionManager.sessions);
         resolve();
       });
     });
@@ -913,7 +915,7 @@ class SessionManager {
       if (this.compareTabs(win, _session)) {
         session.setId(_session.id);
         session.rename(_session.title);
-        if (config_.debug) console.log('[SessionManager] A session with open window', session);
+        util.log('[SessionManager] A session with open window', session);
         prevSessions.splice(counter, 1);
       } else {
         counter++;
@@ -939,12 +941,12 @@ class SessionManager {
           if (table[i+1]) {
             // Assign start time of next session as end time
             session.end = (new Date(table[i+1].start)).getTime();
-            if (config_.debug) console.log('[SessionManager] Assigning session end time as start time of next one', session);
+            util.log('[SessionManager] Assigning session end time as start time of next one', session);
           // If next session doesn't exist, this is the last session
           } else {
             // Simply assign latest possible
             session.end = end > Date.now() ? Date.now() : end;
-            if (config_.debug) console.log('[SessionManager] Assigning session end time as latest possible', session);
+            util.log('[SessionManager] Assigning session end time as latest possible', session);
           }
         }
         table[i] = session;
@@ -960,13 +962,13 @@ class SessionManager {
    * @param  {Function} callback [description]
    * @return {[type]}            [description]
    */
-  public getSummary(_start: string, _end: string, callback: Function) {
+  public getSummary(_start: number, _end: number, callback: Function) {
     let start     = (new Date(_start)).getTime();
     let next_day  = (new Date(_end)).getTime() + (60 * 60 * 24 * 1000);
     let end       = (new Date(next_day)).getTime();
     db.getRange(db.SUMMARIES, start, end, summary => {
       let _summary = {};
-      summary.forEach(function(session, i) {
+      summary.forEach((session, i) => {
         let id = session.id;
         if (!_summary[id]) {
           _summary[id] = {
@@ -979,11 +981,11 @@ class SessionManager {
           if (summary[i+1]) {
             // Assign start time of next session as end time
             session.end = (new Date(summary[i+1].start)).getTime();
-            if (config_.debug) console.log('[SessionManager] Assigning session end time as start time of next one', session);
+            util.log('[SessionManager] Assigning session end time as start time of next one', session);
           // If next session doesn't exist, this is the last session
           } else {
             // Simply remove that last session
-            if (config_.debug) console.log('[SessionManager] Removing session since end time is not known', session);
+            util.log('[SessionManager] Removing session since end time is not known', session);
             summary.splice(i, 1);
             return;
           }
@@ -999,11 +1001,9 @@ class SessionManager {
     let today = new Date().toDateString();
     let boundDate = (new Date(today)).getTime() - boundDateOffset;
     db.deleteOlder(db.SUMMARIES, boundDate, () => {
-      if (config_.debug) console.log('[SessionManager] Old summary record has been deleted in database.');
+      util.log('[SessionManager] Old summary record has been deleted in database.');
     });
   }
 }
 
-const sessionManager = new SessionManager();
-
-export default sessionManager;
+export const sessionManager = new SessionManager();

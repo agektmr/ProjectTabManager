@@ -5,6 +5,9 @@ var merge = require('event-stream').merge;
 var swig = require('swig');
 var path = require('path');
 var through = require('through2');
+var browserify = require('browserify');
+var tsify = require('tsify');
+var source = require('vinyl-source-stream');
 var runSequence = require('run-sequence');
 
 gulp.task('clean', function(cb) {
@@ -61,6 +64,20 @@ gulp.task('scripts', ['concat'], function() {
     // TODO: Gave up on using uglify for ES6
     // .pipe($.uglify())
     .pipe(gulp.dest('app/js/'));
+});
+
+gulp.task('typescript', function() {
+  return browserify({
+    basedir: '.',
+    debug: true,
+    entries: ['src/js/Background.ts'],
+    cache: {},
+    packageCache: {}
+  })
+  .plugin(tsify)
+  .bundle()
+  .pipe(source('bundle.js'))
+  .pipe(gulp.dest('app/js/'));
 });
 
 gulp.task('copy', function() {

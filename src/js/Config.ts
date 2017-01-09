@@ -38,11 +38,11 @@ class Config {
           console.error(chrome.runtime.lastError.message);
           reject();
         } else {
-          if (items.config) {
-            this.rootParentId = items.config.rootParentId;
-            this.rootName     = items.config.rootName;
-            this.lazyLoad     = items.config.lazyLoad;
-            this.maxSessions  = items.config.maxSessions;
+          if (items['config']) {
+            this.rootParentId = items['config'].rootParentId;
+            this.rootName     = items['config'].rootName;
+            this.lazyLoad     = items['config'].lazyLoad;
+            this.maxSessions  = items['config'].maxSessions;
           } else {
             this.sync();
           }
@@ -53,7 +53,7 @@ class Config {
 
       chrome.storage.onChanged.addListener((change, areaName) => {
         if (areaName == 'sync' && 'config' in change) {
-          let config = change.config.newValue;
+          let config = change['config'].newValue;
           this.rootParentId = config.rootParentId;
           this.rootName     = config.rootName;
           this.lazyLoad     = config.lazyLoad;

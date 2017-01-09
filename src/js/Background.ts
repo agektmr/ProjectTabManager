@@ -18,9 +18,11 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 
 import config_ from './Config';
 import bookmarkManager from './BookmarkManager';
-import sessionManager from './SessionManager';
-import projectManager from './ProjectManager';
-var db;
+import { SessionEntity, sessionManager } from './SessionManager';
+import ProjectManager from './ProjectManager';
+import db from './iDB';
+
+let projectManager: ProjectManager;
 
 chrome.runtime.onInstalled.addListener(details => {
   // Pop up history page only if the version changes in major (ex 2.0.0) or minor (ex 2.1.0).
@@ -38,12 +40,13 @@ chrome.runtime.onInstalled.addListener(details => {
   await config_.init();
   await bookmarkManager.load();
   await sessionManager.resumeSessions();
+  projectManager = new ProjectManager();
   projectManager.update(true);
 })();
 
 chrome.runtime.onMessage.addListener((msg, sender, respond) => {
-  var params = [];
-  for (var key in msg) {
+  let params: Object[] = [];
+  for (let key in msg) {
     if (key == 'command') continue;
     params.push(msg[key]);
   }

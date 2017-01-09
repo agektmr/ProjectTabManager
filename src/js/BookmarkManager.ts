@@ -71,7 +71,7 @@ class BookmarkManager {
       }, bookmark => {
         this.load().then(() => resolve(bookmark), reject);
       });
-      if (config_.debug) console.log('[BookmarkManager] added bookmark', title);
+      util.log('[BookmarkManager] added bookmark', title);
     });
   }
 
@@ -84,7 +84,7 @@ class BookmarkManager {
       chrome.bookmarks.remove(bookmarkId, () => {
         this.load().then(resolve, reject);
       });
-      if (config_.debug) console.log('[BookmarkManager] removed bookmark', bookmarkId);
+      util.log('[BookmarkManager] removed bookmark', bookmarkId);
     });
   }
 
@@ -114,7 +114,7 @@ class BookmarkManager {
         index:    0,
         title:    title
       }, folder => {
-        if (config_.debug) console.log('[BookmarkManager] added new folder', folder);
+        util.log('[BookmarkManager] added new folder', folder);
         this.load().then(() => resolve(folder), reject);
       });
     });
@@ -152,7 +152,7 @@ class BookmarkManager {
         chrome.bookmarks.move(bookmarkId, {
           parentId: archiveFolder.id
         }, bookmark => {
-          if (config_.debug) console.log('[BookmarkManager] archived a bookmark', bookmark);
+          util.log('[BookmarkManager] archived a bookmark', bookmark);
           return this.load().then(resolve, reject);
         });
       } catch (error) {
@@ -185,6 +185,4 @@ class BookmarkManager {
   }
 }
 
-const bookmarkManager = new BookmarkManager();
-
-export default bookmarkManager;
+export default new BookmarkManager();

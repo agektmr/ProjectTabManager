@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "lib": ["dom", "es2015", "es2016"],
+    "noImplicitAny": false,
+    "removeComments": true,
+    "sourceMap": true
+  },
+  "include": [
+    "./src/js/**/*.ts"
+  ]
+}

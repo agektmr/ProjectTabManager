@@ -16,6 +16,8 @@ limitations under the License.
 Author: Eiji Kitamura (agektmr@gmail.com)
 */
 
+import config_ from './Config';
+
 const Utilities = {
   CHROME_EXCEPTION_URL: /^chrome(|-devtools|-extensions):/,
   STRIP_HASH: /^(.*?)#.*$/,
@@ -66,6 +68,12 @@ const Utilities = {
     // Hash will be ignored
   },
 
+  log: function(str, ...args) {
+    if (config_.debug) {
+      console.log(str, ...args);
+    }
+  },
+
   // /**
   //  * parse url as per http://en.wikipedia.org/wiki/URI_scheme
   //  * @param  {String} url
@@ -103,12 +111,12 @@ const Utilities = {
    * @return {Promise}          A promise
    */
   deepCopy: (function() {
-    return function(array: Array<Project>) {
+    return function(array: Array<chrome.bookmarks.BookmarkTreeNode>) {
       var mc = new MessageChannel;
       return new Promise(resolve => {
         mc.port1.onmessage = resolve;
         mc.port2.postMessage(array);
-      }).then(function(e) {
+      }).then(function(e: MessageEvent) {
         return e.data;
       });
     }

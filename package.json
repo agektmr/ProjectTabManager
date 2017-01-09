@@ -39,6 +39,9 @@
   },
   "dependencies": {
     "@types/chrome": "^0.0.38",
-    "typescript": "^2.1.4"
+    "browserify": "^13.3.0",
+    "tsify": "^3.0.0",
+    "typescript": "^2.1.4",
+    "vinyl-source-stream": "^1.1.0"
   }
 }

@@ -20,16 +20,13 @@ import config_ from './Config';
 import util from './Utilities';
 
 class BookmarkManager {
-  rootId: string
-  bookmarks: Array<chrome.bookmarks.BookmarkTreeNode>
+  rootId: string = null;
+  bookmarks: chrome.bookmarks.BookmarkTreeNode[] = [];
+
   /**
    * [BookmarkManager description]
-   * @param {[type]}   config   [description]
    */
-  constructor() {
-    this.rootId = null;
-    this.bookmarks = [];
-  }
+  constructor() {}
 
   /**
    * Gets root chrome.bookmarks.BookmarkTreeNode object of given bookmark id
@@ -79,7 +76,7 @@ class BookmarkManager {
    * Removes a bookmark
    * @param  {String}           bookmarkId
    */
-  public removeBookmark(bookmarkId: string): Promise<undefined> {
+  public removeBookmark(bookmarkId: string): Promise<any> {
     return new Promise((resolve, reject) => {
       chrome.bookmarks.remove(bookmarkId, () => {
         this.load().then(resolve, reject);
@@ -93,7 +90,7 @@ class BookmarkManager {
    * @param {Boolean} force_reload whether reload bookmarks or not
    * @return {Array} Array of chrome.bookmarks.BookmarkTreeNode
    */
-  public getRoot(force_reload: boolean): Promise<Array<chrome.bookmarks.BookmarkTreeNode>> {
+  public getRoot(force_reload: boolean): Promise<chrome.bookmarks.BookmarkTreeNode[]> {
     return new Promise((resolve, reject) => {
       if (force_reload) {
         this.load().then(resolve, reject);
@@ -174,7 +171,7 @@ class BookmarkManager {
    * @param  {Function} callback [description]
    * @return {[type]}            [description]
    */
-  public load(): Promise<Array<chrome.bookmarks.BookmarkTreeNode>> {
+  public load(): Promise<chrome.bookmarks.BookmarkTreeNode[]> {
     return new Promise((resolve, reject) => {
       this.getBookmarkFolder(config_.rootParentId, config_.rootName).then(folder => {
         this.rootId = folder.id;

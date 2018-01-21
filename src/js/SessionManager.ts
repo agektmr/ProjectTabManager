@@ -21,11 +21,11 @@ import util from './Utilities';
 import db from './iDB';
 
 interface UpdateManager {
-  queue: Array<chrome.tabs.Tab>;
-  restoreSessions(): Promise<Array<SessionEntity>>;
-  storeSessions(): Promise<undefined>;
-  tabLoading(tab: chrome.tabs.Tab): void;
-  tabComplete(tab: chrome.tabs.Tab): void;
+  queue: chrome.tabs.Tab[]
+  restoreSessions(): Promise<SessionEntity[]>
+  storeSessions(): Promise<undefined>
+  tabLoading(tab: chrome.tabs.Tab): void
+  tabComplete(tab: chrome.tabs.Tab): void
 }
 
 const UpdateManager: UpdateManager = {
@@ -133,17 +133,18 @@ export class SessionEntity {
   id: string = null
   winId: number = null
   title: string = ''
-  tabs: Array<TabEntity> = []
+  tabs: TabEntity[] = []
+
   constructor(target: chrome.windows.Window|SessionEntity) {
     // if target.focused is set, target is chrome.windows.Window object
     if ('focused' in target) {
-      this.id     = '-'+target.id; // project id for non-bound session can be anything as long as it's unique.
-      this.winId  = <number>target.id;
+      this.id     = '-'+(<chrome.windows.Window>target).id; // project id for non-bound session can be anything as long as it's unique.
+      this.winId  = (<chrome.windows.Window>target).id;
       this.title  = (new Date()).toLocaleString();
     // otherwise, target is SessionEntity object recovering from previous session
     } else {
-      this.id     = <string>target.id;
-      this.title  = target.title;
+      this.id     = (<SessionEntity>target).id;
+      this.title  = (<SessionEntity>target).title;
     }
 
     for (let tab of target.tabs) {
@@ -257,7 +258,7 @@ export class SessionEntity {
    * Gets Array of tab entities
    * @return {Array}  Array of TabEntities
    */
-  public getTabs(): Array<TabEntity> {
+  public getTabs(): TabEntity[] {
     return this.tabs;
   }
 
@@ -375,10 +376,10 @@ const getWindowInfo = function(winId: number): Promise<chrome.windows.Window> {
  * [SessionManager description]
  */
 class SessionManager {
-  sessions: Array<SessionEntity> = []
-  openingProject: string = ''
-  activeInfo: ActiveInfo = new ActiveInfo()
-  maxSessions: number = 0
+  sessions: SessionEntity[] = [];
+  openingProject: string = '';
+  activeInfo: ActiveInfo = new ActiveInfo();
+  maxSessions: number = 0;
 
   constructor() {
     this.maxSessions = config_.maxSessions;
@@ -701,7 +702,7 @@ class SessionManager {
    * Returns an array of sessions
    * @return  {Array} sessions
    */
-  public getSessions(): Array<SessionEntity> {
+  public getSessions(): SessionEntity[] {
     return this.sessions;
   }
 
@@ -822,7 +823,7 @@ class SessionManager {
    * @param {Array<SessionEntity>} sessions Array of SessionEntities to be cleaned
    * @return Array<SessionEntity>
    */
-  public cleanSessions(sessions: Array<SessionEntity>): Array<SessionEntity> {
+  public cleanSessions(sessions: SessionEntity[]): SessionEntity[] {
     util.log('[SessionManager] Cleaning sessions: %o', sessions);
     let projects = [];
     for (let i = 0; i < sessions.length; i++) {
@@ -901,7 +902,7 @@ class SessionManager {
    * @param {Window} win Window object
    * @param {Array} prevSessions previous sessions array
    */
-  public restoreSession(win: chrome.windows.Window, prevSessions: Array<SessionEntity>) {
+  public restoreSession(win: chrome.windows.Window, prevSessions: SessionEntity[]) {
     if (win.type !== 'normal' || win.id === chrome.windows.WINDOW_ID_NONE) return;
 
     // Create temporary non-bound session

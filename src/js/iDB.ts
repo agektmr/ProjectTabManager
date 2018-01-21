@@ -26,13 +26,13 @@ const error = function(e) {
 const version = 4
 
 class iDB {
-  private db: IDBDatabase = null
-  private table: Array<Object> = []
-  SUMMARIES: string = 'summaries'
-  SESSIONS: string = 'sessions'
-  FAVICONS: string = 'favicons'
-  public oncomplete: Function = null
-  public onprogress: Function = null
+  private db: IDBDatabase = null;
+  private table: Object[] = [];
+  SUMMARIES: string = 'summaries';
+  SESSIONS: string = 'sessions';
+  FAVICONS: string = 'favicons';
+  public oncomplete: Function = null;
+  public onprogress: Function = null;
 
   constructor() {
     if (!window.indexedDB) {

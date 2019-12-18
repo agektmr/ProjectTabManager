@@ -8,6 +8,9 @@
     "build": "gulp build"
   },
   "repository": "https://github.com/agektmr/ProjectTabManager",
+  "engines": {
+    "node": "10.18.x"
+  },
   "keywords": [
     "ProjectTabManager"
   ],
@@ -36,5 +39,8 @@
     "run-sequence": "^1.1.5",
     "swig": "^1.4.2",
     "through2": "^2.0.0"
+  },
+  "dependencies": {
+    "@types/chrome": "0.0.91"
   }
 }

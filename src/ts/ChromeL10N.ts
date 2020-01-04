@@ -1,6 +1,5 @@
-<!DOCTYPE html>
-<!--
-Copyright 2012 Eiji Kitamura
+/**
+Copyright 2020 Eiji Kitamura
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,13 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 Author: Eiji Kitamura (agektmr@gmail.com)
--->
-<html>
-  <head>
-    <title>Project Tab Manager</title>
-  </head>
-  <body>
-    <ptm-app></ptm-app>
-    <script type="module" src="components/ptm-app.js"></script>
-  </body>
-</html>
+**/
+
+/// <reference path="../../node_modules/@types/chrome/index.d.ts" />
+
+export function l10n(msg: string) {
+  if (!chrome?.i18n) return msg;
+  return chrome.i18n.getMessage(msg);
+}

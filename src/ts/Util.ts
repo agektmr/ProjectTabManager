@@ -16,10 +16,18 @@ limitations under the License.
 Author: Eiji Kitamura (agektmr@gmail.com)
 */
 
-class Util {
+import { Config } from './Config';
+import normalizeUrl from 'normalize-url';
+
+export class Util {
   static CHROME_EXCEPTION_URL = /^chrome(|-devtools|-extensions):/
-  static STRIP_HASH = /^(.*?)#.*$/
-  static FAVICON_URL = 'http://www.google.com/s2/favicons?domain='
+  static config: Config
+
+  static configure(
+    config: Config
+  ): void {
+    this.config = config;
+  }
 
   /**
    * [lazify description]
@@ -44,19 +52,18 @@ class Util {
    * @return {[type]}     [description]
    */
   static unlazify(
-    url: string
+    url?: string
   ): string {
-    var params = {};
+    if (!url) return '';
     if (url.match(RegExp('^chrome-extension:\/\/'+chrome.i18n.getMessage('@@extension_id')+'\/lazy\.html'))) {
-      var query = url.replace(/.*\?(.*)$/, '$1');
-      var _params = query.split('&');
-      _params.forEach(function(param) {
-        var comb = param.split('=');
-        if (comb.length == 2)
-          params[comb[0]] = decodeURIComponent(comb[1]);
-      });
+      const parsed = Util.parse(url);
+      const _params = parsed?.query.split('&');
+      for (let param of _params) {
+        const tmp = param.split('=');
+        if (tmp[0] === 'url') return tmp[1];
+      }
     }
-    return params.url ? params.url : url;
+    return url;
   }
 
   /**
@@ -69,14 +76,13 @@ class Util {
     url1: string,
     url2: string
   ): boolean {
-    url1 = util.unlazify(url1).replace(Util.STRIP_HASH, '$1');
-    url2 = util.unlazify(url2).replace(Util.STRIP_HASH, '$1');
-    if (url1.length >= url2.length) {
-      if (url1.indexOf(url2) === 0) return true;
-    } else {
-      if (url2.indexOf(url1) === 0) return true;
-    }
-    return url1 === url2;
+    url1 = normalizeUrl(url1, { stripHash: true });
+    url2 = normalizeUrl(url2, { stripHash: true });
+    if (url1.indexOf(url2) === 0 ||
+        url2.indexOf(url1) === 0)
+      return true;
+    else
+      return url1 === url2;
   }
 
   /**
@@ -87,16 +93,16 @@ class Util {
   static parse(
     url: string
   ): any {
-    var parsed = url.match(/^(.*?:\/\/)(.*?)(:?([0-9]+))??(\/(.*?))??(\?(.*?))??(#(.*))??$/i);
+    const parsed = url.match(/^(.*?:\/\/)(.*?)(:?([0-9]+))??(\/(.*?))??(\?(.*?))??(#(.*))??$/i);
     return {
-      url:        parsed[0],
-      scheme:     parsed[1],
-      domain:     parsed[2],
-      port:       parsed[4],
-      authority:  parsed[1]+parsed[2]+(parsed[4]?':'+parsed[4]:''),
-      path:       parsed[6],
-      query:      parsed[8],
-      fragment:   parsed[10]
+      url:        parsed?.[0],
+      scheme:     parsed?.[1],
+      domain:     parsed?.[2],
+      port:       parsed?.[4],
+      authority:  `${parsed?.[1]}${parsed?.[2]}${!parsed?.[4]??''}`,
+      path:       parsed?.[6],
+      query:      parsed?.[8],
+      fragment:   parsed?.[10]
     }
   }
 
@@ -106,12 +112,20 @@ class Util {
    * @return {[type]}         [description]
    */
   static getLocalMidnightTime(
-    dateStr
+    dateStr: string
   ) {
-    var date = new Date(dateStr);
-    var UTCMidnight = date.getTime();
-    var TimezoneOffset = date.getTimezoneOffset() * 60 * 1000;
+    const date = new Date(dateStr);
+    const UTCMidnight = date.getTime();
+    const TimezoneOffset = date.getTimezoneOffset() * 60 * 1000;
     return UTCMidnight + TimezoneOffset;
+  }
+
+  static log(
+    str: string,
+    ...vals: any
+  ): void {
+    if (!this.config.debug) return;
+    console.log(str, ...vals);
   }
 
   /**
@@ -119,17 +133,9 @@ class Util {
    * @param  {Array}  array     an array to deep copy
    * @return {Promise}          A promise
    */
-  static deepCopy: (function() {
-    return function(array) {
-      var mc = new MessageChannel;
-      return new Promise(resolve => {
-        mc.port1.onmessage = resolve;
-        mc.port2.postMessage(array);
-      }).then(function(e) {
-        return e.data;
-      });
-    }
-  })()
+  static deepCopy(
+    array: any[]
+  ): any[] {
+    return [...array];
+  }
 }
-
-export default Util;

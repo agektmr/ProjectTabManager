@@ -18,185 +18,195 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 
 /// <reference path="../../node_modules/@types/chrome/index.d.ts" />"
 
-import Util from './Util';
+import { Util } from './Util';
+import { Config } from './Config';
 
-/**
- * Gets root chrome.bookmarks.BookmarkTreeNode object under a given parent folder.
- * Creates if not existing.
- */
-const getFolder = (
-  parentId: string,
-  title: string
-): Promise<chrome.bookmarks.BookmarkTreeNode> => {
-  return new Promise(resolve => {
-    chrome.bookmarks.getSubTree(parentId, bookmarks => {
-      const children = bookmarks[0].children;
-      // Loop through bookmarks under parentId
-      for (let child of children) {
-        if (title === child.title) {
-          resolve(child);
-          return;
-        }
-      }
-      // Create new root folder if not existing
-      chrome.bookmarks.create({
-        parentId: parentId,
-        title:    title
-      }, resolve);
-    });
-  });
-}
+export class BookmarkManager {
+  static readonly archiveFolderName: string = '__Archive__'
+  static config: Config
 
-class BookmarkManager {
-  private rootId: string
-  private bookmarks: chrome.bookmarks.BookmarkTreeNode[]
-  private config: Config
-
-  constructor(config: Config) {
-    this.config = config;
-    this.rootId = null;
-    this.bookmarks = [];
+  static configure(
+    config: Config
+  ): void {
+    BookmarkManager.config = config;
   }
 
-  public addBookmark(
-    folderId,
-    title,
-    url
+  static addBookmark(
+    folderId: string,
+    title: string = 'Untitled',
+    url: string = ''
   ): Promise<chrome.bookmarks.BookmarkTreeNode> {
-    return new Promise((resolve, reject) => {
-      if (url.match(Util.CHROME_EXCEPTION_URL)) reject();
+    return new Promise(resolve => {
+      if (url == '' || url.match(Util.CHROME_EXCEPTION_URL)) {
+        resolve(undefined);
+        return;
+      }
       chrome.bookmarks.create({
         parentId: folderId,
         title: title,
         url: Util.unlazify(url)
-      }, bookmark => {
-        this.load().then(() => resolve(bookmark), reject);
-      });
-      if (this.config.debug) console.log('[BookmarkManager] added bookmark', title);
-    });
+      }, bookmark => resolve(bookmark));
+    })
   }
 
-  public removeBookmark(
-    bookmarkId: string
-  ): Promise<chrome.bookmarks.BookmarkTreeNode[]> {
-    return new Promise((resolve, reject) => {
-      chrome.bookmarks.remove(bookmarkId, () => {
-        this.load().then(resolve, reject);
-      });
-      if (this.config.debug) console.log('[BookmarkManager] removed bookmark', bookmarkId);
-    });
-  }
-
-  public getRoot(
-    force_reload: boolean
-  ): Promise<chrome.bookmarks.BookmarkTreeNode[]> {
-    return new Promise((resolve, reject) => {
-      if (force_reload) {
-        this.load().then(resolve, reject);
-      } else {
-        resolve(this.bookmarks);
+  static async openBookmark(
+    tabId: number | undefined,
+    url: string
+  ): Promise<void> {
+    return new Promise(resolve => {
+      // If tab id is not assigned
+      if (!tabId) {
+        // Open new project entry
+        chrome.tabs.create({url: url, active: true});
+        return;
       }
+      chrome.tabs.get(tabId, tab => {
+        // If the project filed is not open yet
+        if (!tab) {
+          // Open new project entry
+          chrome.tabs.create({url: url, active: true});
+          return;
+        }
+        // If the project filed is already open
+        chrome.windows.get(tab.windowId, win => {
+          if (!win.focused) {
+            // Move focus to the window
+            chrome.windows.update(tab.windowId, {focused:true});
+          }
+          // Activate open project entry
+          chrome.tabs.update(tabId, {active: true});
+        });
+      });
+    });
+  }
+
+  static removeBookmark(
+    bookmarkId: string
+    // TODO: changed to void
+  ): Promise<void> {
+    return new Promise(resolve => {
+      chrome.bookmarks.remove(bookmarkId, () => resolve);
+      Util.log('[BookmarkManager] removed bookmark', bookmarkId);
     });
   }
 
   /**
-   * Creates folder bookmark under root
-   * @param {[type]}   title    [description]
+   * [normalizeBookmarks description]
+   * @param  {Array} src [description]
+   * @param  {Array} dst [description]
+   * @return {[type]}     [description]
    */
-  public addFolder(
+  static flat(
+    src: chrome.bookmarks.BookmarkTreeNode[] = []
+  ): chrome.bookmarks.BookmarkTreeNode[] {
+    // @ts-ignore
+    return src.flatMap((
+      node: chrome.bookmarks.BookmarkTreeNode
+    ) => {
+      if (node.url || !node.children?.length) return node;
+      return BookmarkManager.flat(node.children);
+    });
+  }
+
+
+  static getBookmarkFolders(): Promise<chrome.bookmarks.BookmarkTreeNode[]> {
+    return new Promise(resolve => {
+      chrome.bookmarks.getChildren(
+        BookmarkManager.config.rootParentId,
+        bookmarks => resolve(bookmarks));
+    });
+  }
+
+  static addFolder(
     title: string = 'Untitled'
   ): Promise<chrome.bookmarks.BookmarkTreeNode> {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       chrome.bookmarks.create({
-        parentId: this.rootId,
-        index:    0,
+        parentId: BookmarkManager.config.rootParentId,
         title:    title
       }, folder => {
-        if (this.config.debug)
-          console.log('[BookmarkManager] added new folder', folder);
-        this.load().then(() => resolve(folder), reject);
+        resolve(folder);
+        Util.log('[BookmarkManager] added new folder', folder);
       });
     });
   }
 
-  /**
-   * Renames folder bookmark under root
-   * @param {[type]}   id       Bookmark id
-   * @param {[type]}   title    New title
-   */
-  public renameFolder(
-    id: string,
+  static renameFolder(
+    folderId: string,
     title: string
   ): Promise<chrome.bookmarks.BookmarkTreeNode> {
     return new Promise(resolve => {
-      chrome.bookmarks.update(id, {title: title}, resolve);
+      chrome.bookmarks.update(folderId, {title: title}, resolve);
     });
   }
 
-  /**
-   * Gets chrome.bookmarks.BookmarkTreeNode of given bookmark id
-   * @param  {String}           bookmarkId
-   */
-  public getFolder(
-    folderId: string
-  ): chrome.bookmarks.BookmarkTreeNode {
-    for (let bookmark of this.bookmarks) {
-      if (folderId == bookmark.id) {
-        return bookmark;
-      }
-    }
-    return undefined;
-  }
-
-  /**
-   * Moves a bookmark to the archive folder
-   * @param  {String}           bookmarkId
-   */
-  public archiveFolder(
-    bookmarkId: string
+  static async getFolder(
+    folderId: string = ''
   ): Promise<chrome.bookmarks.BookmarkTreeNode> {
     return new Promise((resolve, reject) => {
-      getFolder(this.rootId, this.config.archiveFolderName)
-      .then(archiveFolder => {
-        if (!archiveFolder)
-          throw 'Archive folder not found';
-        chrome.bookmarks.move(bookmarkId, { parentId: archiveFolder.id },
-          bookmark => {
-          if (this.config.debug)
-            console.log('[BookmarkManager] archived a bookmark', bookmark);
-          this.load().then(() => resolve(bookmark), reject);
-        });
-      }, reject);
+      if (!folderId) reject();
+      chrome.bookmarks.get(folderId, folders => {
+        if (folders.length > 0) {
+          resolve(folders[0]);
+        } else {
+          reject();
+        }
+      });
     });
   }
 
-  /**
-   * [openEditWindow description]
-   * @param  {[type]} bookmarkId [description]
-   */
-  public openEditWindow(
-    bookmarkId: string = this.rootId
-  ): void {
-    chrome.tabs.create({url: `chrome://bookmarks#${bookmarkId}`});
+  static async archiveFolder(
+    bookmarkId: string,
+  ): Promise<void> {
+    let folder: chrome.bookmarks.BookmarkTreeNode | undefined;
+    const folders = await BookmarkManager.getBookmarkFolders();
+    folder = folders?.find(folder => {
+      return folder.title === BookmarkManager.archiveFolderName;
+    });
+    if (!folder) {
+      folder = await BookmarkManager.addFolder(
+        BookmarkManager.archiveFolderName);
+    }
+    chrome.bookmarks.move(bookmarkId, { parentId: folder.id });
+    Util.log('[BookmarkManager] archived a bookmark', folder);
   }
 
-  /**
-   * [load description]
-   * @param  {Function} callback [description]
-   * @return {[type]}            [description]
-   */
-  public load(): Promise<chrome.bookmarks.BookmarkTreeNode[]> {
+  static async openWindow(
+    bookmarks: chrome.bookmarks.BookmarkTreeNode[]
+  ): Promise<void> {
+    let i = 0;
     return new Promise((resolve, reject) => {
-      getFolder(
-        this.config.rootParentId,
-        this.config.rootName
-      ).then(folder => {
-        this.rootId = folder.id;
-        this.bookmarks = folder.children || [];
-        resolve(this.bookmarks);
-      }, reject);
+      // open first tab with window
+      chrome.windows.create({
+        url: bookmarks[0].url,
+        focused: true
+      }, win => {
+        if (!win) {
+          reject();
+          return;
+        }
+        // open bookmarks in window
+        for (let bookmark of bookmarks) {
+          // skip first bookmark and a folder
+          if (i++ === 0 || bookmark.url === undefined)
+            return;
+
+          let url = BookmarkManager.config.lazyLoad ?
+            bookmark.url : Util.lazify(bookmark.url, bookmark.title);
+          chrome.tabs.create({
+            windowId: win.id,
+            url:      url,
+            active:   false
+          });
+        }
+        resolve();
+      });
     });
   }
-};
 
-export default BookmarkManager;
+  static openEditWindow(
+    bookmarkId?: string
+  ): void {
+    chrome.tabs.create({url: `chrome://bookmarks#${bookmarkId || ''}`});
+  }
+}

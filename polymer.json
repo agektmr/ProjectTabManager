@@ -1,0 +1,27 @@
+{
+  "entrypoint": "src/app.html",
+  "shell": "app/components/ptm-app.js",
+  "npm": true,
+  "moduleResolution": "node",
+  "sources": [
+    "src/_locales/**",
+    "src/img/**",
+    "src/styles/**",
+    "src/*.html",
+    "src/manifest.json"
+  ],
+  "builds": [{
+    "name": "static",
+    "preset": "es6-bundled",
+    "addServiceWorker": false,
+    "js": {"minify": true, "compile": false},
+    "css": {"minify": true},
+    "html": {"minify": false},
+    "bundle": true
+  }],
+  "lint": {
+    "rules": [
+      "polymer-3"
+    ]
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "entrypoint": "src/app.html",
+  "shell": "app/components/ptm-app.js",
+  "fragments": [],
+  "sources": [
+    "src/_locales/**",
+    "src/img/**",
+    "src/styles/**",
+    "src/*.html",
+    "src/manifest.json",
+    "src/app.html",
+    "app/components/ptm-app.js"
+  ],
+  "extraDependencies": [
+    "bower_components/webcomponentsjs/*.js"
+  ],
+  "builds": [
+    {
+      "name": "static",
+      "browserCapabilities": [
+        "es2015"
+      ],
+      "js": {
+        "minify": true,
+        "compile": false,
+        "transformModulesToAmd": true
+      },
+      "css": {
+        "minify": true
+      },
+      "html": {
+        "minify": false
+      },
+      "bundle": true,
+      "addServiceWorker": false,
+      "addPushManifest": false,
+      "preset": "es6-bundled"
+    }
+  ],
+  "lint": {
+    "rules": [
+      "polymer-3"
+    ]
+  },
+  "npm": true,
+  "componentDir": "node_modules/",
+  "moduleResolution": "node"
+}

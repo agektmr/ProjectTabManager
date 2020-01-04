@@ -16,11 +16,22 @@ limitations under the License.
 Author: Eiji Kitamura (agektmr@gmail.com)
 */
 
-class Config {
+/// <reference path="../../node_modules/@types/chrome/index.d.ts" />"
+
+export declare type SyncConfig = {
+  rootParentId: string,
+  rootName: string,
+  lazyLoad: boolean,
+  maxSessions: -1 | 5 | 10
+}
+
+export class Config {
   public rootParentId: string = '2'
   public rootName: string = 'Project Tab Manager'
-  public lazyLoad: boolean = false;
-  public maxSessions: number = -1
+  public lazyLoad: boolean = false
+  public maxSessions: -1 | 5 | 10 = -1
+  public archiveFolderName: string = '__Archive__'
+  public summaryRemains: number = 60 * 60 * 24 * 30 * 2 * 1000
   public debug: boolean = true
 
   constructor() {
@@ -31,7 +42,37 @@ class Config {
     }
   }
 
-  public init(): Promise<void> {
+  public async init(): Promise<void> {
+    // TODO: Do we really need to do this?
+    chrome.storage.onChanged.addListener((
+      change: {[key: string]: chrome.storage.StorageChange},
+      areaName: string
+    ) => {
+      if (change.config && areaName == 'sync') {
+        const config = change.config.newValue;
+        this.rootParentId = config?.rootParentId || this.rootParentId;
+        this.rootName     = config?.rootname || this.rootName;
+        this.lazyLoad     = config?.lazyLoad || this.lazyLoad;
+        this.maxSessions  = config?.maxSessions || this.maxSessions;
+        if (this.debug)
+          console.log('[Config] configuration updated.', config);
+      }
+    });
+
+    // TODO: Make sure overwriting this will be ok
+    const config = await this.get();
+    if (config) {
+      this.rootParentId = config.rootParentId;
+      this.rootName     = config.rootName;
+      this.lazyLoad     = config.lazyLoad;
+      this.maxSessions  = config.maxSessions;
+    } else {
+      await this.sync();
+    }
+    if (this.debug) console.log('[Config] initialization finished', this);
+  }
+
+  public get(): Promise<SyncConfig> {
     return new Promise((resolve, reject) => {
       chrome.storage.sync.get(items => {
         if (chrome.runtime.lastError) {
@@ -39,39 +80,29 @@ class Config {
           reject();
         } else {
           if (items.config) {
-            this.rootParentId = items.config.rootParentId;
-            this.rootName     = items.config.rootName;
-            this.lazyLoad     = items.config.lazyLoad;
-            this.maxSessions  = items.config.maxSessions;
+            resolve(items.config);
           } else {
-            this.sync();
+            resolve({
+              rootName: this.rootName,
+              rootParentId: this.rootParentId,
+              lazyLoad: this.lazyLoad,
+              maxSessions: this.maxSessions
+            });
           }
-          if (this.debug) console.log('[Config] initialization finished', this);
-          resolve();
-        }
-      });
-
-      chrome.storage.onChanged.addListener((change, areaName) => {
-        if (areaName == 'sync' && 'config' in change) {
-          var config = change.config.newValue;
-          this.rootParentId = config.rootParentId;
-          this.rootName     = config.rootname;
-          this.lazyLoad     = config.lazyLoad;
-          this.maxSessions  = config.maxSessions;
-          if (this.debug)
-            console.log('[Config] configuration updated.', config);
         }
       });
     });
   }
 
-  public sync(): Promise<void> {
+  public sync(
+    config?: SyncConfig
+  ): Promise<void> {
     return new Promise((resolve, reject) => {
       chrome.storage.sync.set({config: {
-        lazyLoad:     this.lazyLoad,
-        rootParentId: this.rootParentId,
-        rootName:     this.rootName,
-        maxSessions:  this.maxSessions
+        lazyLoad: config?.lazyLoad || this.lazyLoad,
+        rootParentId: config?.rootParentId || this.rootParentId ,
+        rootName: config?.rootName || this.rootName,
+        maxSessions: config?.maxSessions || this.maxSessions
       }}, () => {
         if (chrome.runtime.lastError) {
           console.error(chrome.runtime.lastError.message);
@@ -84,14 +115,4 @@ class Config {
       });
     });
   }
-
-  public get archiveFolderName(): string {
-    return '__Archive__';
-  }
-
-  public get summaryRemains(): number {
-    return 60 * 60 * 24 * 30 * 2 * 1000; // 2 month ago
-  }
 }
-
-export default Config;

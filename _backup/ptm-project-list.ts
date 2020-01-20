@@ -17,9 +17,9 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 **/
 
 import { html, css, customElement, property } from 'lit-element';
-import { PtmBase } from './ptm-base';
+import { PtmBase } from '../components/ptm-base';
 import { ProjectEntity } from '../ts/ProjectEntity';
-import './ptm-project'
+import '../components/ptm-project'
 
 @customElement('ptm-project-list')
 export class PtmProjectList extends PtmBase {

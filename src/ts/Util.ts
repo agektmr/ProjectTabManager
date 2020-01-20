@@ -17,10 +17,10 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 */
 
 import { Config } from './Config';
-import normalizeUrl from 'normalize-url';
 
 export class Util {
   static CHROME_EXCEPTION_URL = /^chrome(|-devtools|-extensions):/
+  static STRIP_HASH = /^(.*?)#.*$/
   static config: Config
 
   static configure(
@@ -76,13 +76,14 @@ export class Util {
     url1: string,
     url2: string
   ): boolean {
-    url1 = normalizeUrl(url1, { stripHash: true });
-    url2 = normalizeUrl(url2, { stripHash: true });
-    if (url1.indexOf(url2) === 0 ||
+    url1 = Util.unlazify(url1).replace(Util.STRIP_HASH, '$1');
+    url2 = Util.unlazify(url2).replace(Util.STRIP_HASH, '$1');
+    if (url1 === url2 ||
+        url1.indexOf(url2) === 0 ||
         url2.indexOf(url1) === 0)
       return true;
     else
-      return url1 === url2;
+      return false;
   }
 
   /**

@@ -16,7 +16,7 @@ limitations under the License.
 Author: Eiji Kitamura (agektmr@gmail.com)
 */
 
-/// <reference path="../../node_modules/@types/chrome/index.d.ts" />"
+/// <reference path="../../node_modules/@types/chrome/index.d.ts" />
 
 import { Util } from './Util';
 import { Config } from './Config';
@@ -54,6 +54,7 @@ export class BookmarkManager {
     url: string
   ): Promise<void> {
     return new Promise(resolve => {
+      Util.log('[BookmarkManager] Opening a bookmark', tabId, url);
       // If tab id is not assigned
       if (!tabId) {
         // Open new project entry
@@ -111,9 +112,24 @@ export class BookmarkManager {
 
   static getBookmarkFolders(): Promise<chrome.bookmarks.BookmarkTreeNode[]> {
     return new Promise(resolve => {
-      chrome.bookmarks.getChildren(
-        BookmarkManager.config.rootParentId,
-        bookmarks => resolve(bookmarks));
+      chrome.bookmarks.getSubTree(BookmarkManager.config.rootParentId,
+          bookmarks => {
+        if (!bookmarks)
+          throw '[BookmarkManager] Bookmark root not found.';
+        const root = bookmarks[0].children?.find(bookmark => {
+          return bookmark.title === BookmarkManager.config.rootName
+        });
+        if (root) {
+          resolve(root.children);
+        } else {
+          chrome.bookmarks.create({
+            parentId: BookmarkManager.config.rootParentId,
+            title: BookmarkManager.config.rootName
+          }, root => {
+            resolve(root.children);
+          });
+        }
+      });
     });
   }
 

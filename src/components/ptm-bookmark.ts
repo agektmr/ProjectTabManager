@@ -20,11 +20,11 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 
 import { html, css, customElement, property } from 'lit-element';
 import { PtmBase } from './ptm-base';
-import '@polymer/paper-item';
-import '@polymer/iron-icon';
-import '@polymer/iron-icons';
-import '@polymer/paper-tooltip';
-import '@polymer/paper-icon-button';
+import '@polymer/paper-item/paper-item.js';
+import '@polymer/iron-icon/iron-icon.js';
+import '@polymer/iron-icons/iron-icons.js';
+import '@polymer/paper-tooltip/paper-tooltip.js';
+import '@polymer/paper-icon-button/paper-icon-button.js';
 
 // entry {
 //   id         : bookmark id if bookmarked
@@ -94,7 +94,10 @@ export class PtmBookmark extends PtmBase {
 
   // private meta: IronMetaElement | undefined
 
-  static styles = css `
+  static styles = css`
+    paper-item {
+      padding: 0;
+    }
     paper-item > *:not(:first-child):not(:last-child) {
       margin-right: 0 !important;
     }
@@ -125,17 +128,19 @@ export class PtmBookmark extends PtmBase {
     }
     #star[bookmarked] {
       color: #FAC12F;
-    }
-  `
+    }`
 
   render () {
     return html`
       <paper-item tabindex="-1">
-        <div class="favicon">
+        <!-- <div class="favicon">
           <iron-icon
             src="${this.favIconUrl || PtmBookmark.DEFAULT_FAVICON_URL}">
           </iron-icon>
-        </div>
+        </div> -->
+        <paper-icon-button
+          src="${this.favIconUrl || PtmBookmark.DEFAULT_FAVICON_URL}">
+        </paper-icon-button>
         <div class="title" @click="${this.open}" ?active="${!!this.tabId}">
           <!-- <paper-ripple recenters></paper-ripple> -->
           <span>${this.siteTitle}</span>

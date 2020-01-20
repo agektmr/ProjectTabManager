@@ -16,7 +16,7 @@ limitations under the License.
 Author: Eiji Kitamura (agektmr@gmail.com)
 */
 
-/// <reference path="../../node_modules/@types/chrome/index.d.ts" />"
+/// <reference path="../../node_modules/@types/chrome/index.d.ts" />
 
 import { SyncConfig, Config } from './Config';
 import { Util } from './Util';
@@ -199,10 +199,8 @@ export class ProjectManager {
    * [getCurrentWindowId description]
    * @return {[type]} [description]
    */
-  public getActiveWindowId(
-    callback: Function
-  ): void {
-    callback(this.sessionManager.getCurrentWindowId());
+  public async getActiveWindowId(): Promise<number | undefined> {
+    return this.sessionManager.getCurrentWindowId();
   }
 
   /**
@@ -282,6 +280,7 @@ export class ProjectManager {
     tabId: number | undefined,
     url: string
   ): Promise<void> {
+    Util.log('[ProjectManager] Opening a bookmark', tabId, url);
     await BookmarkManager.openBookmark(tabId, url);
   }
 

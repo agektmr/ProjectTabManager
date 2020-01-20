@@ -19,6 +19,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 /// <reference path="../../node_modules/@types/chrome/index.d.ts" />
 
 import { LitElement, customElement } from "lit-element";
+import '@webcomponents/shadycss/apply-shim.min.js';
 
 @customElement('ptm-base')
 export class PtmBase extends LitElement {
@@ -42,9 +43,9 @@ export class PtmBase extends LitElement {
     this.dispatchEvent(event);
   }
 
-  protected async command(
+  protected command(
     commandName: string,
-    commandDetail?: object
+    commandDetail: object = {}
   ): Promise<any> {
     return new Promise(resolve =>
       chrome.runtime.sendMessage({

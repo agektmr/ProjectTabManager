@@ -5,3 +5,5 @@
 *.zip
 node_modules
 app
+build
+_backup

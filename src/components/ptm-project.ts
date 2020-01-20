@@ -21,12 +21,12 @@ import { PtmBase } from './ptm-base';
 import { l10n } from '../ts/ChromeL10N';
 import { FieldEntity } from "../ts/FieldEntity";
 import './ptm-bookmark';
-import '@polymer/paper-material';
-import '@polymer/paper-item';
-import '@polymer/paper-icon-button';
-import '@polymer/iron-collapse';
-import '@polymer/iron-icon';
-import '@polymer/iron-icons';
+import '@polymer/paper-material/paper-material.js';
+import '@polymer/paper-item/paper-item.js';
+import '@polymer/paper-icon-button/paper-icon-button.js';
+import '@polymer/iron-collapse/iron-collapse.js';
+import '@polymer/iron-icon/iron-icon.js';
+import '@polymer/iron-icons/iron-icons.js';
 
 
 

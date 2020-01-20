@@ -20,7 +20,11 @@ import { html, css, customElement, property } from "lit-element";
 import { PtmBase } from './ptm-base';
 import { l10n } from '../ts/ChromeL10N';
 import { FieldEntity } from "../ts/FieldEntity";
-import { ProjectEntity } from "../ts/ProjectEntity";
+import './ptm-bookmark';
+import '@polymer/paper-material/paper-material.js';
+import '@polymer/paper-item/paper-item.js';
+import '@polymer/paper-icon-button/paper-icon-button.js';
+import '@polymer/iron-collapse/iron-collapse.js';
 
 @customElement('ptm-session')
 export class PtmSession extends PtmBase {
@@ -90,6 +94,9 @@ export class PtmSession extends PtmBase {
     }
     paper-material[expanded] {
       margin: 0 0 1em 0;
+    }
+    paper-item {
+      padding: 0;
     }
     paper-item > *:not(:first-child):not(:last-child) {
       margin-right: 0 !important;

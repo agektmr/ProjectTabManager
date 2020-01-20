@@ -29,10 +29,27 @@ import { Util } from '../ts/Util';
 import { ProjectEntity } from '../ts/ProjectEntity';
 import { l10n } from '../ts/ChromeL10N';
 import { PtmDialogQueryString } from './ptm-dialog';
-import { PaperToastElement } from '@polymer/paper-toast/paper-toast';
-import { IronPagesElement } from '@polymer/iron-pages/iron-pages';
-import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button';
-import { IronMetaElement } from '@polymer/iron-meta/iron-meta';
+import { PaperToastElement } from '@polymer/paper-toast';
+import { IronPagesElement } from '@polymer/iron-pages';
+import { PaperMenuButton } from '@polymer/paper-menu-button';
+import { IronMetaElement } from '@polymer/iron-meta';
+import './ptm-dialog';
+import './ptm-project-linker';
+import './ptm-options';
+import './ptm-session';
+import './ptm-project';
+import '@polymer/app-layout/app-layout.js';
+import '@polymer/paper-input/paper-input.js';
+import '@polymer/paper-icon-button/paper-icon-button.js';
+import '@polymer/paper-material/paper-material.js';
+import '@polymer/paper-item/paper-item.js';
+import '@polymer/paper-spinner/paper-spinner.js';
+import '@polymer/paper-tabs/paper-tab.js';
+import '@polymer/paper-tabs/paper-tabs.js';
+import '@polymer/paper-toast/paper-toast.js';
+import '@polymer/iron-meta/iron-meta.js';
+import '@polymer/iron-pages/iron-pages.js';
+import '@polymer/iron-flex-layout/iron-flex-layout-classes.js';
 
 @customElement('ptm-app')
 export class PtmApp extends PtmBase {
@@ -42,7 +59,8 @@ export class PtmApp extends PtmBase {
   projects: ProjectEntity[] = []
 
   @property({
-    type: Number
+    type: Number,
+    reflect: true
   })
   selected: number = 0
 
@@ -76,12 +94,35 @@ export class PtmApp extends PtmBase {
   })
   activeWinId: number = 0
 
-  private toast: PaperToastElement | undefined
-  private pages: IronPagesElement | undefined
-  private menu: PaperMenuButton | undefined
-  private options: PtmOptions | undefined
-  private linker: PtmProjectLinker | undefined
-  private meta: IronMetaElement | undefined
+  @property({
+    type: Object
+  })
+  toast: PaperToastElement | undefined
+
+  @property({
+    type: Object
+  })
+  pages: IronPagesElement | undefined
+
+  @property({
+    type: Object
+  })
+  menu: PaperMenuButton | undefined
+
+  @property({
+    type: Object
+  })
+  options: PtmOptions | undefined
+
+  @property({
+    type: Object
+  })
+  linker: PtmProjectLinker | undefined
+
+  @property({
+    type: Object
+  })
+  meta: IronMetaElement | undefined
 
   static styles = css`
     :host {
@@ -90,9 +131,13 @@ export class PtmApp extends PtmBase {
     *:focus {
       outline: none;
     }
-    paper-header-panel {
+    app-layout {
       min-height: 400px;
       overflow-y: hidden;
+    }
+    app-header {
+      margin: 0;
+      padding: 0;
     }
     paper-input {
       --paper-input-container-color:       rgba(255, 255, 255, 0.64);
@@ -113,10 +158,18 @@ export class PtmApp extends PtmBase {
     .toolbar-header {
       @apply(--layout-horizontal);
       @apply(--layout-center);
-      margin: 0 4px -8px 16px;
+      height: 20px;
+      padding: 0 10px;
+    }
+    .toolbar-tabs {
+      margin: 0;
+      padding: 0;
     }
     .paper-header {
       background-color: var(--default-primary-color);
+    }
+    paper-tabs {
+      width: 100%;
     }
     paper-menu-button paper-icon-button {
       color: var(--text-primary-color);
@@ -135,9 +188,9 @@ export class PtmApp extends PtmBase {
   render() {
     return html`
     <ptm-dialog></ptm-dialog>
-    <paper-header-panel>
-      <div class="paper-header">
-        <div class="toolbar-header" class="layout">
+    <app-header-layout>
+      <app-header class="paper-header" fixed>
+        <app-toolbar class="toolbar-header layout" sticky>
           <paper-input
             placeholder="Project Tab Manager"
             class="flex"
@@ -171,94 +224,79 @@ export class PtmApp extends PtmBase {
               </paper-item>
             </paper-material>
           </paper-menu-button>
-        </div>
-        <paper-tabs class="flex" selected="${this.selected}" tabindex="-1">
-          <paper-tab tabindex="-1">${l10n('sessions')}</paper-tab>
-          <paper-tab tabindex="-1">${l10n('projects')}</paper-tab>
-        </paper-tabs>
-      </div>
+        </app-toolbar>
+        <app-toolbar class="toolbar-tabs" sticky>
+          <paper-tabs class="flex" .selected="${this.selected}" tabindex="-1">
+            <paper-tab tabindex="-1">${l10n('sessions')}</paper-tab>
+            <paper-tab tabindex="-1">${l10n('projects')}</paper-tab>
+          </paper-tabs>
+        </app-toolbar>
+      </app-header>
       <iron-meta id="meta" type="dialog"></iron-meta>
       <ptm-project-linker id="linker"
         .projects="${this.projects}"
         @link-project="${this.linkProject}"
         @unlink-project="${this.unlinkProject}"></ptm-project-linker>
       <ptm-options id="options"></ptm-options>
-      <iron-pages id="pages" selected="${this.selected}">
-        ${this.projects.map(project => {
-        return !!project.session ? html`
-        <ptm-session
-          .fields="${project.fields}"
-          project-id="${project.id}"
-          session-id="${project.session.id}"
-          win-id="${project.session?.winId}"
-          session-title="${project.session.title}"
-          project-title="${project.title}"
-          @create-project="${this.createProject}"
-          @link-clicked="${this.openLinker}"
-          @open-clicked="${this.openProject}"
-          @rename-clicked="${this.renameProject}"
-          @remove-clicked="${this.removeSession}">
-          ?expanded="${this.activeWinId === project.session?.winId}"
-          tabindex="0">
-        </ptm-session>`:'';
-        })}
-        <!-- <ptm-session-list
-          .projects="${this.projects}"
-          @create-project="${this.createProject}"
-          @link-clicked="${this.openLinker}"
-          @open-clicked="${this.openProject}"
-          @rename-clicked="${this.renameProject}"
-          @remove-clicked="${this.removeSession}">
-        </ptm-session-list> -->
-        ${this.projects.map(project => {
-        return !!project.bookmark ? html`
-        <ptm-project
-          .fields="${project.fields}"
-          project-id="${project.id}"
-          project-title="${project.title}"
-          win-id="${project.session?.winId}"
-          @open-clicked="${this.openProject}"
-          @rename-clicked="${this.renameProject}"
-          @remove-clicked="${this.removeProject}">
-        </ptm-project>`:'';
-        })}
-        <!-- <ptm-project-list
-          .projects="${this.projects}"
-          @open-clicked="${this.openProject}"
-          @rename-clicked="${this.renameProject}"
-          @remove-clicked="${this.removeProject}">
-        </ptm-project-list> -->
+      <iron-pages id="pages" .selected="${this.selected}">
+        <section>
+          ${this.projects.map(project => {
+          return !!project.session ? html`
+          <ptm-session
+            .fields="${project.fields}"
+            project-id="${project.id}"
+            session-id="${project.session.id}"
+            win-id="${project.session?.winId}"
+            session-title="${project.session.title}"
+            project-title="${project.title}"
+            @create-project="${this.createProject}"
+            @link-clicked="${this.openLinker}"
+            @open-clicked="${this.openProject}"
+            @rename-clicked="${this.renameProject}"
+            @remove-clicked="${this.removeSession}"
+            ?expanded="${this.activeWinId === project.session?.winId}"
+            tabindex="0">
+          </ptm-session>`:'';
+          })}
+        </section>
+        <section>
+          ${this.projects.map(project => {
+          return !!project.bookmark ? html`
+          <ptm-project
+            .fields="${project.fields}"
+            project-id="${project.id}"
+            project-title="${project.title}"
+            win-id="${project.session?.winId}"
+            @open-clicked="${this.openProject}"
+            @rename-clicked="${this.renameProject}"
+            @remove-clicked="${this.removeProject}">
+          </ptm-project>`:'';
+          })}
+        </section>
         <div class="fit loading">
           <paper-spinner active></paper-spinner>
         </div>
-        ${this.searchResults.map(project => html`
-        <ptm-project
-          .fields="${project.fields}"
-          project-id="${project.id}"
-          project-title="${project.title}"
-          @open-clicked="${this.openProject}"
-          expanded="true">
-        </ptm-project>`
-        )}
-        <!-- <ptm-search-list
-          .projects="${this.searchResults}"
-          @open-clicked="${this.openProject}">
-        </ptm-search-list> -->
+        <section>
+          ${this.searchResults.map(project => html`
+          <ptm-project
+            .fields="${project.fields}"
+            project-id="${project.id}"
+            project-title="${project.title}"
+            @open-clicked="${this.openProject}"
+            expanded="true">
+          </ptm-project>`
+          )}
+        </section>
       </iron-pages>
       <paper-toast
         id="toast"
         duration="3000"
         text="${this.toastText}">
       </paper-toast>
-    </paper-header-panel>`;
+    </app-header-layout>`;
   }
 
-  public firstUpdated() {
-    chrome.runtime.sendMessage({
-      command: 'getActiveWindowId'
-    }, activeWinId => {
-      this.activeWinId = activeWinId;
-    });
+  public async firstUpdated() {
     this.toast = this.querySelector('#toast');
     this.pages = this.querySelector('#pages');
     this.menu = this.querySelector('#menu');
@@ -278,6 +316,7 @@ export class PtmApp extends PtmBase {
     this.addEventListener('keyup', (e: KeyboardEvent) => {
       if (e.keyCode === 16) this.shiftKey = false;
     });
+    this.activeWinId = await this.command('getActiveWindowId');
     this.fire('reload', {
       forceReload: false
     });

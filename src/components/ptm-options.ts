@@ -22,7 +22,13 @@ import { html, css, customElement, property } from "lit-element";
 import { PtmBase } from './ptm-base';
 import { SyncConfig } from '../ts/Config';
 import { l10n } from '../ts/ChromeL10N';
-import { PtmDialog } from "./ptm-dialog";
+import '@polymer/paper-dialog/paper-dialog.js';
+import '@polymer/paper-dialog-scrollable/paper-dialog-scrollable.js';
+import '@polymer/paper-dropdown-menu/paper-dropdown-menu.js';
+// import '@polymer/paper-menu/paper-menu.js';
+import '@polymer/paper-item/paper-item.js';
+import '@polymer/paper-toggle-button/paper-toggle-button.js';
+import '@polymer/paper-button/paper-button.js';
 
 @customElement('ptm-options')
 export class PtmOptions extends PtmBase {

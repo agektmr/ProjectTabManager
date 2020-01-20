@@ -16,7 +16,7 @@ limitations under the License.
 Author: Eiji Kitamura (agektmr@gmail.com)
 */
 
-/// <reference path="../../node_modules/@types/chrome/index.d.ts" />"
+/// <reference path="../../node_modules/@types/chrome/index.d.ts" />
 
 import { Config } from './Config';
 import { Util } from './Util';
@@ -71,8 +71,6 @@ export class SessionManager {
     this.config = config;
     this.activeInfo = {
       id:       undefined,
-      // start:    null,
-      // end:      null,
       tabId:    undefined,
       windowId: undefined
     };
@@ -610,7 +608,7 @@ export class SessionManager {
     // Loop through left sessions from previous ones to create unopened sessions
     Util.log('[SessionManager] Looping through left previous sessions.');
     let unboundSessions = 0;
-    this.sessions = prev_sessions.filter(prev_session => {
+    const new_sessions = prev_sessions.filter(prev_session => {
       const session = new SessionEntity(prev_session);
       if (session.id.indexOf('-') === 0) {
         // Unbound session
@@ -624,6 +622,7 @@ export class SessionManager {
       }
       return true;
     });
+    this.sessions.concat(new_sessions);
     Util.log('[SessionManager] Session list created.', this.sessions);
   }
 

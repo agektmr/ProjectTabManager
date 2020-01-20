@@ -16,7 +16,7 @@ limitations under the License.
 Author: Eiji Kitamura (agektmr@gmail.com)
 */
 
-/// <reference path="../../node_modules/@types/chrome/index.d.ts" />"
+/// <reference path="../../node_modules/@types/chrome/index.d.ts" />
 
 export declare type SyncConfig = {
   rootParentId: string,
@@ -35,11 +35,11 @@ export class Config {
   public debug: boolean = true
 
   constructor() {
-    let manifest = chrome.runtime.getManifest();
-    if (manifest.key !== undefined) {
-      // If there's key property exists in manifest, this is production
-      this.debug = false;
-    }
+    // let manifest = chrome.runtime.getManifest();
+    // if (manifest.key !== undefined) {
+    //   // If there's key property exists in manifest, this is production
+    //   this.debug = false;
+    // }
   }
 
   public async init(): Promise<void> {

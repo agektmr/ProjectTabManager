@@ -21,6 +21,9 @@ import { PtmBase } from './ptm-base';
 import { l10n } from '../ts/ChromeL10N';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog';
 import { IronMeta } from '@polymer/iron-meta/iron-meta';
+import '@polymer/paper-dialog/paper-dialog.js';
+import '@polymer/paper-button/paper-button.js';
+import '@polymer/paper-input/paper-input.js';
 
 export declare type PtmDialogQueryString = {
   line1: string,
@@ -109,13 +112,13 @@ export class PtmDialog extends PtmBase {
         <div class="buttons">
           <paper-button
             raised
-            @click="${this._onCanceled}">
+            @click="${this.onCanceled}">
             ${this.cancel}
           </paper-button>
           <paper-button
             class="accent"
             raised
-            @click="${this._onConfirmed}">
+            @click="${this.onConfirmed}">
             ${this.okay}
           </paper-button>
         </div>
@@ -164,7 +167,7 @@ export class PtmDialog extends PtmBase {
     this.dialog?.close();
   }
 
-  private _onConfirmed(e: MouseEvent) {
+  private onConfirmed(e: MouseEvent) {
     if (this._isPrompt) {
       this._confirmed?.(this.answer);
     } else {
@@ -175,7 +178,7 @@ export class PtmDialog extends PtmBase {
     this.close();
   }
 
-  private _onCanceled(e: MouseEvent) {
+  private onCanceled(e: MouseEvent) {
     this._canceled?.();
     this._canceled = function() {};
     this._confirmed = function() {};

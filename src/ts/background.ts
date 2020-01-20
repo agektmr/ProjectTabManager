@@ -16,6 +16,8 @@ limitations under the License.
 Author: Eiji Kitamura (agektmr@gmail.com)
 */
 
+/// <reference path="../../node_modules/@types/chrome/index.d.ts" />
+
 import { Config } from './Config';
 import { ProjectManager } from './ProjectManager';
 import { SessionManager } from './SessionManager';
@@ -46,7 +48,7 @@ chrome.runtime.onInstalled.addListener(details => {
   await sessionManager.resumeSessions()
   projectManager = new ProjectManager(config, sessionManager);
   await projectManager.update();
-  chrome.runtime.onMessage.addListener(async (msg, sender, respond) => {
+  chrome.runtime.onMessage.addListener((msg, sender, respond) => {
     /**
      * **Commands**
      * update: {
@@ -64,6 +66,7 @@ chrome.runtime.onInstalled.addListener(details => {
      *   projectId: string
      * }
      * getActiveProject: {}
+     * getActiveWindowId: {}
      * getConfig: {}
      * setConfig: {
      *   config: SyncConfig
@@ -71,11 +74,11 @@ chrome.runtime.onInstalled.addListener(details => {
      * openBookmarkEditWindow: {}
      * openHelp: {}
      */
-    const params = msg.filter((key: string) => key != 'command');
-    console.log('received command:', msg.command);
+    const params = Object.values(msg.detail);
+    Util.log('[Background] Received a command:', msg.command, params);
     // @ts-ignore
-    const result = await ProjectManager.prototype[msg.command].apply(projectManager, params);
-    respond(result);
+    ProjectManager.prototype[msg.command].apply(projectManager, params)
+    .then(respond);
     return true;
   });
 })();

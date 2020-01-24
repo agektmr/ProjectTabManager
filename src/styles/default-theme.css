@@ -59,13 +59,13 @@ html {
   --paper-tab-ink: var(--accent-color);
 
   /* paper-item */
-  --paper-item: {
+  /* --paper-item: {
     padding: 0;
     font-size: 1.0em;
     background-color: var(--default-background-color);
     min-height: 24px;
     line-height: 16px;
-  };
+  }; */
 
   --paper-dialog: {
     font-size: 1.0em;

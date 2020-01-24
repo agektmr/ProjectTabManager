@@ -95,9 +95,6 @@ export class PtmBookmark extends PtmBase {
   // private meta: IronMetaElement | undefined
 
   static styles = css`
-    paper-item {
-      padding: 0;
-    }
     paper-item > *:not(:first-child):not(:last-child) {
       margin-right: 0 !important;
     }
@@ -132,12 +129,20 @@ export class PtmBookmark extends PtmBase {
 
   render () {
     return html`
+      <style>
+        div {
+          font-size: 2.0em;
+        }
+        /* paper-item */
+        --paper-item: {
+          padding: 0;
+          font-size: 1.0em;
+          background-color: var(--default-background-color);
+          min-height: 24px;
+          line-height: 16px;
+        };
+      </style>
       <paper-item tabindex="-1">
-        <!-- <div class="favicon">
-          <iron-icon
-            src="${this.favIconUrl || PtmBookmark.DEFAULT_FAVICON_URL}">
-          </iron-icon>
-        </div> -->
         <paper-icon-button
           src="${this.favIconUrl || PtmBookmark.DEFAULT_FAVICON_URL}">
         </paper-icon-button>

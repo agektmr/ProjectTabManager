@@ -16,7 +16,7 @@ limitations under the License.
 Author: Eiji Kitamura (agektmr@gmail.com)
 **/
 
-import { html, css, customElement, property } from "lit-element";
+import { html, customElement, property } from "lit-element";
 import { PtmBase } from './ptm-base';
 import { l10n } from '../ts/ChromeL10N';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog';
@@ -83,17 +83,35 @@ export class PtmDialog extends PtmBase {
 
   private dialog: PaperDialogElement | undefined
 
-  static styles = css`
-    paper-dialog .content {
-      padding: 0 16px !important;
-    }
-    .accent {
-      background-color: var(--accent-color);
-    }
-  `;
-
   render() {
     return html`
+      <style>
+        paper-dialog {
+          --paper-dialog: {
+            font-size: 1.0em;
+            margin: 0 20px;
+            max-width: none;
+          };
+
+          --paper-dialog-title: {
+            white-space: normal;
+            margin-top: 12px !important;
+            padding: 0 16px;
+            font-size: 1.4em;
+          };
+
+          --paper-dialog-scrollable: {
+            margin-top: 10px;
+            padding: 0 16px;
+          };
+        }
+        paper-dialog .content {
+          padding: 0 16px !important;
+        }
+        .accent {
+          background-color: var(--accent-color);
+        }
+      </style>
       <paper-dialog id="dialog" modal>
         <h2>${this.line1}</h2>
         <div class="content">

@@ -16,12 +16,12 @@ limitations under the License.
 Author: Eiji Kitamura (agektmr@gmail.com)
 **/
 
-import { html, css, customElement, property } from "lit-element";
+import { html, customElement, property } from "lit-element";
 import { PtmBase } from './ptm-base';
 import { l10n } from '../ts/ChromeL10N';
 import { ProjectEntity } from "../ts/ProjectEntity";
-import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog';
-import { IronMetaElement } from '@polymer/iron-meta/iron-meta';
+import { PaperDialogElement } from '@polymer/paper-dialog';
+import { IronMetaElement } from '@polymer/iron-meta';
 import '@polymer/iron-meta/iron-meta.js';
 import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-dialog-scrollable/paper-dialog-scrollable.js';
@@ -37,70 +37,96 @@ export class PtmProjectLinker extends PtmBase {
   projects: ProjectEntity[] = []
 
   @property({
+    type: String
+  })
+  linkingProjectId?: string
+
+  @property({
+    type: Boolean
+  })
+  bookmarked: boolean = false
+
+  @property({
     type: Object
   })
-  linkingProject?: ProjectEntity
+  meta: IronMetaElement | undefined
 
-  private meta: IronMetaElement | undefined
-  private repeat: Element | undefined
-  private dialog: PaperDialogElement | undefined
+  @property({
+    type: Object
+  })
+  repeat: Element | undefined
 
-  static styles = css`
-    h2 {
-      width: 180px;
-    }
-    iron-icon {
-      width: 16px;
-      height: 16px;
-      margin-right: 4px;
-    }
-    paper-dialog-scrollable {
-      --paper-dialog-scrollable: {
-        padding: 0;
-      }
-    }
-    paper-item {
-      cursor: pointer;
-      padding: 0 16px;
-      margin: 0;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      white-space: nowrap;
-    }
-    paper-item:not([disabled]):hover {
-      background-color: var(--primary-background-color);
-    }
-    paper-item[disabled] {
-      cursor: auto;
-      color: var(--disabled-text-color);
-    }
-    .accent {
-      color: var(--text-primary-color);
-      background-color: var(--accent-color);
-    }
-    .buttons {
-      padding: 10px 5px 10px 10px;
-      @apply(--layout-horizontal);
-      @apply(--layout-end-justified);
-    }
-  `
+  @property({
+    type: Object
+  })
+  dialog: PaperDialogElement | undefined
 
   render() {
     return html`
+      <style>
+        h2 {
+          width: 180px;
+        }
+        iron-icon {
+          width: 16px;
+          height: 16px;
+          margin-right: 4px;
+          flex: 1 1 16px;
+        }
+        paper-dialog-scrollable {
+          --paper-dialog-scrollable: {
+            padding: 0;
+          }
+        }
+        paper-item {
+          cursor: pointer;
+          font-size: 1.0em;
+          padding: 0 16px;
+          margin: 0;
+          background-color: var(--default-background-color);
+          min-height: 24px;
+          line-height: 16px;
+          display: flex;
+        }
+        paper-item:not([disabled]):hover {
+          background-color: var(--primary-background-color);
+        }
+        paper-item[disabled] {
+          cursor: auto;
+          color: var(--disabled-text-color);
+        }
+        .title {
+          cursor: pointer;
+          color: var(--secondary-text-color);
+          text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
+          flex: 1 1 auto;
+        }
+        .accent {
+          color: var(--text-primary-color);
+          background-color: var(--accent-color);
+        }
+        .buttons {
+          padding: 10px 5px 10px 10px;
+          @apply(--layout-horizontal);
+          @apply(--layout-end-justified);
+        }
+      </style>
       <iron-meta id="meta" type="dialog"></iron-meta>
       <paper-dialog id="dialog" modal>
         <h2>${l10n('link_session_to_a_project')}</h2>
         <paper-dialog-scrollable>
-          ${this.projects.map((project, index) => {
-          return !!project.bookmark ? '' : html`
+          ${this.projects.map(project => {
+          return !!project.bookmark ? html`
           <paper-item
-            @click="${this._onLink}"
+            @click="${this.onLink}"
             ?data-session="${!!project.session}"
             data-project-id="${project.id}">
-            <span class="flex title">${project.title}</span>
+            <span class="title">${project.title}</span>
             <iron-icon icon="${!project.session ? '' : 'link'}"></iron-icon>
           </paper-item>
-          `})}
+          ` : ''})}
         </paper-dialog-scrollable>
         <div class="buttons">
           <paper-button
@@ -108,10 +134,10 @@ export class PtmProjectLinker extends PtmBase {
             raised>
             ${l10n('cancel')}
           </paper-button>
-          ${!!this.linkingProject?.bookmark ? html`
+          ${this.bookmarked ? html`
           <paper-button
             class="accent"
-            @click="${this._onUnlink}"
+            @click="${this.onUnlink}"
             raised>
             ${l10n('unlink')}
           </paper-button>
@@ -128,10 +154,11 @@ export class PtmProjectLinker extends PtmBase {
   }
 
   public open(
-    linkingProject: ProjectEntity
+    linkingProjectId: string,
+    bookmarked: boolean
   ) {
-    this.linkingProject = linkingProject;
-    // TODO: render
+    this.linkingProjectId = linkingProjectId;
+    this.bookmarked = bookmarked;
     this.dialog?.open();
   }
 
@@ -139,10 +166,10 @@ export class PtmProjectLinker extends PtmBase {
     this.dialog?.close();
   }
 
-  private async _onLink(e: MouseEvent): Promise<void> {
+  private async onLink(e: MouseEvent): Promise<void> {
     this.close();
     // already linked?
-    const elem = e.target as HTMLElement;
+    const elem = e.currentTarget as HTMLElement;
     if (elem.dataset.session) {
       await this.meta?.byKey('confirm').confirm({
         line1: l10n('linked_project'),
@@ -151,22 +178,22 @@ export class PtmProjectLinker extends PtmBase {
         cancel: l10n('cancel')
       });
       this.fire('link-project', {
-        srcprojid: this.linkingProject?.id,
-        dstprojid: elem.dataset.projectId
+        srcProjId: this.linkingProjectId,
+        dstProjId: elem.dataset.projectId
       });
     } else {
       this.fire('link-project', {
-        srcprojid: this.linkingProject?.id,
-        dstprojid: elem.dataset.projectId
+        srcProjId: this.linkingProjectId,
+        dstProjId: elem.dataset.projectId
       });
     }
   }
 
-  private _onUnlink(e: MouseEvent): void {
+  private onUnlink(e: MouseEvent): void {
     // e.stoppropagation();
     this.close();
     this.fire('unlink-project', {
-      targetproject: this.linkingProject,
+      targetProjId: this.linkingProjectId,
     });
   }
 }

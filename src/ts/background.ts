@@ -65,11 +65,21 @@ chrome.runtime.onInstalled.addListener(details => {
      * removeProject: {
      *   projectId: string
      * }
+     * openProject: {
+     *   projectId: string
+     *   closeCurrent: boolean
+     * }
      * getActiveProject: {}
      * getActiveWindowId: {}
      * getConfig: {}
      * setConfig: {
      *   config: SyncConfig
+     * }
+     * addBookmark: {
+     *   tabId: number
+     * }
+     * removeBookmark: {
+     *   bookmarkId: string
      * }
      * openBookmarkEditWindow: {}
      * openHelp: {}
@@ -78,7 +88,12 @@ chrome.runtime.onInstalled.addListener(details => {
     Util.log('[Background] Received a command:', msg.command, params);
     // @ts-ignore
     ProjectManager.prototype[msg.command].apply(projectManager, params)
-    .then(respond);
+    .then((result: any) => {
+      if (chrome.runtime.lastError) throw chrome.runtime.lastError.message;
+      respond({result: result});
+    }).catch((e: any) => {
+      respond({error: e});
+    });
     return true;
   });
 })();

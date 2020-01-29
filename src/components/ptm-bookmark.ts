@@ -18,10 +18,9 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 
 /// <reference path="../../node_modules/@types/chrome/index.d.ts" />
 
-import { html, css, customElement, property } from 'lit-element';
+import { html, customElement, property } from 'lit-element';
 import { PtmBase } from './ptm-base';
 import '@polymer/paper-item/paper-item.js';
-import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-tooltip/paper-tooltip.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
@@ -94,53 +93,50 @@ export class PtmBookmark extends PtmBase {
 
   // private meta: IronMetaElement | undefined
 
-  static styles = css`
-    paper-item > *:not(:first-child):not(:last-child) {
-      margin-right: 0 !important;
-    }
-    .favicon {
-      display: block;
-      width: 16px;
-      height: 16px;
-      padding: 2px 4px 4px 4px;
-      -webkit-user-select: none;
-    }
-    iron-icon {
-      width: 100%;
-      height: 100%;
-    }
-    .title {
-      cursor: pointer;
-      color: #aaa;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      white-space: nowrap;
-      @apply(--layout-flex);
-    }
-    .title[active] {
-      color: black;
-    }
-    #star {
-      color: #D3D3D3;
-    }
-    #star[bookmarked] {
-      color: #FAC12F;
-    }`
-
   render () {
     return html`
       <style>
-        div {
-          font-size: 2.0em;
-        }
-        /* paper-item */
-        --paper-item: {
+        paper-item {
           padding: 0;
           font-size: 1.0em;
           background-color: var(--default-background-color);
           min-height: 24px;
           line-height: 16px;
-        };
+          display: flex;
+        }
+        paper-item > *:not(:first-child):not(:last-child) {
+          margin-right: 0 !important;
+        }
+        paper-icon-button {
+          width: 24px;
+          height: 24px;
+          padding: 2px 4px 4px 4px;
+          flex: 0 0 24px;
+        }
+        .favicon {
+          display: block;
+          width: 16px;
+          height: 16px;
+          padding: 2px 4px 4px 4px;
+          -webkit-user-select: none;
+        }
+        .title {
+          cursor: pointer;
+          color: #aaa;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
+          flex: 1 1 auto;
+        }
+        .title[active] {
+          color: black;
+        }
+        #star {
+          color: #D3D3D3;
+        }
+        #star[bookmarked] {
+          color: #FAC12F;
+        }
       </style>
       <paper-item tabindex="-1">
         <paper-icon-button
@@ -157,7 +153,7 @@ export class PtmBookmark extends PtmBase {
           id="star"
           icon="icons:star"
           @click="${this.onTapStar}"
-          ?bookmarked="${!!this.bookmarkId}"
+          ?bookmarked="${this.bookmarkId != 'undefined'}"
           tabindex="-1">
         </paper-icon-button>
         `:''}
@@ -182,36 +178,19 @@ export class PtmBookmark extends PtmBase {
       tabId: this.tabId,
       url: this.url
     });
-    // // If tab id is not assigned
-    // if (!this.tabId) {
-    //   // Open new project entry
-    //   chrome.tabs.create({url: this.url, active: true});
-    // } else {
-    //   chrome.tabs.get(this.tabId, tab => {
-    //     // If the project filed is not open yet
-    //     if (!tab) {
-    //       // Open new project entry
-    //       chrome.tabs.create({url: this.url, active: true});
-    //     // If the project filed is already open
-    //     } else {
-    //       chrome.windows.get(tab.windowId, win => {
-    //         if (!win.focused) {
-    //           // Move focus to the window
-    //           chrome.windows.update(tab.windowId, {focused:true});
-    //         }
-    //         // Activate open project entry
-    //         chrome.tabs.update(this.tabId, {active: true});
-    //       });
-    //     }
-    //   });
-    // }
   }
 
   private onTapStar(e: MouseEvent): void {
     e.stopPropagation();
-    this.fire('toggle-bookmark', {
-      tabId: this.tabId
-    });
+    if (this.tabId) {
+      this.fire('add-bookmark', {
+        tabId: this.tabId,
+      });
+    } if (this.bookmarkId) {
+      this.fire('remove-bookmark', {
+        bookmarkId: this.bookmarkId
+      });
+    }
   }
 
   private readFavicon(): void {

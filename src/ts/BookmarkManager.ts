@@ -30,25 +30,6 @@ export class BookmarkManager {
   ): void {
     BookmarkManager.config = config;
   }
-
-  static addBookmark(
-    folderId: string,
-    title: string = 'Untitled',
-    url: string = ''
-  ): Promise<chrome.bookmarks.BookmarkTreeNode> {
-    return new Promise(resolve => {
-      if (url == '' || url.match(Util.CHROME_EXCEPTION_URL)) {
-        resolve(undefined);
-        return;
-      }
-      chrome.bookmarks.create({
-        parentId: folderId,
-        title: title,
-        url: Util.unlazify(url)
-      }, bookmark => resolve(bookmark));
-    })
-  }
-
   static async openBookmark(
     tabId: number | undefined,
     url: string
@@ -81,13 +62,32 @@ export class BookmarkManager {
     });
   }
 
+  static addBookmark(
+    folderId: string,
+    title: string = 'Untitled',
+    url: string = ''
+  ): Promise<chrome.bookmarks.BookmarkTreeNode> {
+    return new Promise(resolve => {
+      if (url == '' || url.match(Util.CHROME_EXCEPTION_URL)) {
+        resolve(undefined);
+        return;
+      }
+      chrome.bookmarks.create({
+        parentId: folderId,
+        title: title,
+        url: Util.unlazify(url)
+      }, bookmark => resolve(bookmark));
+    })
+  }
+
   static removeBookmark(
     bookmarkId: string
-    // TODO: changed to void
   ): Promise<void> {
     return new Promise(resolve => {
-      chrome.bookmarks.remove(bookmarkId, () => resolve);
-      Util.log('[BookmarkManager] removed bookmark', bookmarkId);
+      chrome.bookmarks.remove(bookmarkId, () => {
+        Util.log('[BookmarkManager] removed bookmark', bookmarkId);
+        resolve();
+      });
     });
   }
 
@@ -109,8 +109,7 @@ export class BookmarkManager {
     });
   }
 
-
-  static getBookmarkFolders(): Promise<chrome.bookmarks.BookmarkTreeNode[]> {
+  static getRootFolder(): Promise<chrome.bookmarks.BookmarkTreeNode> {
     return new Promise(resolve => {
       chrome.bookmarks.getSubTree(BookmarkManager.config.rootParentId,
           bookmarks => {
@@ -120,29 +119,34 @@ export class BookmarkManager {
           return bookmark.title === BookmarkManager.config.rootName
         });
         if (root) {
-          resolve(root.children);
+          resolve(root);
         } else {
           chrome.bookmarks.create({
             parentId: BookmarkManager.config.rootParentId,
             title: BookmarkManager.config.rootName
-          }, root => {
-            resolve(root.children);
-          });
+          }, resolve);
         }
       });
     });
   }
 
+  static async getBookmarkFolders(
+  ): Promise<chrome.bookmarks.BookmarkTreeNode[]> {
+    const root = await BookmarkManager.getRootFolder();
+    return root?.children || [];
+  }
+
   static addFolder(
     title: string = 'Untitled'
   ): Promise<chrome.bookmarks.BookmarkTreeNode> {
-    return new Promise(resolve => {
+    return new Promise(async resolve => {
+      const root = await BookmarkManager.getRootFolder();
       chrome.bookmarks.create({
-        parentId: BookmarkManager.config.rootParentId,
+        parentId: root.id,
         title:    title
       }, folder => {
-        resolve(folder);
         Util.log('[BookmarkManager] added new folder', folder);
+        resolve(folder);
       });
     });
   }
@@ -205,7 +209,7 @@ export class BookmarkManager {
         for (let bookmark of bookmarks) {
           // skip first bookmark and a folder
           if (i++ === 0 || bookmark.url === undefined)
-            return;
+            continue;
 
           let url = BookmarkManager.config.lazyLoad ?
             bookmark.url : Util.lazify(bookmark.url, bookmark.title);

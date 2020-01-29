@@ -38,11 +38,11 @@ html {
   --menu-link-color:             #111111;
 
   /* paper-icon-button */
-  --paper-icon-button: {
+  /* --paper-icon-button: {
     width: 24px;
     height: 24px;
     padding: 2px 4px 4px 4px;
-  };
+  }; */
 
   /* iron-icon */
   --iron-icon-width: 100%;

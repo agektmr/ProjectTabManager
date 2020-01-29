@@ -19,7 +19,6 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 /// <reference path="../../node_modules/@types/chrome/index.d.ts" />
 
 import { LitElement, customElement } from "lit-element";
-import '@webcomponents/shadycss/apply-shim.min.js';
 
 @customElement('ptm-base')
 export class PtmBase extends LitElement {
@@ -47,11 +46,20 @@ export class PtmBase extends LitElement {
     commandName: string,
     commandDetail: object = {}
   ): Promise<any> {
-    return new Promise(resolve =>
+    return new Promise((resolve, reject) =>
       chrome.runtime.sendMessage({
         command: commandName,
         detail: commandDetail
-      }, resolve)
+      }, result => {
+        if (!result) {
+          // result being `undefined` is safe
+          resolve();
+        } else if (result.error) {
+          reject(result.error);
+        } else {
+          resolve(result.result)
+        }
+      })
     );
   }
 }

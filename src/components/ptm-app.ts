@@ -42,11 +42,14 @@ import '@polymer/app-layout/app-layout.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-material/paper-material.js';
+import '@polymer/paper-menu-button/paper-menu-button.js';
 import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-spinner/paper-spinner.js';
 import '@polymer/paper-tabs/paper-tab.js';
 import '@polymer/paper-tabs/paper-tabs.js';
 import '@polymer/paper-toast/paper-toast.js';
+import '@polymer/iron-icons/iron-icons.js';
+import '@polymer/iron-icons/notification-icons.js';
 import '@polymer/iron-meta/iron-meta.js';
 import '@polymer/iron-pages/iron-pages.js';
 import '@polymer/iron-flex-layout/iron-flex-layout-classes.js';
@@ -59,8 +62,7 @@ export class PtmApp extends PtmBase {
   projects: ProjectEntity[] = []
 
   @property({
-    type: Number,
-    reflect: true
+    type: Number
   })
   selected: number = 0
 
@@ -124,76 +126,133 @@ export class PtmApp extends PtmBase {
   })
   meta: IronMetaElement | undefined
 
-  static styles = css`
-    :host {
-      display: block;
-    }
-    *:focus {
-      outline: none;
-    }
-    app-layout {
-      min-height: 400px;
-      overflow-y: hidden;
-    }
-    app-header {
-      margin: 0;
-      padding: 0;
-    }
-    paper-input {
-      --paper-input-container-color:       rgba(255, 255, 255, 0.64);
-      --paper-input-container-focus-color: rgba(255, 255, 255, 1);
-      --paper-input-container-input-color: var(--default-background-color);
-    }
-    paper-menu {
-      width: 130px;
-      padding: 8px 0;
-    }
-    paper-material paper-item {
-      cursor: pointer;
-      padding: 0 10px;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      white-space: nowrap;
-    }
-    .toolbar-header {
-      @apply(--layout-horizontal);
-      @apply(--layout-center);
-      height: 20px;
-      padding: 0 10px;
-    }
-    .toolbar-tabs {
-      margin: 0;
-      padding: 0;
-    }
-    .paper-header {
-      background-color: var(--default-primary-color);
-    }
-    paper-tabs {
-      width: 100%;
-    }
-    paper-menu-button paper-icon-button {
-      color: var(--text-primary-color);
-      margin-left: 4px;
-    }
-    .loading {
-      @apply(--layout-horizontal);
-      @apply(--layout-center);
-      @apply(--layout-center-justified);
-    }
-    #dialog {
-      @apply(--layout-horizontal);
-      @apply(--layout-center);
-    }`
-
   render() {
     return html`
+    <style>
+      :host {
+        display: block;
+      }
+      *:focus {
+        outline: none;
+      }
+      app-header-layout {
+        min-height: 400px;
+        overflow-y: hidden;
+      }
+      app-header {
+        margin: 0;
+        padding: 0;
+        height: 82px;
+        background-color: var(--default-primary-color);
+      }
+      .toolbar-header {
+        padding: 0 10px;
+        height: 48px;
+        display: flex;
+      }
+      .toolbar-tabs {
+        margin: 0;
+        padding: 0;
+        height: 34px;
+      }
+      paper-button {
+        color: var(--text-primary-color);
+        background-color: var(--default-primary-color);
+      }
+      paper-input {
+        --paper-input-container-color:       rgba(255, 255, 255, 0.64);
+        --paper-input-container-focus-color: rgba(255, 255, 255, 1);
+        --paper-input-container-input-color: var(--default-background-color);
+        flex: 1 1 auto;
+      }
+      paper-item {
+        padding: 0;
+        font-size: 1.0em;
+        background-color: var(--default-background-color);
+        min-height: 24px;
+        line-height: 16px;
+      }
+      paper-menu {
+        width: 130px;
+        padding: 8px 0;
+      }
+      paper-material paper-item {
+        cursor: pointer;
+        padding: 0 10px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+      paper-tabs {
+        width: 100%;
+        /* font-size: 1.0em; */
+        height: 24px;
+        color: var(--text-primary-color);
+        background-color: var(--default-primary-color);
+      }
+      paper-menu-button paper-icon-button {
+        color: var(--text-primary-color);
+        margin-left: 4px;
+        width: 24px;
+        height: 24px;
+        padding: 2px 4px 4px 4px;
+        flex: 1 1 24px;
+      }
+      .loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 300px;
+      }
+      #dialog {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      * {
+        --paper-dropdown-menu-icon: {
+          width: 24px;
+          height: 24px;
+        };
+
+        --paper-font-subhead: {
+          font-family: 'Roboto', 'Noto', sans-serif;
+          -webkit-font-smoothing: antialiased;
+          text-rendering: optimizeLegibility;
+
+          font-size: 1.0em;
+          font-weight: 400;
+          line-height: 16px;
+        };
+
+        --paper-font-caption: {
+          font-family: 'Roboto', 'Noto', sans-serif;
+          -webkit-font-smoothing: antialiased;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+
+          font-size: 0.8em;
+          font-weight: 400;
+          letter-spacing: 0.011em;
+          line-height: 10px;
+        };
+        --paper-input-container: {
+          padding: 0;
+          height: 42px;
+        };
+      }
+    </style>
     <ptm-dialog></ptm-dialog>
+    <ptm-project-linker id="linker"
+      .projects="${this.projects}"
+      @link-project="${this.linkProject}"
+      @unlink-project="${this.unlinkProject}"></ptm-project-linker>
     <app-header-layout>
       <app-header class="paper-header" fixed>
         <app-toolbar class="toolbar-header layout" sticky>
           <paper-input
             placeholder="Project Tab Manager"
-            class="flex"
             value="${this.query}">
           </paper-input>
           <paper-menu-button
@@ -226,19 +285,15 @@ export class PtmApp extends PtmBase {
           </paper-menu-button>
         </app-toolbar>
         <app-toolbar class="toolbar-tabs" sticky>
-          <paper-tabs class="flex" .selected="${this.selected}" tabindex="-1">
+          <paper-tabs selected="${this.selected}" tabindex="-1" @selected-changed="${this.changeTab}">
             <paper-tab tabindex="-1">${l10n('sessions')}</paper-tab>
             <paper-tab tabindex="-1">${l10n('projects')}</paper-tab>
           </paper-tabs>
         </app-toolbar>
       </app-header>
       <iron-meta id="meta" type="dialog"></iron-meta>
-      <ptm-project-linker id="linker"
-        .projects="${this.projects}"
-        @link-project="${this.linkProject}"
-        @unlink-project="${this.unlinkProject}"></ptm-project-linker>
       <ptm-options id="options"></ptm-options>
-      <iron-pages id="pages" .selected="${this.selected}">
+      <iron-pages id="pages" selected="${this.selected}">
         <section>
           ${this.projects.map(project => {
           return !!project.session ? html`
@@ -326,7 +381,7 @@ export class PtmApp extends PtmBase {
     if (this.pages) {
       this.pages.selected = 2;
     }
-    this.projects = await this.command('update', { forceReload: e.detail.forceReload || true });
+    this.projects = await this.command('update');
     // this.projectManager =
     //   chrome.extension.getBackgroundPage().projectManager;
     // this.set('projectManager.projects', this.projectManager.projects);
@@ -374,10 +429,14 @@ export class PtmApp extends PtmBase {
     }
   }
 
+  private changeTab(e: CustomEvent) {
+    this.selected = e.detail.value;
+  }
+
   private openLinker(e: CustomEvent) {
     const project = this.getProjectFromId(e.detail.id);
     if (project) {
-      this.linker?.open(project);
+      this.linker?.open(e.detail.id, !!project.bookmark);
     } else {
       this.fire('show-toast', {
         text: l10n('project_to_link_not_found')
@@ -385,45 +444,46 @@ export class PtmApp extends PtmBase {
     }
   }
 
-  private linkProject(e: CustomEvent) {
-    let srcProj: any = this.getProjectFromId(e.detail.srcProjId);
-    let dstProj: any = this.getProjectFromId(e.detail.dstProjId);
-
-    if (!srcProj || !dstProj) {
+  private async linkProject(
+    e: CustomEvent
+  ): Promise<void> {
+    try {
+      const result = await this.command('linkProject', e.detail);
+      if (result) {
+        this.linker?.close();
+        this.fire('reload');
+        this.fire('show-toast', {
+          text: l10n('project_linked')
+        });
+      } else {
+        this.fire('show-toast', {
+          text: l10n('failed_linking')
+        });
+      }
+    } catch (e) {
       this.fire('show-toast', {
         text: l10n('failed_linking')
       });
-      return;
     }
-
-    if (!!dstProj.session) {
-      var bookmark = dstProj.bookmark;
-      dstProj.deassociateBookmark();
-      // create a dummy target project
-      dstProj = {
-        bookmark: bookmark
-      };
-    }
-    srcProj.associateBookmark(dstProj.bookmark);
-
-    this.linker?.close();
-    this.fire('reload');
-    this.fire('show-toast', {
-      text: l10n('project_linked')
-    });
   }
 
-  private unlinkProject(e: CustomEvent) {
-    if (e.detail.targetProject) {
-      const targetProject = e.detail.targetProject;
-      targetProject.deassociateBookmark();
-
-      this.fire('reload');
-      this.fire('show-toast', {
-        text: l10n('project_unlinked')
-      });
-      this.linker?.close();
-    } else {
+  private async unlinkProject(
+    e: CustomEvent
+  ): Promise<void> {
+    try {
+      const result = await this.command('unlinkProject', e.detail);
+      if (result) {
+        this.fire('reload');
+        this.fire('show-toast', {
+          text: l10n('project_unlinked')
+        });
+        this.linker?.close();
+      } else {
+        this.fire('show-toast', {
+          text: l10n('failed_unlinking')
+        });
+      }
+    } catch (e) {
       this.fire('show-toast', {
         text: l10n('failed_unlinking')
       });
@@ -433,17 +493,15 @@ export class PtmApp extends PtmBase {
   private async openProject(
     e: CustomEvent
   ): Promise<void> {
-    const project = this.getProjectFromId(e.detail.id);
-    if (!project) {
+    try {
+      await this.command('openProject', {
+        projectId: e.detail.id,
+        closeCurrent: this.shiftKey
+      });
+    } catch (e) {
       this.fire('show-toast', {
         text: l10n('failed_opening')
       });
-      return;
-    }
-    project.open();
-    if (this.shiftKey) {
-      const project = await this.command('getActiveProject');
-      project?.close();
     }
   }
 
@@ -468,7 +526,6 @@ export class PtmApp extends PtmBase {
         cancel: l10n('cancel')
       };
       const projectName = await this.meta?.byKey('confirm').prompt(qs);
-      project.deassociateBookmark();
       await this.command('createProject', {
         projectId: project.id,
         title: projectName

@@ -142,7 +142,7 @@ export class PtmOptions extends PtmBase {
       </paper-dialog-scrollable>
       <div class="buttons">
         <paper-button
-          @click="${this.dialog.close}"
+          @click="${this.close}"
           raised>
           ${l10n('cancel')}
         </paper-button>

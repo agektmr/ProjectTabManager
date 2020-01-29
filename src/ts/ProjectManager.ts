@@ -24,6 +24,7 @@ import { SessionManager } from './SessionManager';
 import { BookmarkManager } from './BookmarkManager';
 import { ProjectEntity } from './ProjectEntity';
 import { SessionEntity } from './SessionEntity';
+import { FieldEntity } from './FieldEntity';
 
 /**
  * [ProjectManager description]
@@ -53,19 +54,20 @@ export class ProjectManager {
 
   /**
    * [saveNewProject description]
-   * @param  {[type]} id    project id
+   * @param  {[type]} projectId    project id
    * @param  {[type]} title optional title
    * @return {[type]}       [description]
    */
   public async createProject(
-    id: string,
+    projectId: string,
     title: string
   ): Promise<ProjectEntity> {
-    const project = this.getProjectFromId(id);
+    const project = this.getProjectFromId(projectId);
 
     if (!project || !project.session) {
       throw '[ProjectManager] Session not found when creating new project';
     }
+    project.deassociateBookmark();
     const session = project.session;
     title = title || session.title;
 
@@ -77,61 +79,12 @@ export class ProjectManager {
     // Create new project
     const new_project = new ProjectEntity(session, folder);
     // Remove non-bound session project
-    this.removeProject(id);
+    this.removeProject(projectId);
     // Add the new project to list
     this.projects.unshift(new_project);
 
     Util.log('[ProjectManager] created new project', new_project);
     return new_project;
-  }
-
-  /**
-   * Gets Project of given project id
-   * @param  {String} id
-   * @return {ProjectEntity|undefined}
-   */
-  public getProjectFromId(
-    id: string
-  ): ProjectEntity | undefined {
-    return this.projects.find(project => project.session?.id === id);
-  }
-
-  /**
-   * Gets project of given window id
-   * @param  {Integer} winId
-   * @return {ProjectEntity|undefined}
-   */
-  public getProjectFromWinId(
-    winId: number
-  ): ProjectEntity | undefined {
-    return this.projects.find(project => project.session?.winId === winId);
-  }
-
-  /**
-   * Renames project of given project id
-   * @param  {String} project id
-   * @return void
-   */
-  public async renameProject(
-    projectId: string,
-    title: string
-  ): Promise<chrome.bookmarks.BookmarkTreeNode> {
-    let folder: chrome.bookmarks.BookmarkTreeNode;
-
-    const project = this.getProjectFromId(projectId);
-    if (!project) throw `Project ${projectId} not found`;
-    project.title = title;
-
-    if (!project.bookmark) {
-      folder = await BookmarkManager.addFolder(title);
-      project.id       = folder.id;
-      project.bookmark = folder;
-      if (project.session) project.session.setId(folder.id);
-    } else {
-      folder = await BookmarkManager.renameFolder(project.id, title);
-    }
-    project.setBadgeText();
-    return folder;
   }
 
   /**
@@ -178,6 +131,90 @@ export class ProjectManager {
     const sessionId = project.session?.id;
     if (!sessionId) return;
     return this.sessionManager.removeSessionFromProjectId(sessionId);
+  }
+
+  /**
+   * Gets Project of given project id
+   * @param  {String} id
+   * @return {ProjectEntity|undefined}
+   */
+  public getProjectFromId(
+    id: string
+  ): ProjectEntity | undefined {
+    return this.projects.find(project => project.id === id);
+  }
+
+  /**
+   * Gets project of given window id
+   * @param  {Integer} winId
+   * @return {ProjectEntity|undefined}
+   */
+  public getProjectFromWinId(
+    winId: number
+  ): ProjectEntity | undefined {
+    return this.projects.find(project => project.session?.winId === winId);
+  }
+
+  public async linkProject(
+    srcProjId: string,
+    dstProjId: string
+  ): Promise<boolean> {
+    let srcProj: ProjectEntity | undefined = this.getProjectFromId(srcProjId);
+    let dstProj: ProjectEntity | undefined = this.getProjectFromId(dstProjId);
+
+    if (!srcProj || !dstProj) {
+      return false;
+    }
+
+    if (dstProj.session) {
+      const bookmark = dstProj.bookmark;
+      dstProj.deassociateBookmark();
+      // create a dummy target project
+      dstProj = new ProjectEntity(undefined, bookmark);
+    }
+    // @ts-ignore
+    srcProj.associateBookmark(dstProj.bookmark);
+    return true;
+  }
+
+  public async unlinkProject(
+    targetProjId: string
+  ): Promise<boolean> {
+    if (!targetProjId) return false;
+    const targetProject = this.getProjectFromId(targetProjId);
+    if (targetProject) {
+      targetProject.deassociateBookmark();
+      return true
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Renames project of given project id
+   * @param  {String} project id
+   * @return void
+   */
+  public async renameProject(
+    projectId: string,
+    title: string
+  ): Promise<chrome.bookmarks.BookmarkTreeNode> {
+    let folder: chrome.bookmarks.BookmarkTreeNode;
+
+    const project = this.getProjectFromId(projectId);
+    if (!project) throw `Project ${projectId} not found`;
+    project.title = title;
+
+    if (!project.bookmark) {
+      folder = await BookmarkManager.addFolder(title);
+      project.id       = folder.id;
+      project.bookmark = folder;
+      if (project.session) project.session.setId(folder.id);
+    } else {
+      folder = await BookmarkManager.renameFolder(project.id, title);
+    }
+    project.setBadgeText();
+    return folder;
   }
 
   /**
@@ -263,11 +300,14 @@ export class ProjectManager {
   }
 
   public async openProject(
-    projectId: string
+    projectId: string,
+    closeCurrent: boolean = false
   ): Promise<boolean> {
     const project = this.getProjectFromId(projectId);
     if (!project) return false;
     this.sessionManager.openingProject = projectId;
+    const active = this.getActiveProject();
+    if (active && closeCurrent) active.close();
     return project.open();
   }
 
@@ -284,27 +324,48 @@ export class ProjectManager {
     await BookmarkManager.openBookmark(tabId, url);
   }
 
-  /**
-   * Removes or adds a bookmark depending on current status
-   * @param projectId
-   * @param tabId
-   */
-  public async toggleBookmark(
+  public async addBookmark(
     projectId: string,
-    tabId: number | undefined
+    tabId: number
   ): Promise<chrome.bookmarks.BookmarkTreeNode | undefined> {
     const project = this.getProjectFromId(projectId);
     if (!project)
-      throw '[ProjectManager] Unexpected attempt to toggle bookmark';
-    const field = project.fields.find(field => field.tabId === tabId);
-    if (!tabId || !field)
-      throw '[ProjectEntity] Unexpected attempt to toggle bookmark';
-    if (field.bookmarkId) {
-      return project.removeBookmark(field.bookmarkId);
-    } else {
-      return project.addBookmark(tabId);
-    }
+      throw '[ProjectManager] Project to add bookmark not found';
+    return project.addBookmark(tabId);
   }
+
+  public async removeBookmark(
+    projectId: string,
+    bookmarkId: string
+  ): Promise<chrome.bookmarks.BookmarkTreeNode | undefined> {
+    const project = this.getProjectFromId(projectId);
+    if (!project)
+      throw '[ProjectManager] Project to remove bookmark not found';
+    return project.removeBookmark(bookmarkId);
+  }
+
+  // /**
+  //  * Removes or adds a bookmark depending on current status
+  //  * @param projectId
+  //  * @param tabId
+  //  */
+  // public async toggleBookmark(
+  //   projectId: string,
+  //   tabId?: number,
+  //   bookmarkId?: string
+  // ): Promise<chrome.bookmarks.BookmarkTreeNode | undefined> {
+  //   const project = this.getProjectFromId(projectId);
+  //   if (!project)
+  //     throw '[ProjectManager] Project to toggle bookmark not found';
+
+  //   if (tabId) {
+  //     return project.addBookmark(tabId);
+  //   } else if (bookmarkId) {
+  //     return project.removeBookmark(bookmarkId);
+  //   } else {
+  //     throw '[ProjectEntity] Unexpected attempt to toggle bookmark';
+  //   }
+  // }
 
   /**
    * Open the bookmark manager page.

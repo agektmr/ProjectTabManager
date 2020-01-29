@@ -16,7 +16,7 @@ limitations under the License.
 Author: Eiji Kitamura (agektmr@gmail.com)
 **/
 
-import { html, css, customElement, property } from "lit-element";
+import { html, customElement, property } from "lit-element";
 import { PtmBase } from './ptm-base';
 import { l10n } from '../ts/ChromeL10N';
 import { FieldEntity } from "../ts/FieldEntity";
@@ -76,45 +76,58 @@ export class PtmProject extends PtmBase {
   })
   initialized: boolean = false
 
-  static styles = css`
-    :host {
-      display: block;
-    }
-    *:focus {
-      outline: none;
-    }
-    :host:focus {
-      outline: none;
-    }
-    paper-material[expanded] {
-      margin: 0 0 1em 0;
-    }
-    paper-item > *:not(:first-child):not(:last-child) {
-      margin-right: 0 !important;
-    }
-    paper-item > paper-icon-button:first-child {
-      padding-left: 2px;
-      border-left: 2px white solid;
-    }
-    paper-item[focused] > paper-icon-button:first-child {
-      border-left: 2px var(--accent-color) solid;
-    }
-    .title {
-      cursor: pointer;
-      color: var(--primary-text-color);
-      text-overflow: ellipsis;
-      overflow: hidden;
-      white-space: nowrap;
-      @apply(--layout-flex);
-    }
-    .title[active] {
-      font-weight: bold;
-      color: var(--primary-text-color);
-    }
-  `;
-
   render() {
     return html`
+      <style>
+        :host {
+          display: block;
+        }
+        *:focus {
+          outline: none;
+        }
+        :host:focus {
+          outline: none;
+        }
+        paper-material[expanded] {
+          margin: 0 0 1em 0;
+        }
+        paper-item {
+          padding: 0;
+          font-size: 1.0em;
+          background-color: var(--default-background-color);
+          min-height: 24px;
+          line-height: 16px;
+          display: flex;
+        }
+        paper-item > *:not(:first-child):not(:last-child) {
+          margin-right: 0 !important;
+        }
+        paper-icon-button {
+          width: 24px;
+          height: 24px;
+          padding: 2px 4px 4px 4px;
+          flex: 0 0 24px;
+        }
+        paper-item > paper-icon-button:first-child {
+          padding-left: 2px;
+          border-left: 2px white solid;
+        }
+        paper-item[focused] > paper-icon-button:first-child {
+          border-left: 2px var(--accent-color) solid;
+        }
+        .title {
+          cursor: pointer;
+          color: var(--primary-text-color);
+          text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
+          flex: 1 1 auto;
+        }
+        .title[active] {
+          font-weight: bold;
+          color: var(--primary-text-color);
+        }
+      </style>
       <paper-material
         elevation="${this.expanded ? 2 : 0}"
         ?expanded="${this.expanded}"
@@ -164,7 +177,8 @@ export class PtmProject extends PtmBase {
             tab-id="${field.tabId}"
             site-title="${field.title}"
             project-id="${this.projectId}"
-            @toggle-bookmark="${this.toggleBookmark}">
+            @add-bookmark="${this.addBookmark}"
+            @remove-bookmark="${this.removeBookmark}">
           </ptm-bookmark>`
           )}`:''}
         </iron-collapse>
@@ -190,7 +204,7 @@ export class PtmProject extends PtmBase {
     // this.keyEventTarget = this;
   }
 
-  private toggle(e: MouseEvent) {
+  protected toggle(e: MouseEvent) {
     e.stopPropagation();
     this.expanded = !this.expanded;
   }
@@ -215,38 +229,77 @@ export class PtmProject extends PtmBase {
   //   }
   // }
 
-  private onTapRename(e: MouseEvent) {
+  protected onTapRename(e: MouseEvent) {
     e.stopPropagation();
     this.fire('renmae-clicked', {
       id: this.projectId
     });
   }
 
-  private onTapRemove(e: MouseEvent) {
+  protected onTapRemove(e: MouseEvent) {
     e.stopPropagation();
     this.fire('remove-clicked', {
       id: this.projectId
     });
   }
 
-  private async toggleBookmark(
+  protected async addBookmark(
     e: CustomEvent
   ): Promise<void> {
     e.stopPropagation();
-
-    const bookmark = await this.command('toggleBookmark', {
-      projectId: this.projectId,
-      tabId: e.detail.tabId
-    });
-    if (bookmark) {
+    try {
+      const bookmark = await this.command('addBookmark', {
+        projectId: this.projectId,
+        tabId: e.detail.tabId
+      });
       this.fire('show-toast', {
         text: l10n('bookmark_added')
       });
-    } else {
+    } catch (e) {
+      this.fire('show-toast', { text: e });
+    }
+  }
+
+  protected async removeBookmark(
+    e: CustomEvent
+  ): Promise<void> {
+    e.stopPropagation();
+    try {
+      const bookmark = await this.command('removeBookmark', {
+        projectId: this.projectId,
+        bookmarkId: e.detail.bookmarkId
+      });
       this.fire('show-toast', {
         text: l10n('bookmark_removed')
       });
+    } catch (e) {
+      this.fire('show-toast', { text: e });
     }
-    // TODO: render
   }
+
+  // protected async toggleBookmark(
+  //   e: CustomEvent
+  // ): Promise<void> {
+  //   e.stopPropagation();
+
+  //   try {
+  //     const bookmark = await this.command('toggleBookmark', {
+  //       projectId: this.projectId,
+  //       tabId: e.detail.tabId,
+  //       bookmarkId: e.detail.bookmarkId
+  //     });
+  //     if (bookmark) {
+  //       this.fire('show-toast', {
+  //         text: l10n('bookmark_added')
+  //       });
+  //     } else {
+  //       this.fire('show-toast', {
+  //         text: l10n('bookmark_removed')
+  //       });
+  //     }
+  //   } catch (e) {
+  //     this.fire('show-toast', { text: e });
+  //   }
+  //   // TODO: render
+  // }
 }

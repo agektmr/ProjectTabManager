@@ -9,6 +9,7 @@ module.exports = {
   devtool: 'inline-source-map',
   entry: {
     'js/background': './src/ts/background.ts',
+    'js/lazy': './src/ts/lazy.ts',
     'components/ptm-app': './src/components/ptm-app.ts'
   },
   output: {

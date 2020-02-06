@@ -1,3 +1,7 @@
+## Version 5.0.0
+* Mostly quick fix to escape from HTML Imports deprecation. I know there should be many issues, but will fix them gradually.
+* Rewrote with TypeScript + lit-element + webpack.
+
 ## Version 4.0.2
 * Removing linked session has been only unlinking the project and required to then remove the session. It's now unlink and remove the session.
 * Badge displays improvement.

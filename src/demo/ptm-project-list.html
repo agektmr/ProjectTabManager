@@ -1,0 +1,27 @@
+<html>
+  <head>
+    <title>PTM Project List Demo</title>
+    <link rel="stylesheet" href="../styles/default-theme.css">
+    <script type="module" src="../../app/components/ptm-app.js"></script>
+    <style media="screen">
+      body {
+        background-color: #aaa;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="main"></div>
+    <script type="module">
+      import { html, render } from '../../node_modules/lit-html/lit-html.js';
+      const main = document.querySelector('#main');
+      fetch('./stab_projects.json')
+      .then(text => text.json())
+      .then(projects => {
+        render(html`
+          <ptm-project-list .projects="${projects}"></ptm-project-list>
+        `, main);
+      });
+    </script>
+  </body>
+
+</html>

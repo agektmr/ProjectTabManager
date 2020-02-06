@@ -1,0 +1,113 @@
+body {
+  width: 300px;
+  margin: 0;
+  padding: 0;
+}
+
+/*paper-item > *:not(:first-child):not(:last-child) {
+  margin-right: 0;
+}*/
+
+* {
+  font-family: 'Roboto';
+  --default-background-color: #FFFFFF;
+  --dark-primary-color:       #E64A19;
+  --default-primary-color:    #FF5722;
+  --light-primary-color:      #FFCCBC;
+  --text-primary-color:       #FFFFFF;
+  --accent-color:             #FF9800;
+  --primary-background-color: #FFCCBC;
+  --primary-text-color:       #212121;
+  --secondary-text-color:     #727272;
+  --disabled-text-color:      #BDBDBD;
+  --divider-color:            #B6B6B6;
+
+
+  /* Components */
+
+  /* paper-drawer-panel */
+  --drawer-menu-color:           #ffffff;
+  --drawer-border-color:         1px solid #ccc;
+  --drawer-toolbar-border-color: 1px solid rgba(0, 0, 0, 0.22);
+
+  /* paper-menu */
+  --paper-menu-background-color: #fff;
+  --menu-link-color:             #111111;
+
+  /* paper-icon-button */
+  /* --paper-icon-button: {
+    width: 24px;
+    height: 24px;
+    padding: 2px 4px 4px 4px;
+  }; */
+
+  /* iron-icon */
+  --iron-icon-width: 100%;
+  --iron-icon-height: 100%;
+
+  /* paper-tabs */
+  --paper-tabs: {
+    font-size: 1.0em;
+    height: 24px;
+    color: var(--text-primary-color);
+    background-color: var(--default-primary-color);
+  };
+  --paper-tabs-selection-bar-color: var(--accent-color);
+  --paper-tab-ink: var(--accent-color);
+
+  /* paper-item */
+  /* --paper-item: {
+    padding: 0;
+    font-size: 1.0em;
+    background-color: var(--default-background-color);
+    min-height: 24px;
+    line-height: 16px;
+  }; */
+
+  --paper-dialog: {
+    font-size: 1.0em;
+    margin: 0 20px;
+    max-width: none;
+  };
+  --paper-dialog-background-color: var(--default-background-color);
+  --paper-dialog-button-color: var(--default-background-color);
+
+  --paper-dialog-title: {
+    white-space: normal;
+    margin-top: 12px !important;
+    padding: 0 16px;
+    font-size: 1.4em;
+  };
+
+  --paper-dialog-scrollable: {
+    margin-top: 10px;
+    padding: 0 16px;
+  };
+
+  --paper-font-subhead: {
+    font-family: 'Roboto', 'Noto', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+
+    font-size: 1.0em;
+    font-weight: 400;
+    line-height: 16px;
+  };
+
+  --paper-font-caption: {
+    font-family: 'Roboto', 'Noto', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    font-size: 0.8em;
+    font-weight: 400;
+    letter-spacing: 0.011em;
+    line-height: 10px;
+  };
+  --paper-input-container: {
+    padding: 0;
+    height: 42px;
+  };
+}

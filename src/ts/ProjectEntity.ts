@@ -71,9 +71,7 @@ export class ProjectEntity {
       let bookmark;
       // Loop through bookmarks to find matched one
       for (let j = 0; j < copy.length; j++) {
-        if (Util.resembleUrls(
-            Util.unlazify(tab?.url),
-            Util.unlazify(copy[j]?.url))) {
+        if (Util.resembleUrls(tab?.url, copy[j]?.url)) {
           bookmark = copy.splice(j--, 1)[0];
           break;
         }
@@ -90,7 +88,9 @@ export class ProjectEntity {
    * [open description]
    * @return {[type]}            [description]
    */
-  public async open(): Promise<boolean> {
+  public async open(
+    lazify: boolean = false
+  ): Promise<boolean> {
     this.setBadgeText();
 
     // If there's no fields, open an empty window
@@ -105,7 +105,7 @@ export class ProjectEntity {
         chrome.windows.update(this.session.winId, { focused: true });
       } else {
         // If the session is not open yet
-        this.session.openTabs();
+        await this.session.openTabs(lazify);
       }
       return true;
 
@@ -114,7 +114,7 @@ export class ProjectEntity {
       Util.log('[ProjectEntity] Opening bookmarks', this.bookmark);
 
       const bookmarks = BookmarkManager.flat(this.bookmark.children);
-      await BookmarkManager.openWindow(bookmarks);
+      await BookmarkManager.openWindow(bookmarks, lazify);
       return true;
     }
     return false;

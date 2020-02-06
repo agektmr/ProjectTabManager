@@ -1,7 +1,3 @@
-* {
-  font-family: 'Roboto';
-}
-
 body {
   width: 300px;
   margin: 0;
@@ -12,7 +8,8 @@ body {
   margin-right: 0;
 }*/
 
-html {
+* {
+  font-family: 'Roboto';
   --default-background-color: #FFFFFF;
   --dark-primary-color:       #E64A19;
   --default-primary-color:    #FF5722;
@@ -85,16 +82,6 @@ html {
   --paper-dialog-scrollable: {
     margin-top: 10px;
     padding: 0 16px;
-  };
-
-  --paper-dropdown-menu-icon: {
-    width: 24px;
-    height: 24px;
-  }
-
-  --paper-button: {
-    color: var(--text-primary-color);
-    background-color: var(--default-primary-color);
   };
 
   --paper-font-subhead: {

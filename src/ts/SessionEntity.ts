@@ -159,35 +159,40 @@ export class SessionEntity {
    * [openSession description]
    */
   // TODO: Move to SessionManager
-  public openTabs(): void {
+  public openTabs(
+    lazify: boolean = false
+  ): Promise<void> {
     Util.log('[SessionEntity] Opening a session', this);
-    // open first tab with window
-    chrome.windows.create({
-      url: this.tabs?.[0]?.url,
-      focused: true
-    }, win => {
-      if (!win) return;
-      this.tabs[0].id = win.tabs?.[0]?.id;
+    return new Promise(resolve => {
+      // open first tab with window
+      chrome.windows.create({
+        url: this.tabs?.[0]?.url,
+        focused: true
+      }, win => {
+        if (!win) return;
+        this.tabs[0].id = win.tabs?.[0]?.id;
 
-      // open bookmarks in window
-      this.tabs.forEach((tab, i) => {
-        if (tab?.pinned && tab.id && i === 0) {
-          // Don't forget to make this pinned if required
-          chrome.tabs.update(tab.id, {
-            pinned: true
+        // open bookmarks in window
+        this.tabs.forEach((tab, i) => {
+          if (tab?.pinned && tab.id && i === 0) {
+            // Don't forget to make this pinned if required
+            chrome.tabs.update(tab.id, {
+              pinned: true
+            });
+          }
+          if (!tab || !tab.url || i === 0) return; // skip if undefined or first tab (since it's already opened)
+          let url = lazify ? tab.url : Util.lazify(tab.url, tab.title, tab.favIconUrl);
+          chrome.tabs.create({
+            windowId: win?.id,
+            index:    i,
+            url:      url,
+            pinned:   tab.pinned,
+            active:   false
+          }, tab => {
+            this.tabs[i].id = tab.id;
           });
-        }
-        if (!tab || !tab.url || i === 0) return; // skip if undefined or first tab (since it's already opened)
-        // let url = config_.lazyLoad ? tab.url : Util.lazify(tab.url, tab.title, tab.favIconUrl);
-        chrome.tabs.create({
-          windowId: win?.id,
-          index:    i,
-          url:      tab.url,
-          pinned:   tab.pinned,
-          active:   false
-        }, tab => {
-          this.tabs[i].id = tab.id;
         });
+        resolve();
       });
     });
   }

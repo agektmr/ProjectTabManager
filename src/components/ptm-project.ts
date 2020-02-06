@@ -76,6 +76,12 @@ export class PtmProject extends PtmBase {
   })
   initialized: boolean = false
 
+  @property({
+    type: Boolean,
+    reflect: true
+  })
+  mouseover: boolean = false
+
   render() {
     return html`
       <style>
@@ -127,9 +133,17 @@ export class PtmProject extends PtmBase {
           font-weight: bold;
           color: var(--primary-text-color);
         }
+        .buttons {
+          display: none;
+        }
+        .buttons.visible {
+          display: block;
+        }
       </style>
       <paper-material
         elevation="${this.expanded ? 2 : 0}"
+        @mouseenter="${()=>{this.mouseover=true}}"
+        @mouseleave="${()=>{this.mouseover=false}}"
         ?expanded="${this.expanded}"
         animated>
         <paper-item ?focused="${this.focused}" tabindex="-1">
@@ -143,22 +157,22 @@ export class PtmProject extends PtmBase {
             <!-- <paper-ripple></paper-ripple> -->
             <span>${this.projectTitle}</span>
           </div>
-          ${this.expanded ? html`
-          <paper-icon-button
-            icon="create"
-            @click="${this.onTapRename}"
-            tabindex="-1"
-            title="${l10n('edit')}">
-          </paper-icon-button>
-          ${!this.winId ? html`
-          <paper-icon-button
-            icon="delete"
-            @click="${this.onTapRemove}"
-            tabindex="-1"
-            title="${l10n('remove')}">
-          </paper-icon-button>
-          `:''}
-          `:''}
+          <div class="buttons ${this.mouseover?'visible':''}">
+            ${!this.winId ? html`
+            <paper-icon-button
+              icon="delete"
+              @click="${this.onTapRemove}"
+              tabindex="-1"
+              title="${l10n('remove')}">
+            </paper-icon-button>
+            `:''}
+            <paper-icon-button
+              icon="create"
+              @click="${this.onTapRename}"
+              tabindex="-1"
+              title="${l10n('edit')}">
+            </paper-icon-button>
+          </div>
         </paper-item>
         <iron-collapse id="collapse" ?opened="${this.expanded}" tabindex="-1">
           ${!this.fields.length ? html`
@@ -231,7 +245,7 @@ export class PtmProject extends PtmBase {
 
   protected onTapRename(e: MouseEvent) {
     e.stopPropagation();
-    this.fire('renmae-clicked', {
+    this.fire('rename-clicked', {
       id: this.projectId
     });
   }
@@ -252,6 +266,7 @@ export class PtmProject extends PtmBase {
         projectId: this.projectId,
         tabId: e.detail.tabId
       });
+      this.fire('reload');
       this.fire('show-toast', {
         text: l10n('bookmark_added')
       });
@@ -269,6 +284,7 @@ export class PtmProject extends PtmBase {
         projectId: this.projectId,
         bookmarkId: e.detail.bookmarkId
       });
+      this.fire('reload');
       this.fire('show-toast', {
         text: l10n('bookmark_removed')
       });
@@ -276,30 +292,4 @@ export class PtmProject extends PtmBase {
       this.fire('show-toast', { text: e });
     }
   }
-
-  // protected async toggleBookmark(
-  //   e: CustomEvent
-  // ): Promise<void> {
-  //   e.stopPropagation();
-
-  //   try {
-  //     const bookmark = await this.command('toggleBookmark', {
-  //       projectId: this.projectId,
-  //       tabId: e.detail.tabId,
-  //       bookmarkId: e.detail.bookmarkId
-  //     });
-  //     if (bookmark) {
-  //       this.fire('show-toast', {
-  //         text: l10n('bookmark_added')
-  //       });
-  //     } else {
-  //       this.fire('show-toast', {
-  //         text: l10n('bookmark_removed')
-  //       });
-  //     }
-  //   } catch (e) {
-  //     this.fire('show-toast', { text: e });
-  //   }
-  //   // TODO: render
-  // }
 }

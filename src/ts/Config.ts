@@ -35,11 +35,11 @@ export class Config {
   public debug: boolean = true
 
   constructor() {
-    // let manifest = chrome.runtime.getManifest();
-    // if (manifest.key !== undefined) {
-    //   // If there's key property exists in manifest, this is production
-    //   this.debug = false;
-    // }
+    let manifest = chrome.runtime.getManifest();
+    if (manifest.key !== undefined) {
+      // If there's key property exists in manifest, this is production
+      this.debug = false;
+    }
   }
 
   public async init(): Promise<void> {

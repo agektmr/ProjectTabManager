@@ -52,6 +52,18 @@ export class ProjectManager {
     });
   }
 
+  public async openProject(
+    projectId: string,
+    closeCurrent: boolean = false
+  ): Promise<boolean> {
+    const project = this.getProjectFromId(projectId);
+    if (!project) return false;
+    this.sessionManager.openingProject = projectId;
+    const active = this.getActiveProject();
+    if (active && closeCurrent) active.close();
+    return project.open(this.config.lazyLoad);
+  }
+
   /**
    * [saveNewProject description]
    * @param  {[type]} projectId    project id
@@ -104,33 +116,14 @@ export class ProjectManager {
     if (project.bookmark) {
       try {
         await BookmarkManager.archiveFolder(projectId)
-        // Session might be non bound. Don't return promise directly.
-        await this.sessionManager.removeSessionFromProjectId(projectId);
-        Util.log('[ProjectManager] removed project %s from bookmark', projectId);
       } catch (e) {
         Util.log('[ProjectManager] failed to remove project %s from bookmark', projectId);
       }
-    } else {
-      // non-bound session should be removed from session list as well
-      await this.sessionManager.removeSessionFromProjectId(projectId);
     }
+    // Session might be non bound. Don't return promise directly.
+    this.sessionManager.removeSessionFromProjectId(projectId);
+    Util.log('[ProjectManager] removed project %s from bookmark', projectId);
     return project;
-  }
-
-  /**
-   * Removes session part of the project
-   * TODO: Not used? Shall I delete this?
-   * @param  {String}           projectId       [description]
-   */
-  public async removeSession(
-    projectId: string
-  ): Promise<SessionEntity[] | undefined> {
-    const project = this.getProjectFromId(projectId);
-    if (!project) return;
-    if (project.bookmark) project.deassociateBookmark();
-    const sessionId = project.session?.id;
-    if (!sessionId) return;
-    return this.sessionManager.removeSessionFromProjectId(sessionId);
   }
 
   /**
@@ -153,6 +146,21 @@ export class ProjectManager {
     winId: number
   ): ProjectEntity | undefined {
     return this.projects.find(project => project.session?.winId === winId);
+  }
+
+  public async search(
+    query: string
+  ): Promise<ProjectEntity[]> {
+    const projects = Util.deepCopy(this.projects);
+    const queryLC = query.toLowerCase();
+    return projects.filter(project => {
+      // project.fields = project.fields.filter(field => {
+      //   const title = field.title?.toLowerCase();
+      //   return title?.indexOf(queryLC) === -1 ? false : true;
+      // });
+      const title = project.title.toLocaleLowerCase();
+      return title?.indexOf(queryLC) === -1 ? false : true;
+    });
   }
 
   public async linkProject(
@@ -233,6 +241,23 @@ export class ProjectManager {
   }
 
   /**
+   * Removes session part of the project
+   * TODO: Not used? Shall I delete this?
+   * @param  {String}           projectId       [description]
+   */
+  public async removeSession(
+    projectId: string
+  ): Promise<void> {
+    const project = this.getProjectFromId(projectId);
+    if (!project) return;
+    if (project.bookmark) project.deassociateBookmark();
+    const sessionId = project.session?.id;
+    if (!sessionId) return;
+    this.sessionManager.removeSessionFromProjectId(sessionId);
+    return;
+  }
+
+  /**
    * [getCurrentWindowId description]
    * @return {[type]} [description]
    */
@@ -299,18 +324,6 @@ export class ProjectManager {
     return this.config.sync(config);
   }
 
-  public async openProject(
-    projectId: string,
-    closeCurrent: boolean = false
-  ): Promise<boolean> {
-    const project = this.getProjectFromId(projectId);
-    if (!project) return false;
-    this.sessionManager.openingProject = projectId;
-    const active = this.getActiveProject();
-    if (active && closeCurrent) active.close();
-    return project.open();
-  }
-
   /**
    * Opens a bookmarked tab or focus on the tab with the same URL
    * @param tabId
@@ -371,9 +384,13 @@ export class ProjectManager {
    * Open the bookmark manager page.
    * @param  {String} bookmarkId
    */
-  public openBookmarkEditWindow(
+  public async openBookmarkEditWindow(
     bookmarkId?: string
-  ): void {
+  ): Promise<void> {
+    if (!bookmarkId) {
+      const root = await BookmarkManager.getRootFolder();
+      bookmarkId = root.id;
+    }
     BookmarkManager.openEditWindow(bookmarkId);
   }
 

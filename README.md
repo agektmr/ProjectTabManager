@@ -1,3 +1,5 @@
+<strong>Important: the latest version of Project Tab Manager is a quick fix for the problem not being able to run this app on Chrome 80 and later. The author knows that there are number of issues to fix, but please be patient until they are fixed. Feel free to contact [the author](mailto:agektmr@gmail.com) if you feel strongly about any issues.</strong>
+
 Project Tab Manager is an extension for Google Chrome that helps you focus on a single project. It preserves each windows as projects, not only you can restore them anytime, you can synchronize projects across different devices using same Chrome profile.
 
 ## Getting Started

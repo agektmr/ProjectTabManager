@@ -41,6 +41,12 @@ export class PtmSession extends PtmProject {
   })
   sessionTitle: string = ''
 
+  @property({
+    type: Boolean,
+    reflect: true
+  })
+  mouseover: boolean = false
+
   render() {
     return html`
       <style>
@@ -89,9 +95,17 @@ export class PtmSession extends PtmProject {
           font-weight: bold;
           color: var(--primary-text-color);
         }
+        .buttons {
+          display: none;
+        }
+        .buttons.visible {
+          display: block;
+        }
       </style>
       <paper-material
         elevation="${this.expanded ? 2 : 0}"
+        @mouseenter="${()=>{this.mouseover=true}}"
+        @mouseleave="${()=>{this.mouseover=false}}"
         ?expanded="${this.expanded}"
         animated>
         <paper-item ?focused="${this.focused}" tabindex="-1">
@@ -105,43 +119,37 @@ export class PtmSession extends PtmProject {
             <!-- <paper-ripple></paper-ripple> -->
             <span>${this.projectTitle}</span>
           </div>
-          ${this.projectId.indexOf('-') === -1 && this.expanded ? html`
-          <paper-icon-button
-            icon="create"
-            @click="${this.onTapRename}"
-            tabindex="-1"
-            title="${l10n('edit')}">
-          </paper-icon-button>
-          ${!this.winId ? html`
-          <paper-icon-button
-            icon="icons:delete"
-            @click="${this.onTapRemove}"
-            tabindex="-1"
-            title="${l10n('remove')}">
-          </paper-icon-button>
-          `:''}
-          `:html`
-          ${!this.winId ? html`
-          <paper-icon-button
-            icon="icons:delete"
-            @click="${this.onTapRemove}"
-            tabindex="-1"
-            title="${l10n('remove')}">
-          </paper-icon-button>
-          `:''}
-          <paper-icon-button
-            icon="icons:link"
-            @click="${this.onTapLink}"
-            tabindex="-1"
-            title="${l10n('link_session_to_a_project')}">
-          </paper-icon-button>
-          <paper-icon-button
-            icon="notification:folder-special"
-            @click="${this.onTapNewProject}"
-            tabindex="-1"
-            title="${l10n('create_a_new_project')}">
-          </paper-icon-button>
-          `}
+          <div class="buttons ${this.mouseover?'visible':''}">
+            ${!this.winId ? html`
+            <paper-icon-button
+              icon="delete"
+              @click="${this.onTapRemove}"
+              tabindex="-1"
+              title="${l10n('remove')}">
+            </paper-icon-button>
+            `:''}
+            <paper-icon-button
+              icon="link"
+              @click="${this.onTapLink}"
+              tabindex="-1"
+              title="${l10n('link_session_to_a_project')}">
+            </paper-icon-button>
+            ${this.projectId.indexOf('-') === -1 ? html`
+            <paper-icon-button
+              icon="create"
+              @click="${this.onTapRename}"
+              tabindex="-1"
+              title="${l10n('edit')}">
+            </paper-icon-button>
+            `:html`
+            <paper-icon-button
+              icon="notification:folder-special"
+              @click="${this.onTapNewProject}"
+              tabindex="-1"
+              title="${l10n('create_a_new_project')}">
+            </paper-icon-button>
+            `}
+          </div>
         </paper-item>
         <iron-collapse id="collapse" ?opened="${this.expanded}" tabindex="-1">
           <div class="collapse-content">

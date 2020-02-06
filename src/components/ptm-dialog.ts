@@ -53,60 +53,68 @@ export class PtmDialog extends PtmBase {
 
   @property({
     type: String,
+    reflect: true
   })
   answer: string = ''
 
   @property({
-    type: String,
+    type: String
   })
   okay: string = ''
 
   @property({
-    type: String,
+    type: String
   })
   cancel: string = ''
 
   @property({
     type: Boolean,
   })
-  _isPrompt: boolean = false
+  isPrompt: boolean = false
 
   @property({
-    type: Function
+    type: Object
   })
-  _confirmed: Function | undefined
+  confirmed: Function = function() {};
 
   @property({
-    type: Function,
+    type: Object,
   })
-  _canceled: Function | undefined
+  canceled: Function = function() {};
 
-  private dialog: PaperDialogElement | undefined
+  @property({
+    type: Object
+  })
+  dialog: PaperDialogElement | undefined
 
   render() {
     return html`
       <style>
         paper-dialog {
-          --paper-dialog: {
-            font-size: 1.0em;
-            margin: 0 20px;
-            max-width: none;
-          };
+          font-size: 1.0em;
+          margin: 0 20px;
+          max-width: none;
+        };
 
-          --paper-dialog-title: {
-            white-space: normal;
-            margin-top: 12px !important;
-            padding: 0 16px;
-            font-size: 1.4em;
-          };
+        h2 {
+          white-space: normal;
+          margin-top: 12px !important;
+          padding: 0 16px;
+          font-size: 1.4em;
+        }
 
-          --paper-dialog-scrollable: {
-            margin-top: 10px;
-            padding: 0 16px;
-          };
+        paper-dialog {
+          font-size: 1.0em;
+          margin: 0 20px;
+          max-width: none;
         }
         paper-dialog .content {
+          margin-top: 10px;
           padding: 0 16px !important;
+        }
+        paper-button {
+          color: var(--text-primary-color);
+          background-color: var(--default-primary-color);
         }
         .accent {
           background-color: var(--accent-color);
@@ -118,7 +126,7 @@ export class PtmDialog extends PtmBase {
           ${this.line2 ? html`
           <p>${this.line2}</p>
           ` : ''}
-          ${this._isPrompt ? html`
+          ${this.isPrompt ? html`
           <paper-input
             id="input"
             value="${this.answer}"
@@ -158,11 +166,11 @@ export class PtmDialog extends PtmBase {
     this.placeholder = qs.placeholder || 'Enter value';
     this.okay = qs.confirm || 'OK';
     this.cancel = qs.cancel || l10n('cancel');
-    this._isPrompt = true;
+    this.isPrompt = true;
     this.dialog?.open();
     return new Promise((resolve, reject) => {
-      this._confirmed = resolve || function() {};
-      this._canceled = reject || function() {};
+      this.confirmed = resolve;
+      this.canceled = reject;
     });
   }
 
@@ -173,11 +181,11 @@ export class PtmDialog extends PtmBase {
     this.line2 = qs.line2 || l10n('undonable_operation');
     this.okay = qs.confirm || 'OK';
     this.cancel = qs.cancel || l10n('cancel');
-    this._isPrompt = false;
+    this.isPrompt = false;
     this.dialog?.open();
     return new Promise((resolve, reject) => {
-      this._confirmed = resolve || function() {};
-      this._canceled = reject || function() {};
+      this.confirmed = resolve;
+      this.canceled = reject;
     });
   }
 
@@ -186,20 +194,21 @@ export class PtmDialog extends PtmBase {
   }
 
   private onConfirmed(e: MouseEvent) {
-    if (this._isPrompt) {
-      this._confirmed?.(this.answer);
+    if (this.isPrompt) {
+      const answer = this.querySelector('#input')?.value;
+      this.confirmed(answer);
     } else {
-      this._confirmed?.();
+      this.confirmed();
     }
-    this._confirmed = function() {};
-    this._canceled = function() {};
+    this.confirmed = function() {};
+    this.canceled = function() {};
     this.close();
   }
 
   private onCanceled(e: MouseEvent) {
-    this._canceled?.();
-    this._canceled = function() {};
-    this._confirmed = function() {};
+    this.canceled();
+    this.canceled = function() {};
+    this.confirmed = function() {};
     this.close();
   }
 }

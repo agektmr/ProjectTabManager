@@ -60,7 +60,7 @@ export class Util {
       const _params = parsed?.query.split('&');
       for (let param of _params) {
         const tmp = param.split('=');
-        if (tmp[0] === 'url') return tmp[1];
+        if (tmp[0] === 'url') return decodeURIComponent(tmp[1]);
       }
     }
     return url;
@@ -73,9 +73,10 @@ export class Util {
    * @return {[type]}      [description]
    */
   static resembleUrls(
-    url1: string,
-    url2: string
+    url1: string = '',
+    url2: string = ''
   ): boolean {
+    if (url1 == '' || url2 == '') return false;
     url1 = Util.unlazify(url1).replace(Util.STRIP_HASH, '$1');
     url2 = Util.unlazify(url2).replace(Util.STRIP_HASH, '$1');
     if (url1 === url2 ||

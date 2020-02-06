@@ -192,7 +192,8 @@ export class BookmarkManager {
   }
 
   static async openWindow(
-    bookmarks: chrome.bookmarks.BookmarkTreeNode[]
+    bookmarks: chrome.bookmarks.BookmarkTreeNode[],
+    lazify: boolean = false
   ): Promise<void> {
     let i = 0;
     return new Promise((resolve, reject) => {
@@ -211,7 +212,7 @@ export class BookmarkManager {
           if (i++ === 0 || bookmark.url === undefined)
             continue;
 
-          let url = BookmarkManager.config.lazyLoad ?
+          let url = lazify ?
             bookmark.url : Util.lazify(bookmark.url, bookmark.title);
           chrome.tabs.create({
             windowId: win.id,
@@ -225,8 +226,8 @@ export class BookmarkManager {
   }
 
   static openEditWindow(
-    bookmarkId?: string
+    bookmarkId: string
   ): void {
-    chrome.tabs.create({url: `chrome://bookmarks#${bookmarkId || ''}`});
+    chrome.tabs.create({url: `chrome://bookmarks?id=${bookmarkId}`});
   }
 }

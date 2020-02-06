@@ -25,15 +25,6 @@ import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-tooltip/paper-tooltip.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 
-// entry {
-//   id         : bookmark id if bookmarked
-//   tabId      : tabId of the page if open
-//   title      : title of the page
-//   url        : url of the bookmark
-//   pinned     : pinned flag
-//   favIconUrl : favicon Url
-// }
-
 declare class UrlCache {
   domain: string
   url: string
@@ -91,8 +82,6 @@ export class PtmBookmark extends PtmBase {
   })
   bookmarkId: string = ''
 
-  // private meta: IronMetaElement | undefined
-
   render () {
     return html`
       <style>
@@ -140,7 +129,7 @@ export class PtmBookmark extends PtmBase {
       </style>
       <paper-item tabindex="-1">
         <paper-icon-button
-          src="${this.favIconUrl || PtmBookmark.DEFAULT_FAVICON_URL}">
+          src="${navigator.onLine && this.favIconUrl ? this.favIconUrl : PtmBookmark.DEFAULT_FAVICON_URL}">
         </paper-icon-button>
         <div class="title" @click="${this.open}" ?active="${!!this.tabId}">
           <!-- <paper-ripple recenters></paper-ripple> -->
@@ -165,8 +154,6 @@ export class PtmBookmark extends PtmBase {
     // this.keyEventTarget = this;
     // this.addOwnKeyBinding('enter', 'open');
 
-    // this.meta = this.querySelector('#meta');
-    // this.db = this.meta?.byKey('ProjectTabManager-favicons');
     this.readFavicon();
   }
 
@@ -202,40 +189,16 @@ export class PtmBookmark extends PtmBase {
       if (PtmBookmark.cache[domain]) {
         // Use the cache
         this.favIconUrl = PtmBookmark.cache[domain].url || '';
-      // favicon url is not yet cached
-      // } else {
-      //   // Look up on database
-      //   this.db.get(domain).then(result => {
-      //     // If there's an entry, use it and cache
-      //     // Otherwise, fallback to default icon
-      //     if (result) {
-      //       this.favIconUrl = result.url || '';
-      //       PtmBookmark.cache[domain] = <UrlCache>{
-      //         domain: domain,
-      //         url: this.favIconUrl
-      //       }
-      //     } else {
-      //       this.favIconUrl = PtmBookmark.DEFAULT_FAVICON_URL;
-      //     }
-      //   });
       }
     // If favicon is specified
     } else {
       // Check if cache exists
       if (!PtmBookmark.cache[domain]) {
-        // Look up on database
-        // this.db.get(domain).then(result => {
-        //   // If there's no entry or exists but differ
-        //   if (!result || result.url != this.favIconUrl) {
-        //     // Save the favicon
-        //     this.saveFavIconUrl(domain, this.favIconUrl);
-        //   }
-          // Cache it regardless of database entry exists or not
-          PtmBookmark.cache[domain] = {
-            domain: domain,
-            url: this.favIconUrl
-          }
-        // });
+        // Cache it regardless of database entry exists or not
+        PtmBookmark.cache[domain] = {
+          domain: domain,
+          url: this.favIconUrl
+        }
       // Renew cache with new favicon
       } else if (PtmBookmark.cache[domain].url == PtmBookmark.DEFAULT_FAVICON_URL) {
         PtmBookmark.cache[domain].url = this.favIconUrl;

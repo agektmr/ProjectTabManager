@@ -18,7 +18,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 
 /// <reference path="../../node_modules/@types/chrome/index.d.ts" />
 
-import { html, css, customElement, property } from "lit-element";
+import { html, customElement, property } from "lit-element";
 import { PtmBase } from './ptm-base';
 import { SyncConfig } from '../ts/Config';
 import { l10n } from '../ts/ChromeL10N';
@@ -79,36 +79,47 @@ export class PtmOptions extends PtmBase {
 
   private readonly maxSessCand = [ -1, 5, 10 ]
 
-  static styles = css`
-    iron-icon {
-      width: 16px;
-      height: 16px;
-      margin-right: 4px;
-    }
-    paper-item {
-      cursor: pointer;
-      padding: 0 16px;
-      margin: 0;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      white-space: nowrap;
-    }
-    p {
-      color: var(--secondary-text-color);
-    }
-    .accent {
-      color: var(--text-primary-color);
-      background-color: var(--accent-color);
-    }
-    .buttons {
-      padding: 10px 5px 10px 10px;
-      @apply(--layout-horizontal);
-      @apply(--layout-end-justified);
-    }
-  `;
-
   render() {
     return html`
+    <style>
+      :host {
+        font-size: 1.0em;
+      }
+      iron-icon {
+        width: 16px;
+        height: 16px;
+        margin-right: 4px;
+      }
+      paper-dialog {
+        font-size: 1.0em;
+        margin: 0 20px;
+        max-width: none;
+      }
+      paper-item {
+        cursor: pointer;
+        padding: 0 16px;
+        margin: 0;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+      p {
+        color: var(--secondary-text-color);
+      }
+      paper-button {
+        color: var(--text-primary-color);
+        background-color: var(--default-primary-color);
+      }
+      .accent {
+        color: var(--text-primary-color);
+        background-color: var(--accent-color);
+      }
+      .buttons {
+        padding: 10px 5px 10px 10px;
+        @apply(--layout-horizontal);
+        @apply(--layout-end-justified);
+      }
+    </style>
     <paper-dialog id="dialog" modal>
       <h2>${l10n('settings')}</h2>
       <paper-dialog-scrollable>

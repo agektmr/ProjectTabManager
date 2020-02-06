@@ -389,13 +389,13 @@ export class SessionManager {
 
   public removeSessionFromProjectId(
     projectId: string
-  ): Promise<SessionEntity[]> {
+  ): SessionEntity[] {
     let i = this.sessions.findIndex(session => session.id === projectId);
-    if (i === -1) return Promise.reject();
-    const sessions = this.sessions.splice(i, 1);
+    if (i === -1) return this.sessions;
+    this.sessions.splice(i, 1);
     Util.log('[SessionManager] removed session of project id:', projectId);
     this.storeSessions();
-    return Promise.resolve(sessions);
+    return this.sessions;
   }
 
   /**
@@ -528,7 +528,7 @@ export class SessionManager {
    * @param  {[type]} session
    * @return {[type]}
    */
-  public compareTabs(
+  private compareTabs(
     win: chrome.windows.Window,
     session: SessionEntity
   ): boolean {
@@ -539,15 +539,20 @@ export class SessionManager {
 
     // Loop through all tabs in temporary session
     for (let tab of win.tabs) {
-      if (tab.url?.match(Util.CHROME_EXCEPTION_URL)) continue;
+      if (!tab.url) continue;
+      if (tab.url.match(Util.CHROME_EXCEPTION_URL)) continue;
       count++;
       // Loop through all tabs in previous session
-      similar = session.tabs.reduce((acc, t) => {
-        return Util.resembleUrls(
-          Util.unlazify(t.url),
-          Util.unlazify(tab.url)
-        ) ? acc + 1 : acc;
+      similar += session.tabs.reduce((acc, t) => {
+        return Util.resembleUrls(t.url, tab.url) ? acc + 1 : acc;
       }, 0);
+      // for (let t of session.tabs) {
+      //   // Check if tab url is similar
+      //   if (Util.resembleUrls(t.url, tab.url)) {
+      //     similar++;
+      //     continue;
+      //   }
+      // }
     }
 
     Util.log('[SessionManager] %d/%d similar tabs found between window %d:%o and project %s:%o', similar, count, win.id, win, session.id, session);
@@ -569,7 +574,6 @@ export class SessionManager {
       if (projects.includes(session.id)) {
         return false;
       } else {
-        projects.push(session.id);
         return true;
       }
     });
@@ -602,56 +606,68 @@ export class SessionManager {
     // Loop through all open windows
     Util.log('[SessionManager] Looping through windows.');
     for (let win of windows) {
-      this.restoreSession(win, prev_sessions);
+      if (win.type !== 'normal' || win.id === chrome.windows.WINDOW_ID_NONE) continue;
+
+      // Create temporary non-bound session
+      const session = new SessionEntity(win);
+
+      // Loop through previous sessions to see if there's identical one
+      for (let i = 0; i < prev_sessions.length; i++) {
+        if (this.compareTabs(win, prev_sessions[i])) {
+          session.setId(prev_sessions[i].id);
+          session.rename(prev_sessions[i].title);
+          Util.log('[SessionManager] A session with open window', session);
+          prev_sessions.splice(i--, 1);
+        }
+      }
+      this.sessions.unshift(session);
     }
 
     // Loop through left sessions from previous ones to create unopened sessions
     Util.log('[SessionManager] Looping through left previous sessions.');
     let unboundSessions = 0;
-    const new_sessions = prev_sessions.filter(prev_session => {
+    for (let prev_session of prev_sessions) {
       const session = new SessionEntity(prev_session);
       if (session.id.indexOf('-') === 0) {
         // Unbound session
         unboundSessions++;
-        if (unboundSessions > this.maxSessions) {
+        if (this.maxSessions !== -1 && unboundSessions > this.maxSessions) {
           Util.log('[SessionManager] Max session number exceeded. Eliminating an old session.', session);
-          return false;
+          continue;
         }
         // `push` not `unshift`
         Util.log('[SessionManager] A session without open window.', session);
       }
-      return true;
-    });
-    this.sessions.concat(new_sessions);
+      this.sessions.push(session);
+    }
     Util.log('[SessionManager] Session list created.', this.sessions);
   }
 
-  /**
-   * Compare a window status with previous sessions
-   * @param {Window} win Window object
-   * @param {Array} prev_sessions previous sessions array
-   */
-  public restoreSession(
-    win: chrome.windows.Window,
-    prev_sessions: SessionEntity[]
-  ): void {
-    if (win.type !== 'normal' || win.id === chrome.windows.WINDOW_ID_NONE) return;
+  // /**
+  //  * Compare a window status with previous sessions
+  //  * @param {Window} win Window object
+  //  * @param {Array} prev_sessions previous sessions array
+  //  */
+  // public restoreSession(
+  //   win: chrome.windows.Window,
+  //   prev_sessions: SessionEntity[]
+  // ): SessionEntity | undefined {
+  //   if (win.type !== 'normal' || win.id === chrome.windows.WINDOW_ID_NONE) return;
 
-    // Create temporary non-bound session
-    const session = new SessionEntity(win);
-    // `unshift` not `push`
-    this.sessions.unshift(session);
+  //   // Create temporary non-bound session
+  //   const session = new SessionEntity(win);
 
-    // Loop through previous sessions to see if there's identical one
-    for (let i = 0; i < prev_sessions.length; i++) {
-      if (this.compareTabs(win, prev_sessions[i])) {
-        session.setId(prev_sessions[i].id);
-        session.rename(prev_sessions[i].title);
-        Util.log('[SessionManager] A session with open window', session);
-        prev_sessions.splice(i--, 1);
-      }
-    }
-  }
+  //   // Loop through previous sessions to see if there's identical one
+  //   for (let i = 0; i < prev_sessions.length; i++) {
+  //     if (this.compareTabs(win, prev_sessions[i])) {
+  //       session.setId(prev_sessions[i].id);
+  //       session.rename(prev_sessions[i].title);
+  //       Util.log('[SessionManager] A session with open window', session);
+  //       prev_sessions.splice(i--, 1);
+  //     }
+  //   }
+  //   return session;
+  // }
 
   /**
    * [initialize description]
@@ -726,91 +742,4 @@ export class SessionManager {
       Util.log('[SessionManager] tab %o sync completed. %o remaining', tab, this.queue);
     }
   }
-  // /**
-  //  * [getSummary description]
-  //  * @param  {Function} callback [description]
-  //  * @return {[type]}            [description]
-  //  */
-  // public getTimeTable(
-  //   date: number,
-  //   callback: Function
-  // ): void {
-  //   let start     = Util.getLocalMidnightTime(date);
-  //   let next_day  = start + (60 * 60 * 24 * 1000);
-  //   let end       = (new Date(next_day)).getTime();
-  //   db.getRange(db.SUMMARIES, start, end, table => {
-  //     table.forEach((session, i) => {
-  //       // If end time not known
-  //       if (session.end === null) {
-  //         // If next session exists
-  //         if (table[i+1]) {
-  //           // Assign start time of next session as end time
-  //           session.end = (new Date(table[i+1].start)).getTime();
-  //           Util.log('[SessionManager] Assigning session end time as start time of next one', session);
-  //         // If next session doesn't exist, this is the last session
-  //         } else {
-  //           // Simply assign latest possible
-  //           session.end = end > Date.now() ? Date.now() : end;
-  //           Util.log('[SessionManager] Assigning session end time as latest possible', session);
-  //         }
-  //       }
-  //       table[i] = session;
-  //     });
-  //     callback(table);
-  //   });
-  // }
-
-  // /**
-  //  * [getSummary description]
-  //  * @param  {[type]}   _start   [description]
-  //  * @param  {[type]}   _end     [description]
-  //  * @param  {Function} callback [description]
-  //  * @return {[type]}            [description]
-  //  */
-  // public getSummary(
-  //   _start: number,
-  //   _end: number,
-  //   callback: Function
-  // ): void {
-  //   let start     = (new Date(_start)).getTime();
-  //   let next_day  = (new Date(_end)).getTime() + (60 * 60 * 24 * 1000);
-  //   let end       = (new Date(next_day)).getTime();
-  //   db.getRange(db.SUMMARIES, start, end, summary => {
-  //     let _summary = {};
-  //     summary.forEach(function(session, i) {
-  //       let id = session.id;
-  //       if (!_summary[id]) {
-  //         _summary[id] = {
-  //           duration: 0
-  //         };
-  //       }
-  //       // If end time not known
-  //       if (session.end === null) {
-  //         // If next session exists
-  //         if (summary[i+1]) {
-  //           // Assign start time of next session as end time
-  //           session.end = (new Date(summary[i+1].start)).getTime();
-  //           Util.log('[SessionManager] Assigning session end time as start time of next one', session);
-  //         // If next session doesn't exist, this is the last session
-  //         } else {
-  //           // Simply remove that last session
-  //           Util.log('[SessionManager] Removing session since end time is not known', session);
-  //           summary.splice(i, 1);
-  //           return;
-  //         }
-  //       }
-  //       _summary[id].duration += ~~((session.end - session.start) / 1000);
-  //     });
-  //     callback(_summary);
-  //   });
-  // }
-
-  // public deleteOldSummary(): void {
-  //   let boundDateOffset = config_.summaryRemains;
-  //   let today = new Date().toDateString();
-  //   let boundDate = (new Date(today)).getTime() - boundDateOffset;
-  //   db.deleteOlder(db.SUMMARIES, boundDate, () => {
-  //     Util.log('[SessionManager] Old summary record has been deleted in database.');
-  //   });
-  // }
 }

@@ -74,9 +74,13 @@ export class PtmProjectLinker extends PtmBase {
           flex: 1 1 16px;
         }
         paper-dialog-scrollable {
-          --paper-dialog-scrollable: {
-            padding: 0;
-          }
+          margin-top: 10px;
+          padding: 0 16px;
+        }
+        paper-dialog {
+          font-size: 1.0em;
+          margin: 0 20px;
+          max-width: none;
         }
         paper-item {
           cursor: pointer;
@@ -103,14 +107,16 @@ export class PtmProjectLinker extends PtmBase {
           white-space: nowrap;
           flex: 1 1 auto;
         }
+        .buttons {
+          padding: 10px 5px 10px 10px;
+        }
+        paper-button {
+          color: var(--text-primary-color);
+          background-color: var(--default-primary-color);
+        }
         .accent {
           color: var(--text-primary-color);
           background-color: var(--accent-color);
-        }
-        .buttons {
-          padding: 10px 5px 10px 10px;
-          @apply(--layout-horizontal);
-          @apply(--layout-end-justified);
         }
       </style>
       <iron-meta id="meta" type="dialog"></iron-meta>
@@ -134,7 +140,7 @@ export class PtmProjectLinker extends PtmBase {
             raised>
             ${l10n('cancel')}
           </paper-button>
-          ${this.bookmarked ? html`
+          ${this.linkingProjectId ? html`
           <paper-button
             class="accent"
             @click="${this.onUnlink}"

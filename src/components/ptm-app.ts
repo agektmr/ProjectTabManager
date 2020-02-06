@@ -16,16 +16,10 @@ limitations under the License.
 Author: Eiji Kitamura (agektmr@gmail.com)
 **/
 
-import {
-  html,
-  css,
-  customElement,
-  property
-} from 'lit-element';
+import { html, customElement, property } from 'lit-element';
 import { PtmBase } from './ptm-base';
 import { PtmProjectLinker } from './ptm-project-linker';
 import { PtmOptions } from './ptm-options';
-import { Util } from '../ts/Util';
 import { ProjectEntity } from '../ts/ProjectEntity';
 import { l10n } from '../ts/ChromeL10N';
 import { PtmDialogQueryString } from './ptm-dialog';
@@ -126,29 +120,52 @@ export class PtmApp extends PtmBase {
   })
   meta: IronMetaElement | undefined
 
+  @property({
+    type: Object
+  })
+  searchQuery: HTMLInputElement | undefined
+
+  @property({
+    type: Number
+  })
+  timer: number = -1
+
   render() {
     return html`
     <style>
       :host {
         display: block;
+        overflow: hidden;
+      }
+      * {
+        font-size: 1.0em;
       }
       *:focus {
         outline: none;
       }
-      app-header-layout {
+      iron-pages {
         min-height: 400px;
-        overflow-y: hidden;
+        margin-top: 82px;
+      }
+      iron-pages section {
+        overflow-y: scroll;
       }
       app-header {
+        position: fixed;
+        top: 0;
+        left: 0;
         margin: 0;
         padding: 0;
         height: 82px;
+        width: 100%;
+        z-index: 2;
         background-color: var(--default-primary-color);
       }
       .toolbar-header {
         padding: 0 10px;
         height: 48px;
         display: flex;
+        z-index: 2;
       }
       .toolbar-tabs {
         margin: 0;
@@ -166,29 +183,20 @@ export class PtmApp extends PtmBase {
         flex: 1 1 auto;
       }
       paper-item {
-        padding: 0;
-        font-size: 1.0em;
+        cursor: pointer;
+        padding: 0 10px;
         background-color: var(--default-background-color);
         min-height: 24px;
         line-height: 16px;
-      }
-      paper-menu {
-        width: 130px;
-        padding: 8px 0;
-      }
-      paper-material paper-item {
-        cursor: pointer;
-        padding: 0 10px;
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
       }
-      paper-tabs {
-        width: 100%;
-        /* font-size: 1.0em; */
-        height: 24px;
-        color: var(--text-primary-color);
-        background-color: var(--default-primary-color);
+      paper-menu-button {
+        margin: 0;
+      }
+      paper-menu-button paper-material {
+        width: 130px;
       }
       paper-menu-button paper-icon-button {
         color: var(--text-primary-color);
@@ -197,6 +205,12 @@ export class PtmApp extends PtmBase {
         height: 24px;
         padding: 2px 4px 4px 4px;
         flex: 1 1 24px;
+      }
+      paper-tabs {
+        width: 100%;
+        height: 33px;
+        color: var(--text-primary-color);
+        background-color: var(--default-primary-color);
       }
       .loading {
         display: flex;
@@ -210,11 +224,6 @@ export class PtmApp extends PtmBase {
         align-items: center;
       }
       * {
-        --paper-dropdown-menu-icon: {
-          width: 24px;
-          height: 24px;
-        };
-
         --paper-font-subhead: {
           font-family: 'Roboto', 'Noto', sans-serif;
           -webkit-font-smoothing: antialiased;
@@ -243,112 +252,112 @@ export class PtmApp extends PtmBase {
         };
       }
     </style>
+    <iron-meta id="meta" type="dialog"></iron-meta>
     <ptm-dialog></ptm-dialog>
+    <ptm-options id="options"></ptm-options>
     <ptm-project-linker id="linker"
       .projects="${this.projects}"
       @link-project="${this.linkProject}"
       @unlink-project="${this.unlinkProject}"></ptm-project-linker>
-    <app-header-layout>
-      <app-header class="paper-header" fixed>
-        <app-toolbar class="toolbar-header layout" sticky>
-          <paper-input
-            placeholder="Project Tab Manager"
-            value="${this.query}">
-          </paper-input>
-          <paper-menu-button
-            id="menu"
-            horizontal-align="right"
-            vertical-offset="2">
-            <paper-icon-button
-              icon="icons:more-vert"
-              class="dropdown-trigger"
-              tabindex="-1">
-            </paper-icon-button>
-            <paper-material class="dropdown-content">
-              <paper-item
-                @click="${this.reload}">
-                ${l10n('reload')}
-              </paper-item>
-              <paper-item
-                @click="${this.manageBookmarks}">
-                ${l10n('manage_bookmarks')}
-              </paper-item>
-              <paper-item
-                @click="${this.openSettings}">
-                ${l10n('settings')}
-              </paper-item>
-              <paper-item
-                @click="${this.openHelp}">
-                ${l10n('help')}
-              </paper-item>
-            </paper-material>
-          </paper-menu-button>
-        </app-toolbar>
-        <app-toolbar class="toolbar-tabs" sticky>
-          <paper-tabs selected="${this.selected}" tabindex="-1" @selected-changed="${this.changeTab}">
-            <paper-tab tabindex="-1">${l10n('sessions')}</paper-tab>
-            <paper-tab tabindex="-1">${l10n('projects')}</paper-tab>
-          </paper-tabs>
-        </app-toolbar>
-      </app-header>
-      <iron-meta id="meta" type="dialog"></iron-meta>
-      <ptm-options id="options"></ptm-options>
-      <iron-pages id="pages" selected="${this.selected}">
-        <section>
-          ${this.projects.map(project => {
-          return !!project.session ? html`
-          <ptm-session
-            .fields="${project.fields}"
-            project-id="${project.id}"
-            session-id="${project.session.id}"
-            win-id="${project.session?.winId}"
-            session-title="${project.session.title}"
-            project-title="${project.title}"
-            @create-project="${this.createProject}"
-            @link-clicked="${this.openLinker}"
-            @open-clicked="${this.openProject}"
-            @rename-clicked="${this.renameProject}"
-            @remove-clicked="${this.removeSession}"
-            ?expanded="${this.activeWinId === project.session?.winId}"
-            tabindex="0">
-          </ptm-session>`:'';
-          })}
-        </section>
-        <section>
-          ${this.projects.map(project => {
-          return !!project.bookmark ? html`
-          <ptm-project
-            .fields="${project.fields}"
-            project-id="${project.id}"
-            project-title="${project.title}"
-            win-id="${project.session?.winId}"
-            @open-clicked="${this.openProject}"
-            @rename-clicked="${this.renameProject}"
-            @remove-clicked="${this.removeProject}">
-          </ptm-project>`:'';
-          })}
-        </section>
-        <div class="fit loading">
-          <paper-spinner active></paper-spinner>
-        </div>
-        <section>
-          ${this.searchResults.map(project => html`
-          <ptm-project
-            .fields="${project.fields}"
-            project-id="${project.id}"
-            project-title="${project.title}"
-            @open-clicked="${this.openProject}"
-            expanded="true">
-          </ptm-project>`
-          )}
-        </section>
-      </iron-pages>
-      <paper-toast
-        id="toast"
-        duration="3000"
-        text="${this.toastText}">
-      </paper-toast>
-    </app-header-layout>`;
+    <app-header class="paper-header" shadow>
+      <app-toolbar class="toolbar-header">
+        <paper-input
+          id="search"
+          placeholder="Project Tab Manager"
+          @input="${this.queryChanged}"
+          value="${this.query}">
+        </paper-input>
+        <paper-menu-button
+          id="menu"
+          vertical-align="top"
+          horizontal-align="right">
+          <paper-icon-button
+            icon="icons:more-vert"
+            slot="dropdown-trigger"
+            tabindex="-1">
+          </paper-icon-button>
+          <paper-material slot="dropdown-content">
+            <paper-item
+              @click="${this.reload}">
+              ${l10n('reload')}
+            </paper-item>
+            <paper-item
+              @click="${this.manageBookmarks}">
+              ${l10n('manage_bookmarks')}
+            </paper-item>
+            <paper-item
+              @click="${this.openSettings}">
+              ${l10n('settings')}
+            </paper-item>
+            <paper-item
+              @click="${this.openHelp}">
+              ${l10n('help')}
+            </paper-item>
+          </paper-material>
+        </paper-menu-button>
+      </app-toolbar>
+      <app-toolbar class="toolbar-tabs">
+        <paper-tabs selected="${this.selected}" tabindex="-1" @selected-changed="${this.changeTab}">
+          <paper-tab tabindex="-1">${l10n('sessions')}</paper-tab>
+          <paper-tab tabindex="-1">${l10n('projects')}</paper-tab>
+        </paper-tabs>
+      </app-toolbar>
+    </app-header>
+    <iron-pages id="pages" selected="${this.selected}">
+      <section>
+        ${this.projects.map(project => {
+        return !!project.session ? html`
+        <ptm-session
+          .fields="${project.fields}"
+          project-id="${project.id}"
+          session-id="${project.session.id}"
+          win-id="${project.session?.winId}"
+          session-title="${project.session.title}"
+          project-title="${project.title}"
+          @create-project="${this.createProject}"
+          @link-clicked="${this.openLinker}"
+          @open-clicked="${this.openProject}"
+          @rename-clicked="${this.renameProject}"
+          @remove-clicked="${this.removeSession}"
+          ?expanded="${this.activeWinId === project.session?.winId}"
+          tabindex="0">
+        </ptm-session>`:'';
+        })}
+      </section>
+      <section>
+        ${this.projects.map(project => {
+        return !!project.bookmark ? html`
+        <ptm-project
+          .fields="${project.fields}"
+          project-id="${project.id}"
+          project-title="${project.title}"
+          win-id="${project.session?.winId}"
+          @open-clicked="${this.openProject}"
+          @rename-clicked="${this.renameProject}"
+          @remove-clicked="${this.removeProject}">
+        </ptm-project>`:'';
+        })}
+      </section>
+      <section class="loading">
+        <paper-spinner active></paper-spinner>
+      </section>
+      <section>
+        ${this.searchResults.map(project => html`
+        <ptm-project
+          .fields="${project.fields}"
+          project-id="${project.id}"
+          project-title="${project.title}"
+          @open-clicked="${this.openProject}"
+          expanded="true">
+        </ptm-project>`
+        )}
+      </section>
+    </iron-pages>
+    <paper-toast
+      id="toast"
+      duration="3000"
+      text="${this.toastText}">
+    </paper-toast>`;
   }
 
   public async firstUpdated() {
@@ -358,6 +367,7 @@ export class PtmApp extends PtmBase {
     this.options = this.querySelector('#options');
     this.linker = this.querySelector('#linker');
     this.meta = this.querySelector('#meta');
+    this.searchQuery = this.querySelector('#search');
     // @ts-ignore
     this.addEventListener('show-toast', (e: CustomEvent) => {
       this.toastText = e.detail.text;
@@ -372,38 +382,27 @@ export class PtmApp extends PtmBase {
       if (e.keyCode === 16) this.shiftKey = false;
     });
     this.activeWinId = await this.command('getActiveWindowId');
-    this.fire('reload', {
-      forceReload: false
-    });
+    this.fire('reload');
   }
 
   public async reload(e: CustomEvent) {
-    if (this.pages) {
-      this.pages.selected = 2;
-    }
+    if (this.pages) this.pages.selected = 2;
     this.projects = await this.command('update');
-    // this.projectManager =
-    //   chrome.extension.getBackgroundPage().projectManager;
-    // this.set('projectManager.projects', this.projectManager.projects);
-    if (this.pages) {
-      this.pages.selected = this.selected;
-    }
+    if (this.pages) this.pages.selected = this.selected;
     this.menu?.close();
   }
 
-  public manageBookmarks() {
+  public manageBookmarks(): void {
     this.command('openBookmarkEditWindow');
-    // this.projectManager.openBookmarkEditWindow();
   }
 
-  public openSettings() {
+  public openSettings(): void {
     this.options?.open();
     this.menu?.close();
   }
 
-  public openHelp() {
+  public openHelp(): void {
     this.command('openHelp');
-    // chrome.tabs.create({url: chrome.extension.getURL('/README.html')});
   }
 
   private getProjectFromId(
@@ -412,20 +411,22 @@ export class PtmApp extends PtmBase {
     return this.projects.find(project => project.id === projectId);
   }
 
-  private _queryChanged(
-    newValue: string,
-    oldValue: string
-  ) {
-    if (oldValue == newValue) return;
-    if (newValue.length === 0 && this.pages) {
-      this.pages.selected = this.previousPage;
-    } else {
-      if (this.pages && this.pages.selected != 3) {
-        this.previousPage = <number>this.pages.selected;
-        this.pages.selected = 3;
-      }
-      // TODO:
-      // this.debounce('search', this.search.bind(this), 150);
+  private queryChanged(): void {
+    this.query = this.searchQuery?.value || '';
+    if (this.query.length === 0 && this.pages) {
+      clearTimeout(this.timer);
+      this.timer = -1;
+      this.pages.selected = this.selected;
+    } if (this.timer < 0) {
+      this.timer = window.setTimeout(async () => {
+        this.searchResults = await this.command('search', {
+          query: this.query
+        });
+        // this.search(this.query);
+        if (this.pages) this.pages.selected = 3;
+        this.timer = -1;
+      }, 300);
+      if (this.pages) this.pages.selected = 2;
     }
   }
 
@@ -450,20 +451,17 @@ export class PtmApp extends PtmBase {
     try {
       const result = await this.command('linkProject', e.detail);
       if (result) {
-        this.linker?.close();
         this.fire('reload');
         this.fire('show-toast', {
           text: l10n('project_linked')
-        });
-      } else {
-        this.fire('show-toast', {
-          text: l10n('failed_linking')
         });
       }
     } catch (e) {
       this.fire('show-toast', {
         text: l10n('failed_linking')
       });
+    } finally {
+      this.linker?.close();
     }
   }
 
@@ -570,33 +568,25 @@ export class PtmApp extends PtmBase {
   private async renameProject(
     e: CustomEvent
   ): Promise<void> {
-    var project = this.getProjectFromId(e.detail.id);
-    if (!project) {
-      this.fire('show-toast', {
-        // TODO: l10n-nize
-        text: 'Failed renaming a project'
-      });
-      return;
-    }
     try {
+      const project = this.getProjectFromId(e.detail.id);
       const qs: PtmDialogQueryString = {
         line1: l10n('rename_a_project'),
         line2: l10n('change_project_name_notice'),
-        answer: project.title,
+        answer: project?.title,
         placeholder: l10n('new_project_name'),
         confirm: l10n('update'),
         cancel: l10n('cancel')
       };
       const projectName = await this.meta?.byKey('confirm').prompt(qs);
       await this.command('renameProject', {
-        projectId: project.id,
+        projectId: project?.id,
         title: projectName
       });
-      // TODO: render
-      this.fire('reload');
       this.fire('show-toast', {
         text: l10n('project_renamed')
       });
+      this.fire('reload');
     } catch (e) {
       this.fire('show-toast', {
         // TODO: l10n-nize
@@ -619,7 +609,6 @@ export class PtmApp extends PtmBase {
       await this.command('removeProject', {
         projectId: e.detail.id
       });
-      // TODO: render
       this.fire('reload');
       this.fire('show-toast', {
         text: l10n('project_removed')
@@ -663,35 +652,4 @@ export class PtmApp extends PtmBase {
   //     });
   //   }
   // }
-
-  public async search(): Promise<void> {
-    let projects: ProjectEntity[] = await Util.deepCopy(this.projects);
-    const queryLC = this.query.toLowerCase();
-    projects = projects.filter(project => {
-      project.fields = project.fields.filter(field => {
-        const title = field.title?.toLowerCase();
-        return title?.indexOf(queryLC) === -1 ? false : true;
-      });
-      const title = project.title.toLocaleLowerCase();
-      return title?.indexOf(queryLC) === -1 ? false : true;
-    });
-    // for (var i = 0; i < projects.length; i++) {
-    //   var project = projects[i];
-    //   for (var j = 0; j < project.fields.length; j++) {
-    //     var fieldTitle = project.fields[j].title?.toLowerCase();
-    //     if (fieldTitle?.indexOf(queryLC) === -1) {
-    //       project.fields.splice(j, 1);
-    //       j--;
-    //     }
-    //   }
-    //   if (project.fields.length === 0) {
-    //     const projectTitle = project.title.toLowerCase();
-    //     if (projectTitle.indexOf(queryLC) === -1) {
-    //       projects.splice(i, 1);
-    //       i--;
-    //     }
-    //   }
-    // }
-    this.searchResults = projects;
-  }
 };

@@ -16,6 +16,7 @@ limitations under the License.
 Author: Eiji Kitamura (agektmr@gmail.com)
 **/
 
+import 'web-animations-js/web-animations-next-lite.min.js';
 import { html, customElement, property } from 'lit-element';
 import { PtmBase } from './ptm-base';
 import { PtmProjectLinker } from './ptm-project-linker';
@@ -25,28 +26,31 @@ import { l10n } from '../ts/ChromeL10N';
 import { PtmDialogQueryString } from './ptm-dialog';
 import { PaperToastElement } from '@polymer/paper-toast';
 import { IronPagesElement } from '@polymer/iron-pages';
-import { PaperMenuButton } from '@polymer/paper-menu-button';
 import { IronMetaElement } from '@polymer/iron-meta';
 import './ptm-dialog';
 import './ptm-project-linker';
 import './ptm-options';
 import './ptm-session';
 import './ptm-project';
-import '@polymer/app-layout/app-layout.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-material/paper-material.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
 import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-spinner/paper-spinner.js';
-import '@polymer/paper-tabs/paper-tab.js';
-import '@polymer/paper-tabs/paper-tabs.js';
 import '@polymer/paper-toast/paper-toast.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-icons/notification-icons.js';
 import '@polymer/iron-meta/iron-meta.js';
 import '@polymer/iron-pages/iron-pages.js';
 import '@polymer/iron-flex-layout/iron-flex-layout-classes.js';
+import '@material/mwc-top-app-bar-fixed';
+import '@material/mwc-tab';
+import '@material/mwc-tab-bar';
+import '@material/mwc-textfield';
+import '@material/mwc-menu';
+import '@material/mwc-list/mwc-list-item';
+import '@material/mwc-icon-button';
 
 @customElement('ptm-app')
 export class PtmApp extends PtmBase {
@@ -103,7 +107,7 @@ export class PtmApp extends PtmBase {
   @property({
     type: Object
   })
-  menu: PaperMenuButton | undefined
+  menu: any | undefined
 
   @property({
     type: Object
@@ -132,6 +136,7 @@ export class PtmApp extends PtmBase {
 
   render() {
     return html`
+    <link href="https://fonts.googleapis.com/css?family=Material+Icons&display=block" rel="stylesheet">
     <style>
       :host {
         display: block;
@@ -145,7 +150,6 @@ export class PtmApp extends PtmBase {
       }
       iron-pages {
         min-height: 400px;
-        margin-top: 82px;
       }
       iron-pages section {
         overflow-y: scroll;
@@ -160,6 +164,9 @@ export class PtmApp extends PtmBase {
         width: 100%;
         z-index: 2;
         background-color: var(--default-primary-color);
+      }
+      #menu {
+        position: relative;
       }
       .toolbar-header {
         padding: 0 10px;
@@ -195,9 +202,9 @@ export class PtmApp extends PtmBase {
       paper-menu-button {
         margin: 0;
       }
-      paper-menu-button paper-material {
+      /* #menu-list {
         width: 130px;
-      }
+      } */
       paper-menu-button paper-icon-button {
         color: var(--text-primary-color);
         margin-left: 4px;
@@ -205,12 +212,6 @@ export class PtmApp extends PtmBase {
         height: 24px;
         padding: 2px 4px 4px 4px;
         flex: 1 1 24px;
-      }
-      paper-tabs {
-        width: 100%;
-        height: 33px;
-        color: var(--text-primary-color);
-        background-color: var(--default-primary-color);
       }
       .loading {
         display: flex;
@@ -255,54 +256,46 @@ export class PtmApp extends PtmBase {
     <iron-meta id="meta" type="dialog"></iron-meta>
     <ptm-dialog></ptm-dialog>
     <ptm-options id="options"></ptm-options>
-    <ptm-project-linker id="linker"
+    <ptm-project-linker
+      id="linker"
       .projects="${this.projects}"
       @link-project="${this.linkProject}"
       @unlink-project="${this.unlinkProject}"></ptm-project-linker>
-    <app-header class="paper-header" shadow>
-      <app-toolbar class="toolbar-header">
-        <paper-input
-          id="search"
-          placeholder="Project Tab Manager"
-          @input="${this.queryChanged}"
-          value="${this.query}">
-        </paper-input>
-        <paper-menu-button
-          id="menu"
-          vertical-align="top"
-          horizontal-align="right">
-          <paper-icon-button
-            icon="icons:more-vert"
-            slot="dropdown-trigger"
-            tabindex="-1">
-          </paper-icon-button>
-          <paper-material slot="dropdown-content">
-            <paper-item
-              @click="${this.reload}">
-              ${l10n('reload')}
-            </paper-item>
-            <paper-item
-              @click="${this.manageBookmarks}">
-              ${l10n('manage_bookmarks')}
-            </paper-item>
-            <paper-item
-              @click="${this.openSettings}">
-              ${l10n('settings')}
-            </paper-item>
-            <paper-item
-              @click="${this.openHelp}">
-              ${l10n('help')}
-            </paper-item>
-          </paper-material>
-        </paper-menu-button>
-      </app-toolbar>
-      <app-toolbar class="toolbar-tabs">
-        <paper-tabs selected="${this.selected}" tabindex="-1" @selected-changed="${this.changeTab}">
-          <paper-tab tabindex="-1">${l10n('sessions')}</paper-tab>
-          <paper-tab tabindex="-1">${l10n('projects')}</paper-tab>
-        </paper-tabs>
-      </app-toolbar>
-    </app-header>
+    <mwc-top-app-bar-fixed>
+      <mwc-textfield
+        id="search"
+        slot="title"
+        placeholder="Project Tab Manager"
+        @input="${this.queryChanged}"
+        value="${this.query}"
+      ></mwc-textfield>
+      <div id="menu" slot="actionItems">
+        <mwc-icon-button
+          id="menu-button"
+          icon="shop"></mwc-icon-button>
+        <mwc-menu id="menu-list">
+          <mwc-list-item @click="${this.reload}">
+            ${l10n('reload')}
+          </mwc-list-item>
+          <mwc-list-item @click="${this.manageBookmarks}">
+            ${l10n('manage_bookmarks')}
+          </mwc-list-item>
+          <mwc-list-item @click="${this.openSettings}">
+            ${l10n('settings')}
+          </mwc-list-item>
+          <mwc-list-item @click="${this.openHelp}">
+            ${l10n('help')}
+          </mwc-list-item>
+        </mwc-menu>
+      </div>
+      <mwc-tab-bar
+        activeIndex="${this.selected}"
+        tabindex="-1"
+        @activated="${this.changeTab}">
+        <mwc-tab label="${l10n('sessions')}"></mwc-tab>
+        <mwc-tab label="${l10n('projects')}"></mwc-tab>
+      </mwc-tab-bar>
+    </mwc-top-app-bar-fixed>
     <iron-pages id="pages" selected="${this.selected}">
       <section>
         ${this.projects.map(project => {
@@ -363,11 +356,20 @@ export class PtmApp extends PtmBase {
   public async firstUpdated() {
     this.toast = this.querySelector('#toast');
     this.pages = this.querySelector('#pages');
-    this.menu = this.querySelector('#menu');
+    this.menu = this.querySelector('#menu-list');
     this.options = this.querySelector('#options');
     this.linker = this.querySelector('#linker');
     this.meta = this.querySelector('#meta');
     this.searchQuery = this.querySelector('#search');
+
+    const menuButton = this.querySelector('#menu-button');
+    // @ts-ignore
+    this.menu.anchor = menuButton;
+    menuButton.addEventListener('click', () => {
+      // @ts-ignore
+      this.menu.open = true;
+    });
+
     // @ts-ignore
     this.addEventListener('show-toast', (e: CustomEvent) => {
       this.toastText = e.detail.text;

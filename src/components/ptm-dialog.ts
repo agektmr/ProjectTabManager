@@ -19,11 +19,10 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 import { html, customElement, property } from "lit-element";
 import { PtmBase } from './ptm-base';
 import { l10n } from '../ts/ChromeL10N';
-import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog';
 import { IronMeta } from '@polymer/iron-meta/iron-meta';
-import '@polymer/paper-dialog/paper-dialog.js';
-import '@polymer/paper-button/paper-button.js';
-import '@polymer/paper-input/paper-input.js';
+import '@material/mwc-dialog';
+import '@material/mwc-textfield';
+import '@material/mwc-button';
 
 export declare type PtmDialogQueryString = {
   line1: string,
@@ -85,7 +84,7 @@ export class PtmDialog extends PtmBase {
   @property({
     type: Object
   })
-  dialog: PaperDialogElement | undefined
+  dialog: any
 
   render() {
     return html`
@@ -120,35 +119,31 @@ export class PtmDialog extends PtmBase {
           background-color: var(--accent-color);
         }
       </style>
-      <paper-dialog id="dialog" modal>
-        <h2>${this.line1}</h2>
+      <mwc-dialog id="dialog" heading="${this.line1}">
         <div class="content">
           ${this.line2 ? html`
           <p>${this.line2}</p>
           ` : ''}
           ${this.isPrompt ? html`
-          <paper-input
+          <mwc-textfield
             id="input"
             value="${this.answer}"
             placeholder="${this.placeholder}"
             autofocus>
-          </paper-input>
+          </mwc-textfield>
           ` : ''}
         </div>
-        <div class="buttons">
-          <paper-button
-            raised
-            @click="${this.onCanceled}">
-            ${this.cancel}
-          </paper-button>
-          <paper-button
-            class="accent"
-            raised
-            @click="${this.onConfirmed}">
-            ${this.okay}
-          </paper-button>
-        </div>
-      </paper-dialog>
+        <mwc-button
+          slot="secondaryAction"
+          @click="${this.onCanceled}">
+          ${this.cancel}
+        </mwc-button>
+        <mwc-button
+          slot="primaryAction"
+          @click="${this.onConfirmed}">
+          ${this.okay}
+        </mwc-button>
+      </mwc-dialog>
     `;
   }
 
@@ -167,7 +162,7 @@ export class PtmDialog extends PtmBase {
     this.okay = qs.confirm || 'OK';
     this.cancel = qs.cancel || l10n('cancel');
     this.isPrompt = true;
-    this.dialog?.open();
+    this.dialog?.show();
     return new Promise((resolve, reject) => {
       this.confirmed = resolve;
       this.canceled = reject;
@@ -182,7 +177,7 @@ export class PtmDialog extends PtmBase {
     this.okay = qs.confirm || 'OK';
     this.cancel = qs.cancel || l10n('cancel');
     this.isPrompt = false;
-    this.dialog?.open();
+    this.dialog?.show();
     return new Promise((resolve, reject) => {
       this.confirmed = resolve;
       this.canceled = reject;

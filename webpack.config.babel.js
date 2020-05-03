@@ -10,7 +10,6 @@ module.exports = {
   entry: {
     'js/background': './src/ts/background.ts',
     'js/lazy': './src/ts/lazy.ts',
-    'js/web-animations-next-lite.min.js': './src/ts/web-animations-next-lite.min.js',
     'components/ptm-app': './src/components/ptm-app.ts'
   },
   output: {
@@ -23,13 +22,11 @@ module.exports = {
     hot: true
   },
   module: {
-    rules: [
-      {
-        test: /\.ts$/,
-        loader: 'ts-loader',
-        exclude: /node_modules/
-      }
-    ]
+    rules: [{
+      test: /\.ts$/,
+      loader: 'ts-loader',
+      exclude: /node_modules/
+    }]
   },
   resolve: {
     extensions: [ '.ts', '.js' ]

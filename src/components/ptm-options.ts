@@ -22,13 +22,11 @@ import { html, customElement, property } from "lit-element";
 import { PtmBase } from './ptm-base';
 import { SyncConfig } from '../ts/Config';
 import { l10n } from '../ts/ChromeL10N';
-import '@polymer/paper-dialog/paper-dialog.js';
-import '@polymer/paper-dialog-scrollable/paper-dialog-scrollable.js';
-import '@polymer/paper-dropdown-menu/paper-dropdown-menu.js';
-// import '@polymer/paper-menu/paper-menu.js';
-import '@polymer/paper-item/paper-item.js';
-import '@polymer/paper-toggle-button/paper-toggle-button.js';
-import '@polymer/paper-button/paper-button.js';
+import '@material/mwc-select';
+import '@material/mwc-list/mwc-list-item';
+import '@material/mwc-switch';
+import '@material/mwc-button';
+import '@material/mwc-dialog';
 
 @customElement('ptm-options')
 export class PtmOptions extends PtmBase {
@@ -63,9 +61,14 @@ export class PtmOptions extends PtmBase {
   maxSessions: -1 | 5 | 10 = -1
 
   @property({
-    type: Number
+    type: Object
   })
-  maxSessIdx: number = 0
+  maxSess: any
+
+  @property({
+    type: Object
+  })
+  root: any
 
   @property({
     type: Object
@@ -120,55 +123,61 @@ export class PtmOptions extends PtmBase {
         @apply(--layout-end-justified);
       }
     </style>
-    <paper-dialog id="dialog" modal>
-      <h2>${l10n('settings')}</h2>
-      <paper-dialog-scrollable>
-        <paper-dropdown-menu id="root" label="${l10n('root_folder_location')}">
-          <paper-menu class="dropdown-content" selected="${this.rootParent}">
-            ${this.rootFolders?.map(item => html`
-            <paper-item>${item.title}</paper-item>
-            `)}
-          </paper-menu>
-        </paper-dropdown-menu><br/>
-        <paper-input
-          id="rootName"
-          value="${this.rootName}"
-          label="${l10n('root_folder_name')}">
-        </paper-input>
-        <p>${l10n('root_folder_location_help')}</p>
-        <paper-toggle-button
-          id="lazyLoad"
-          ?checked="${this.lazyLoad}">
-          ${l10n('disable_lazy_load')}
-        </paper-toggle-button>
-        <p>${l10n('disable_lazy_load_help')}</p>
-        <paper-dropdown-menu id="sessions" label="${l10n('maximum_sessions')}">
-          <paper-menu class="dropdown-content" selected="${this.maxSessIdx}">
-            <paper-item>${l10n('unlimited')}</paper-item>
-            <paper-item>5</paper-item>
-            <paper-item>10</paper-item>
-          </paper-menu>
-        </paper-dropdown-menu><br/>
-        <p>${l10n('maximum_sessions_help')}</p>
-      </paper-dialog-scrollable>
-      <div class="buttons">
-        <paper-button
-          @click="${this.close}"
-          raised>
-          ${l10n('cancel')}
-        </paper-button>
-        <paper-button
-          class="accent"
-          @click="${this.save}"
-          raised>${l10n('save')}
-        </paper-button>
-      </div>
-    </paper-dialog>
+    <mwc-dialog id="dialog" heading="${l10n('settings')}">
+      <mwc-select
+        id="root"
+        label="${l10n('root_folder_location')}">
+        ${this.rootFolders?.map((item, i) => html`
+        <mwc-list-item
+          ?selected="${this.rootParent === i}">
+          ${item.title}
+        </mwc-list-item>
+        `)}
+      </mwc-select>
+      <mwc-textfield
+        id="rootName"
+        value="${this.rootName}"
+        label="${l10n('root_folder_name')}">
+      </mwc-textfield>
+      <p>${l10n('root_folder_location_help')}</p>
+      <mwc-switch
+        id="lazyLoad"
+        ?checked="${this.lazyLoad}">
+        ${l10n('disable_lazy_load')}
+      </mwc-switch>
+      <p>${l10n('disable_lazy_load_help')}</p>
+      <mwc-select
+        id="max_sessions"
+        label="${l10n('maximum_sessions')}">
+        <mwc-list-item
+          ?selected="${this.maxSessions === -1}"
+        >${l10n('unlimited')}</mwc-list-item>
+        <mwc-list-item
+          ?selected="${this.maxSessions === 5}"
+        >5</mwc-list-item>
+        <mwc-list-item
+          ?selected="${this.maxSessions === 10}"
+        >10</mwc-list-item>
+      </mwc-select><br/>
+      <p>${l10n('maximum_sessions_help')}</p>
+      <mwc-button
+        @click="${this.close}"
+        slot="secondaryAction">
+        ${l10n('cancel')}
+      </mwc-button>
+      <mwc-button
+        @click="${this.save}"
+        slot="primaryAction">
+        ${l10n('save')}
+      </mwc-button>
+    </mwc-dialog>
     `;
   }
 
   public async firstUpdated(): Promise<void> {
     this.dialog = this.querySelector('#dialog');
+    this.maxSess = this.querySelector('#max_sessions');
+    this.root = this.querySelector('#root');
     chrome.bookmarks.getSubTree('0', bookmarks => {
       this.rootFolders = bookmarks[0].children;
     });
@@ -179,7 +188,6 @@ export class PtmOptions extends PtmBase {
     this.rootName     = config.rootName || this.rootName;
     this.lazyLoad     = config.lazyLoad;
     this.maxSessions  = config.maxSessions;
-    this.maxSessIdx   = this.maxSessCand.indexOf(this.maxSessions);
     if (this.debug) console.log('[Config] initialization finished');
 
     const manifest = chrome.runtime.getManifest();
@@ -191,13 +199,14 @@ export class PtmOptions extends PtmBase {
 
   public async save() {
     // @ts-ignore
-    this.maxSessions = this.maxSessCand[this.maxSessIdx];
+    this.maxSessions = this.maxSessCand[this.maxSess.index];
     try {
       const config: SyncConfig = {
         lazyLoad:     this.lazyLoad,
-        rootParentId: this.rootParent.toString(),
+        rootParentId: this.root.index.toString(),
         rootName:     this.rootName,
-        maxSessions:  this.maxSessions
+        // @ts-ignore
+        maxSessions:  this.maxSessCand[this.maxSess.index]
       };
       await this.command('setConfig', { config: config });
       this.fire('show-toast', {
@@ -212,7 +221,7 @@ export class PtmOptions extends PtmBase {
   }
 
   public open() {
-    this.dialog.open();
+    this.dialog.show();
   }
 
   public close() {

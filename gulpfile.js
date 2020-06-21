@@ -32,9 +32,4 @@ gulp.task('markdown', function() {
     .pipe(gulp.dest('app'));
 });
 
-gulp.task('build', function() {
-  runSequence(
-    'markdown',
-    'zip'
-  );
-});
+gulp.task('build', gulp.series('markdown', 'zip', done => done()));

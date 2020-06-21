@@ -5,7 +5,7 @@ var path = require('path');
 var through = require('through2');
 var runSequence = require('run-sequence');
 
-gulp.task('zip', function() {
+gulp.task('zip', () => {
   return gulp.src('app/**/*')
     .pipe($.zip('app.zip'))
     .pipe(gulp.dest('.'));
@@ -25,16 +25,11 @@ function applyTemplate(templateFile) {
   });
 };
 
-gulp.task('markdown', function() {
+gulp.task('markdown', () => {
   return gulp.src('./*.md')
     .pipe($.markdown())
     .pipe(applyTemplate('template.html'))
     .pipe(gulp.dest('app'));
 });
 
-gulp.task('build', function() {
-  runSequence(
-    'markdown',
-    'zip'
-  );
-});
+gulp.task('build', gulp.series('markdown', 'zip', done => done()));

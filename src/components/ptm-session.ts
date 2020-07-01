@@ -17,13 +17,17 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 **/
 
 import { html, customElement, property } from "lit-element";
-import { PtmProject } from './ptm-project';
 import { l10n } from '../ts/ChromeL10N';
+
 import './ptm-bookmark';
-import '@polymer/paper-material/paper-material.js';
-import '@polymer/paper-item/paper-item.js';
-import '@polymer/paper-icon-button/paper-icon-button.js';
+import './ptm-list-item';
 import '@polymer/iron-collapse/iron-collapse.js';
+import '@material/mwc-list';
+import '@material/mwc-list/mwc-list-item';
+import '@material/mwc-icon-button';
+import '@material/mwc-icon-button-toggle';
+
+import { PtmProject } from './ptm-project';
 
 @customElement('ptm-session')
 export class PtmSession extends PtmProject {
@@ -41,12 +45,6 @@ export class PtmSession extends PtmProject {
   })
   sessionTitle: string = ''
 
-  @property({
-    type: Boolean,
-    reflect: true
-  })
-  mouseover: boolean = false
-
   render() {
     return html`
       <style>
@@ -56,7 +54,7 @@ export class PtmSession extends PtmProject {
         *:focus {
           outline: none;
         }
-        paper-material[expanded] {
+        /* paper-material[expanded] {
           margin: 0 0 1em 0;
         }
         paper-item {
@@ -82,6 +80,10 @@ export class PtmSession extends PtmProject {
         }
         paper-item[focused] > paper-icon-button:first-child {
           border-left: 2px var(--accent-color) solid;
+        } */
+        .content {
+          display: flex;
+          align-items: center;
         }
         .title {
           cursor: pointer;
@@ -97,85 +99,88 @@ export class PtmSession extends PtmProject {
         }
         .buttons {
           display: none;
+          flex: 0 0 auto;
         }
-        .buttons.visible {
+        .content:hover .buttons {
           display: block;
         }
+        mwc-list {
+          height: 32px;
+        }
+        mwc-list[expanded] {
+          height: auto;
+        }
       </style>
-      <paper-material
-        elevation="${this.expanded ? 2 : 0}"
-        @mouseenter="${()=>{this.mouseover=true}}"
-        @mouseleave="${()=>{this.mouseover=false}}"
-        ?expanded="${this.expanded}"
-        animated>
-        <paper-item ?focused="${this.focused}" tabindex="-1">
-          <paper-icon-button tabindex="-1"
-            icon="${this.expanded ? 'expand-more' : 'expand-less'}"
-            @click="${this.toggle}"></paper-icon-button>
-          <div
-            class="title"
-            @click="${this.openProject}"
-            ?active="${!!this.winId}">
-            <!-- <paper-ripple></paper-ripple> -->
-            <span>${this.projectTitle}</span>
+      <mwc-list
+        ?expanded="${this.expanded}">
+        <ptm-list-item
+          graphic="avatar"
+          ?focused="${this.focused}">
+          <mwc-icon-button-toggle
+            slot="graphic"
+            ?on=${this.expanded}
+            @click="${this.toggle}">
+            <svg slot="onIcon" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" focusable="false" style="pointer-events: none; display: block; width: 100%; height: 100%;"><g><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"></path></g></svg>
+            <svg slot="offIcon" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" focusable="false" style="pointer-events: none; display: block; width: 100%; height: 100%;"><g><path d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z"></path></g></svg>
+          </mwc-icon-button-toggle>
+          <div class="content">
+            <div
+              class="title"
+              @click="${this.openProject}"
+              ?active="${!!this.winId}">
+              <span>${this.projectTitle}</span>
+            </div>
+            <div class="buttons">
+              ${!this.winId ? html`
+              <mwc-icon-button
+                @click="${this.onTapRemove}"
+                title="${l10n('remove')}">
+                <img src="../img/delete.svg">
+              </mwc-icon-button>`:''}
+              <mwc-icon-button
+                @click="${this.onTapLink}"
+                title="${l10n('link_session_to_a_project')}">
+                <img src="../img/link.svg">
+              </mwc-icon-button>
+              ${this.projectId.indexOf('-') === -1 ? html`
+              <mwc-icon-button
+                @click="${this.onTapRename}"
+                title="${l10n('edit')}">
+                <img src="../img/create.svg">
+              </mwc-icon-button>`:html`
+              <mwc-icon-button
+                @click="${this.onTapNewProject}"
+                title="${l10n('create_a_new_project')}">
+                <img src="../img/folder-special.svg">
+              </mwc-icon-button>`}
+            </div>
           </div>
-          <div class="buttons ${this.mouseover?'visible':''}">
-            ${!this.winId ? html`
-            <paper-icon-button
-              icon="delete"
-              @click="${this.onTapRemove}"
-              tabindex="-1"
-              title="${l10n('remove')}">
-            </paper-icon-button>
-            `:''}
-            <paper-icon-button
-              icon="link"
-              @click="${this.onTapLink}"
-              tabindex="-1"
-              title="${l10n('link_session_to_a_project')}">
-            </paper-icon-button>
-            ${this.projectId.indexOf('-') === -1 ? html`
-            <paper-icon-button
-              icon="create"
-              @click="${this.onTapRename}"
-              tabindex="-1"
-              title="${l10n('edit')}">
-            </paper-icon-button>
-            `:html`
-            <paper-icon-button
-              icon="notification:folder-special"
-              @click="${this.onTapNewProject}"
-              tabindex="-1"
-              title="${l10n('create_a_new_project')}">
-            </paper-icon-button>
-            `}
-          </div>
-        </paper-item>
-        <iron-collapse id="collapse" ?opened="${this.expanded}" tabindex="-1">
-          <div class="collapse-content">
-            ${!this.fields.length ? html`
-            <paper-item class="layout">
-              <paper-icon-button icon="icons:warning"></paper-icon-button>
-              <span class="title">${l10n('no_tabs')}</span>
-            </paper-item>
-            `:''}
-            ${this.initialized ? this.fields.map((field, index) => html`
-            <ptm-bookmark
-              index="${index}"
-              url="${field.url}"
-              fav-icon-url="${field.favIconUrl}"
-              bookmark-id="${field.bookmarkId}"
-              tab-id="${field.tabId}"
-              site-title="${field.title}"
-              project-id="${this.projectId}"
-              @add-bookmark="${this.addBookmark}"
-              @remove-bookmark="${this.removeBookmark}">
-            </ptm-bookmark>
-            `):''}
-          </div>
+        </ptm-list-item>
+        <iron-collapse id="collapse" ?opened="${this.expanded}">
+          ${!this.fields.length ? html`
+          <ptm-list-item graphic="icon">
+            <mwc-icon-button
+              slot="graphic">
+              <img src="../img/warning.svg">
+            </mwc-icon-button>
+            <span class="title">${l10n('no_tabs')}</span>
+          </ptm-list-item>
+          `:''}
+          ${this.initialized ? this.fields.map((field, index) => html`
+          <ptm-bookmark
+            index="${index}"
+            url="${field.url}"
+            fav-icon-url="${field.favIconUrl}"
+            bookmark-id="${field.bookmarkId}"
+            tab-id="${field.tabId}"
+            site-title="${field.title}"
+            project-id="${this.projectId}"
+            @add-bookmark="${this.addBookmark}"
+            @remove-bookmark="${this.removeBookmark}">
+          </ptm-bookmark>
+          `):''}
         </iron-collapse>
-      </paper-material>
-    `;
+      </mwc-list>`;
   }
   private onTapLink(e: MouseEvent) {
     e.stopPropagation();

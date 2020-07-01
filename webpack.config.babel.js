@@ -10,7 +10,8 @@ module.exports = {
   entry: {
     'js/background': './src/ts/background.ts',
     'js/lazy': './src/ts/lazy.ts',
-    'components/ptm-app': './src/components/ptm-app.ts'
+    'components/ptm-app': './src/components/ptm-app.ts',
+    'styles/default-theme': './src/styles/default-theme.scss'
   },
   output: {
     path: dst,
@@ -26,6 +27,27 @@ module.exports = {
       test: /\.ts$/,
       loader: 'ts-loader',
       exclude: /node_modules/
+    }, {
+      test: /\.scss$/,
+      use: [
+        {
+          loader: 'file-loader',
+          options: {
+            name: path.join('styles', 'default-theme.css')
+          }
+        },
+        { loader: 'extract-loader' },
+        { loader: 'css-loader' },
+        {
+          loader: 'sass-loader',
+          options: {
+            implementation: require('sass'),
+            sassOptions: {
+              includePaths: ['./node_modules']
+            }
+          }
+        }
+      ]
     }]
   },
   resolve: {
@@ -38,9 +60,6 @@ module.exports = {
     },{
       from: path.join(src, 'img'),
       to: path.join(dst, 'img')
-    },{
-      from: path.join(src, 'styles'),
-      to: path.join(dst, 'styles')
     },{
       from: path.join(src, '*.html'),
       to: dst,

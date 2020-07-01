@@ -17,17 +17,19 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 **/
 
 import { html, customElement, property } from "lit-element";
-import { PtmBase } from './ptm-base';
 import { l10n } from '../ts/ChromeL10N';
 import { ProjectEntity } from "../ts/ProjectEntity";
-import { PaperDialogElement } from '@polymer/paper-dialog';
-import { IronMetaElement } from '@polymer/iron-meta';
-import '@polymer/iron-meta/iron-meta.js';
-import '@polymer/paper-dialog/paper-dialog.js';
-import '@polymer/paper-dialog-scrollable/paper-dialog-scrollable.js';
-import '@polymer/paper-item/paper-item.js';
-import '@polymer/paper-button/paper-button.js';
 
+import '@polymer/iron-meta/iron-meta.js';
+import '@material/mwc-dialog';
+import '@material/mwc-button';
+import '@material/mwc-list';
+import '@material/mwc-icon-button';
+import './ptm-list-item';
+
+import { PtmBase } from './ptm-base';
+import { IronMetaElement } from '@polymer/iron-meta';
+import { Dialog } from '@material/mwc-dialog';
 
 @customElement('ptm-project-linker')
 export class PtmProjectLinker extends PtmBase {
@@ -54,17 +56,12 @@ export class PtmProjectLinker extends PtmBase {
   @property({
     type: Object
   })
-  repeat: Element | undefined
-
-  @property({
-    type: Object
-  })
-  dialog: PaperDialogElement | undefined
+  dialog: Dialog | undefined
 
   render() {
     return html`
       <style>
-        h2 {
+        /* h2 {
           width: 180px;
         }
         iron-icon {
@@ -98,64 +95,52 @@ export class PtmProjectLinker extends PtmBase {
         paper-item[disabled] {
           cursor: auto;
           color: var(--disabled-text-color);
-        }
+        } */
         .title {
           cursor: pointer;
           color: var(--secondary-text-color);
-          text-overflow: ellipsis;
-          overflow: hidden;
-          white-space: nowrap;
-          flex: 1 1 auto;
         }
-        .buttons {
-          padding: 10px 5px 10px 10px;
-        }
-        paper-button {
+        /* paper-button {
           color: var(--text-primary-color);
           background-color: var(--default-primary-color);
-        }
-        .accent {
-          color: var(--text-primary-color);
-          background-color: var(--accent-color);
+        } */
+        ptm-list-item {
+          --mdc-list-side-padding: 0;
         }
       </style>
       <iron-meta id="meta" type="dialog"></iron-meta>
-      <paper-dialog id="dialog" modal>
-        <h2>${l10n('link_session_to_a_project')}</h2>
-        <paper-dialog-scrollable>
+      <mwc-dialog id="dialog" heading="${l10n('link_session_to_a_project')}">
+        <mwc-list>
           ${this.projects.map(project => {
           return !!project.bookmark ? html`
-          <paper-item
+          <ptm-list-item
             @click="${this.onLink}"
             ?data-session="${!!project.session}"
-            data-project-id="${project.id}">
+            data-project-id="${project.id}"
+            hasMeta>
             <span class="title">${project.title}</span>
-            <iron-icon icon="${!project.session ? '' : 'link'}"></iron-icon>
-          </paper-item>
+            <mwc-icon-button slot="meta">
+              ${project.session ? html`<img src="../img/link.svg">` : ``}
+            </mwc-icon-button>
+          </ptm-list-item>
           ` : ''})}
-        </paper-dialog-scrollable>
-        <div class="buttons">
-          <paper-button
-            @click="${this.close}"
-            raised>
-            ${l10n('cancel')}
-          </paper-button>
-          ${this.linkingProjectId ? html`
-          <paper-button
-            class="accent"
-            @click="${this.onUnlink}"
-            raised>
-            ${l10n('unlink')}
-          </paper-button>
-          `: ''})}
-        </div>
-      </paper-dialog>
-    `;
+        </mwc-list>
+        <mwc-button
+          slot="secondaryAction"
+          @click="${this.close}">
+          ${l10n('cancel')}
+        </mwc-button>
+        ${this.linkingProjectId ? html`
+        <mwc-button
+          slot="primaryAction"
+          @click="${this.onUnlink}">
+          ${l10n('unlink')}
+        </mwc-button>`: ''}
+      </mwc-dialog>`;
   }
 
   public firstUpdated() {
     this.meta = this.querySelector('#meta');
-    this.repeat = this.querySelector('#repeat');
     this.dialog = this.querySelector('#dialog');
   }
 
@@ -165,7 +150,7 @@ export class PtmProjectLinker extends PtmBase {
   ) {
     this.linkingProjectId = linkingProjectId;
     this.bookmarked = bookmarked;
-    this.dialog?.open();
+    this.dialog?.show();
   }
 
   public close() {

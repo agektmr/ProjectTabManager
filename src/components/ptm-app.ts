@@ -18,6 +18,24 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 
 import 'web-animations-js/web-animations-next-lite.min.js';
 import { html, customElement, property } from 'lit-element';
+
+import './ptm-dialog';
+import './ptm-project-linker';
+import './ptm-options';
+import './ptm-list-item';
+import './ptm-session';
+import './ptm-project';
+import '@polymer/iron-meta/iron-meta.js';
+import '@polymer/iron-pages/iron-pages.js';
+import '@material/mwc-top-app-bar-fixed';
+import '@material/mwc-tab';
+import '@material/mwc-tab-bar';
+import '@material/mwc-textfield';
+import '@material/mwc-menu';
+import '@material/mwc-icon-button';
+import '@material/mwc-snackbar';
+import '@material/mwc-linear-progress';
+
 import { PtmBase } from './ptm-base';
 import { PtmProjectLinker } from './ptm-project-linker';
 import { PtmOptions } from './ptm-options';
@@ -27,30 +45,9 @@ import { PtmDialogQueryString } from './ptm-dialog';
 import { PaperToastElement } from '@polymer/paper-toast';
 import { IronPagesElement } from '@polymer/iron-pages';
 import { IronMetaElement } from '@polymer/iron-meta';
-import './ptm-dialog';
-import './ptm-project-linker';
-import './ptm-options';
-import './ptm-session';
-import './ptm-project';
-import '@polymer/paper-input/paper-input.js';
-import '@polymer/paper-icon-button/paper-icon-button.js';
-import '@polymer/paper-material/paper-material.js';
-import '@polymer/paper-menu-button/paper-menu-button.js';
-import '@polymer/paper-item/paper-item.js';
-import '@polymer/paper-spinner/paper-spinner.js';
-import '@polymer/paper-toast/paper-toast.js';
-import '@polymer/iron-icons/iron-icons.js';
-import '@polymer/iron-icons/notification-icons.js';
-import '@polymer/iron-meta/iron-meta.js';
-import '@polymer/iron-pages/iron-pages.js';
-import '@polymer/iron-flex-layout/iron-flex-layout-classes.js';
-import '@material/mwc-top-app-bar-fixed';
-import '@material/mwc-tab';
-import '@material/mwc-tab-bar';
-import '@material/mwc-textfield';
-import '@material/mwc-menu';
-import '@material/mwc-list/mwc-list-item';
-import '@material/mwc-icon-button';
+import { TabBar } from '@material/mwc-tab-bar';
+import { Menu } from '@material/mwc-menu';
+import { LinearProgress } from '@material/mwc-linear-progress';
 
 @customElement('ptm-app')
 export class PtmApp extends PtmBase {
@@ -107,7 +104,7 @@ export class PtmApp extends PtmBase {
   @property({
     type: Object
   })
-  menu: any | undefined
+  menu: Menu | undefined
 
   @property({
     type: Object
@@ -127,6 +124,16 @@ export class PtmApp extends PtmBase {
   @property({
     type: Object
   })
+  tabs: TabBar | undefined
+
+  @property({
+    type: Object
+  })
+  progress: LinearProgress | undefined
+
+  @property({
+    type: Object
+  })
   searchQuery: HTMLInputElement | undefined
 
   @property({
@@ -136,7 +143,6 @@ export class PtmApp extends PtmBase {
 
   render() {
     return html`
-    <link href="https://fonts.googleapis.com/css?family=Material+Icons&display=block" rel="stylesheet">
     <style>
       :host {
         display: block;
@@ -154,19 +160,13 @@ export class PtmApp extends PtmBase {
       iron-pages section {
         overflow-y: scroll;
       }
-      app-header {
-        position: fixed;
-        top: 0;
-        left: 0;
-        margin: 0;
-        padding: 0;
-        height: 82px;
-        width: 100%;
-        z-index: 2;
-        background-color: var(--default-primary-color);
-      }
       #menu {
         position: relative;
+        margin-right: 8px;
+      }
+      mwc-textfield {
+        height: 28px;
+        --mdc-text-field-ink-color: white;
       }
       .toolbar-header {
         padding: 0 10px;
@@ -179,51 +179,9 @@ export class PtmApp extends PtmBase {
         padding: 0;
         height: 34px;
       }
-      paper-button {
-        color: var(--text-primary-color);
-        background-color: var(--default-primary-color);
-      }
-      paper-input {
-        --paper-input-container-color:       rgba(255, 255, 255, 0.64);
-        --paper-input-container-focus-color: rgba(255, 255, 255, 1);
-        --paper-input-container-input-color: var(--default-background-color);
-        flex: 1 1 auto;
-      }
-      paper-item {
-        cursor: pointer;
-        padding: 0 10px;
-        background-color: var(--default-background-color);
-        min-height: 24px;
-        line-height: 16px;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
-      }
-      paper-menu-button {
-        margin: 0;
-      }
       /* #menu-list {
         width: 130px;
       } */
-      paper-menu-button paper-icon-button {
-        color: var(--text-primary-color);
-        margin-left: 4px;
-        width: 24px;
-        height: 24px;
-        padding: 2px 4px 4px 4px;
-        flex: 1 1 24px;
-      }
-      .loading {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 300px;
-      }
-      #dialog {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
       * {
         --paper-font-subhead: {
           font-family: 'Roboto', 'Noto', sans-serif;
@@ -268,33 +226,39 @@ export class PtmApp extends PtmBase {
         placeholder="Project Tab Manager"
         @input="${this.queryChanged}"
         value="${this.query}"
-      ></mwc-textfield>
+        fullwidth>
+      </mwc-textfield>
       <div id="menu" slot="actionItems">
         <mwc-icon-button
-          id="menu-button"
-          icon="shop"></mwc-icon-button>
+          id="menu-button">
+          <svg viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" focusable="false" style="pointer-events: none; display: block; width: 100%; height: 100%;"><g><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path></g></svg>
+        </mwc-icon-button>
         <mwc-menu id="menu-list">
-          <mwc-list-item @click="${this.reload}">
+          <ptm-list-item graphic="icon" @click="${this.reload}">
+            <svg slot="graphic" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" focusable="false" style="pointer-events: none; display: block; width: 100%; height: 100%;"><g><path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8c-.45-.83-.7-1.79-.7-2.8 0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z"></path></g></svg>
             ${l10n('reload')}
-          </mwc-list-item>
-          <mwc-list-item @click="${this.manageBookmarks}">
+          </ptm-list-item>
+          <ptm-list-item graphic="icon" @click="${this.manageBookmarks}">
+            <svg slot="graphic" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" focusable="false" style="pointer-events: none; display: block; width: 100%; height: 100%;"><g><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 10l-2.5-1.5L15 12V4h5v8z"></path></g></svg>
             ${l10n('manage_bookmarks')}
-          </mwc-list-item>
-          <mwc-list-item @click="${this.openSettings}">
+          </ptm-list-item>
+          <ptm-list-item graphic="icon" @click="${this.openSettings}">
+            <svg slot="graphic" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" focusable="false" style="pointer-events: none; display: block; width: 100%; height: 100%;"><g><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"></path></g></svg>
             ${l10n('settings')}
-          </mwc-list-item>
-          <mwc-list-item @click="${this.openHelp}">
+          </ptm-list-item>
+          <ptm-list-item graphic="icon" @click="${this.openHelp}">
+            <svg slot="graphic" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" focusable="false" style="pointer-events: none; display: block; width: 100%; height: 100%;"><g><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"></path></g></svg>
             ${l10n('help')}
-          </mwc-list-item>
+          </ptm-list-item>
         </mwc-menu>
       </div>
       <mwc-tab-bar
-        activeIndex="${this.selected}"
-        tabindex="-1"
-        @activated="${this.changeTab}">
+        id="tabs"
+        @MDCTabBar:activated="${this.changeTab}">
         <mwc-tab label="${l10n('sessions')}"></mwc-tab>
         <mwc-tab label="${l10n('projects')}"></mwc-tab>
       </mwc-tab-bar>
+      <mwc-linear-progress id="progress" indeterminate></mwc-linear-progress>
     </mwc-top-app-bar-fixed>
     <iron-pages id="pages" selected="${this.selected}">
       <section>
@@ -331,9 +295,6 @@ export class PtmApp extends PtmBase {
         </ptm-project>`:'';
         })}
       </section>
-      <section class="loading">
-        <paper-spinner active></paper-spinner>
-      </section>
       <section>
         ${this.searchResults.map(project => html`
         <ptm-project
@@ -346,11 +307,11 @@ export class PtmApp extends PtmBase {
         )}
       </section>
     </iron-pages>
-    <paper-toast
+    <mwc-snackbar
       id="toast"
       duration="3000"
-      text="${this.toastText}">
-    </paper-toast>`;
+      labelText="${this.toastText}">
+    </mwc-snackbar>`;
   }
 
   public async firstUpdated() {
@@ -360,6 +321,8 @@ export class PtmApp extends PtmBase {
     this.options = this.querySelector('#options');
     this.linker = this.querySelector('#linker');
     this.meta = this.querySelector('#meta');
+    this.tabs = this.querySelector('#tabs');
+    this.progress = this.querySelector('#progress');
     this.searchQuery = this.querySelector('#search');
 
     const menuButton = this.querySelector('#menu-button');
@@ -373,7 +336,7 @@ export class PtmApp extends PtmBase {
     // @ts-ignore
     this.addEventListener('show-toast', (e: CustomEvent) => {
       this.toastText = e.detail.text;
-      this.toast?.show();
+      this.toast?.open();
     });
     // @ts-ignore
     this.addEventListener('reload', this.reload);
@@ -388,10 +351,19 @@ export class PtmApp extends PtmBase {
   }
 
   public async reload(e: CustomEvent) {
-    if (this.pages) this.pages.selected = 2;
+    this.showLoading();
     this.projects = await this.command('update');
-    if (this.pages) this.pages.selected = this.selected;
+    this.hideLoading();
+    this.selected = this.tabs?.activeIndex || 0;
     this.menu?.close();
+  }
+
+  private showLoading(): void {
+    if (this.progress) this.progress.closed = false;
+  }
+
+  private hideLoading(): void {
+    if (this.progress) this.progress.closed = true;
   }
 
   public manageBookmarks(): void {
@@ -418,22 +390,24 @@ export class PtmApp extends PtmBase {
     if (this.query.length === 0 && this.pages) {
       clearTimeout(this.timer);
       this.timer = -1;
-      this.pages.selected = this.selected;
+      this.hideLoading();
+      this.selected = this.tabs?.activeIndex || 0;
     } if (this.timer < 0) {
       this.timer = window.setTimeout(async () => {
         this.searchResults = await this.command('search', {
           query: this.query
         });
         // this.search(this.query);
-        if (this.pages) this.pages.selected = 3;
+        this.hideLoading();
+        this.selected = 2;
         this.timer = -1;
       }, 300);
-      if (this.pages) this.pages.selected = 2;
+      this.showLoading();
     }
   }
 
   private changeTab(e: CustomEvent) {
-    this.selected = e.detail.value;
+    this.selected = e.detail.index || 0;
   }
 
   private openLinker(e: CustomEvent) {

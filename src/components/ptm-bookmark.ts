@@ -19,11 +19,13 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 /// <reference path="../../node_modules/@types/chrome/index.d.ts" />
 
 import { html, customElement, property } from 'lit-element';
-import { PtmBase } from './ptm-base';
-import '@polymer/paper-item/paper-item.js';
-import '@polymer/iron-icons/iron-icons.js';
+
+import './ptm-list-item';
 import '@polymer/paper-tooltip/paper-tooltip.js';
-import '@polymer/paper-icon-button/paper-icon-button.js';
+import '@material/mwc-icon';
+import '@material/mwc-icon-button-toggle';
+
+import { PtmBase } from './ptm-base';
 
 declare class UrlCache {
   domain: string
@@ -85,30 +87,6 @@ export class PtmBookmark extends PtmBase {
   render () {
     return html`
       <style>
-        paper-item {
-          padding: 0;
-          font-size: 1.0em;
-          background-color: var(--default-background-color);
-          min-height: 24px;
-          line-height: 16px;
-          display: flex;
-        }
-        paper-item > *:not(:first-child):not(:last-child) {
-          margin-right: 0 !important;
-        }
-        paper-icon-button {
-          width: 24px;
-          height: 24px;
-          padding: 2px 4px 4px 4px;
-          flex: 0 0 24px;
-        }
-        .favicon {
-          display: block;
-          width: 16px;
-          height: 16px;
-          padding: 2px 4px 4px 4px;
-          -webkit-user-select: none;
-        }
         .title {
           cursor: pointer;
           color: #aaa;
@@ -120,6 +98,10 @@ export class PtmBookmark extends PtmBase {
         .title[active] {
           color: black;
         }
+        mwc-icon > img {
+          width: var(--mdc-icon-size);
+          height: var(--mdc-icon-size);
+        }
         #star {
           color: #D3D3D3;
         }
@@ -127,26 +109,28 @@ export class PtmBookmark extends PtmBase {
           color: #FAC12F;
         }
       </style>
-      <paper-item tabindex="-1">
-        <paper-icon-button
-          src="${navigator.onLine && this.favIconUrl ? this.favIconUrl : PtmBookmark.DEFAULT_FAVICON_URL}">
-        </paper-icon-button>
+      <ptm-list-item
+        graphic="icon"
+        tabindex="-1" hasMeta>
+        <mwc-icon slot="graphic">
+          <img src="${navigator.onLine && this.favIconUrl ? this.favIconUrl : PtmBookmark.DEFAULT_FAVICON_URL}">
+        </mwc-icon>
         <div class="title" @click="${this.open}" ?active="${!!this.tabId}">
-          <!-- <paper-ripple recenters></paper-ripple> -->
           <span>${this.siteTitle}</span>
           <paper-tooltip>${this.siteTitle}<br/>${this.url}</paper-tooltip>
         </div>
         <!--Why this?-->
         ${this.projectId.indexOf('-') === -1 ? html`
-        <paper-icon-button
+        <mwc-icon-button
           id="star"
-          icon="icons:star"
+          slot="meta"
           @click="${this.onTapStar}"
           ?bookmarked="${this.bookmarkId != 'undefined'}"
           tabindex="-1">
-        </paper-icon-button>
+          <svg viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" focusable="false" style="pointer-events: none; display: block; width: 100%; height: 100%;"><g><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></g></svg>
+        </mwc-icon-button>
         `:''}
-      </paper-item>`
+      </ptm-list-item>`
   }
 
   public firstUpdated() {
@@ -169,13 +153,13 @@ export class PtmBookmark extends PtmBase {
 
   private onTapStar(e: MouseEvent): void {
     e.stopPropagation();
-    if (this.tabId) {
-      this.fire('add-bookmark', {
-        tabId: this.tabId,
-      });
-    } if (this.bookmarkId) {
+    if (this.bookmarkId) {
       this.fire('remove-bookmark', {
         bookmarkId: this.bookmarkId
+      });
+    } else if (this.tabId) {
+      this.fire('add-bookmark', {
+        tabId: this.tabId,
       });
     }
   }

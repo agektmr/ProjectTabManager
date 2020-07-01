@@ -19,14 +19,18 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 /// <reference path="../../node_modules/@types/chrome/index.d.ts" />
 
 import { html, customElement, property } from "lit-element";
-import { PtmBase } from './ptm-base';
 import { SyncConfig } from '../ts/Config';
 import { l10n } from '../ts/ChromeL10N';
+
 import '@material/mwc-select';
 import '@material/mwc-list/mwc-list-item';
 import '@material/mwc-switch';
 import '@material/mwc-button';
 import '@material/mwc-dialog';
+
+import { PtmBase } from './ptm-base';
+import { Select } from '@material/mwc-select';
+import { Dialog } from '@material/mwc-dialog';
 
 @customElement('ptm-options')
 export class PtmOptions extends PtmBase {
@@ -63,17 +67,17 @@ export class PtmOptions extends PtmBase {
   @property({
     type: Object
   })
-  maxSess: any
+  maxSess: Select | undefined
 
   @property({
     type: Object
   })
-  root: any
+  root: Select | undefined
 
   @property({
     type: Object
   })
-  dialog: any
+  dialog: Dialog | undefined
 
   @property({
     type: Boolean
@@ -119,8 +123,6 @@ export class PtmOptions extends PtmBase {
       }
       .buttons {
         padding: 10px 5px 10px 10px;
-        @apply(--layout-horizontal);
-        @apply(--layout-end-justified);
       }
     </style>
     <mwc-dialog id="dialog" heading="${l10n('settings')}">
@@ -149,15 +151,15 @@ export class PtmOptions extends PtmBase {
       <mwc-select
         id="max_sessions"
         label="${l10n('maximum_sessions')}">
-        <mwc-list-item
-          ?selected="${this.maxSessions === -1}"
-        >${l10n('unlimited')}</mwc-list-item>
-        <mwc-list-item
-          ?selected="${this.maxSessions === 5}"
-        >5</mwc-list-item>
-        <mwc-list-item
-          ?selected="${this.maxSessions === 10}"
-        >10</mwc-list-item>
+        <mwc-list-item ?selected="${this.maxSessions === -1}">
+          ${l10n('unlimited')}
+        </mwc-list-item>
+        <mwc-list-item ?selected="${this.maxSessions === 5}">
+          5
+        </mwc-list-item>
+        <mwc-list-item ?selected="${this.maxSessions === 10}">
+          10
+        </mwc-list-item>
       </mwc-select><br/>
       <p>${l10n('maximum_sessions_help')}</p>
       <mwc-button
@@ -203,7 +205,7 @@ export class PtmOptions extends PtmBase {
     try {
       const config: SyncConfig = {
         lazyLoad:     this.lazyLoad,
-        rootParentId: this.root.index.toString(),
+        rootParentId: this.root?.index.toString() || '2',
         rootName:     this.rootName,
         // @ts-ignore
         maxSessions:  this.maxSessCand[this.maxSess.index]
@@ -221,10 +223,10 @@ export class PtmOptions extends PtmBase {
   }
 
   public open() {
-    this.dialog.show();
+    this.dialog?.show();
   }
 
   public close() {
-    this.dialog.close();
+    this.dialog?.close();
   }
 }

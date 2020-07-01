@@ -89,38 +89,18 @@ export class PtmDialog extends PtmBase {
   render() {
     return html`
       <style>
-        paper-dialog {
-          font-size: 1.0em;
-          margin: 0 20px;
-          max-width: none;
-        };
-
-        h2 {
-          white-space: normal;
-          margin-top: 12px !important;
-          padding: 0 16px;
-          font-size: 1.4em;
-        }
-
-        paper-dialog {
-          font-size: 1.0em;
-          margin: 0 20px;
-          max-width: none;
-        }
-        paper-dialog .content {
-          margin-top: 10px;
-          padding: 0 16px !important;
+        .vertical-center {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
         }
         paper-button {
           color: var(--text-primary-color);
           background-color: var(--default-primary-color);
         }
-        .accent {
-          background-color: var(--accent-color);
-        }
       </style>
       <mwc-dialog id="dialog" heading="${this.line1}">
-        <div class="content">
+        <div class="vertical-center">
           ${this.line2 ? html`
           <p>${this.line2}</p>
           ` : ''}

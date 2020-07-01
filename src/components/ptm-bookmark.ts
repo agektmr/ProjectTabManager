@@ -101,6 +101,7 @@ export class PtmBookmark extends PtmBase {
         mwc-icon > img {
           width: var(--mdc-icon-size);
           height: var(--mdc-icon-size);
+          padding: 4px;
         }
         #star {
           color: #D3D3D3;

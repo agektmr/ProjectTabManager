@@ -48,13 +48,13 @@ body {
   /* --paper-menu-background-color: #fff;
   --menu-link-color:             #111111; */
 
+  /* mwc-list */
+  --mdc-list-side-padding: 0;
+
   /* mwc-list-item */
   --mdc-list-item-graphic-size: var(--mdc-icon-button-size);
-  --mdc-list-item-graphic-margin: 8px;
+  --mdc-list-item-graphic-margin: var(--mdc-list-side-padding);
   --mdc-list-item-meta-size: 16px;
-
-  /* mwc-list */
-  --mdc-list-side-padding: 8px;
 
   /* paper-icon-button */
   /* --paper-icon-button: {

@@ -42,9 +42,9 @@ import { PtmOptions } from './ptm-options';
 import { ProjectEntity } from '../ts/ProjectEntity';
 import { l10n } from '../ts/ChromeL10N';
 import { PtmDialogQueryString } from './ptm-dialog';
-import { PaperToastElement } from '@polymer/paper-toast';
 import { IronPagesElement } from '@polymer/iron-pages';
 import { IronMetaElement } from '@polymer/iron-meta';
+import { Snackbar } from '@material/mwc-snackbar';
 import { TabBar } from '@material/mwc-tab-bar';
 import { Menu } from '@material/mwc-menu';
 import { LinearProgress } from '@material/mwc-linear-progress';
@@ -94,7 +94,7 @@ export class PtmApp extends PtmBase {
   @property({
     type: Object
   })
-  toast: PaperToastElement | undefined
+  toast: Snackbar | undefined
 
   @property({
     type: Object
@@ -336,7 +336,7 @@ export class PtmApp extends PtmBase {
     // @ts-ignore
     this.addEventListener('show-toast', (e: CustomEvent) => {
       this.toastText = e.detail.text;
-      this.toast?.open();
+      this.toast?.show();
     });
     // @ts-ignore
     this.addEventListener('reload', this.reload);

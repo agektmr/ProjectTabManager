@@ -1,6 +1,6 @@
 {
   "name": "project-tab-manager",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "Project tab management per window on your Chrome",
   "main": "app/js/background.js",
   "repository": "https://github.com/agektmr/ProjectTabManager",

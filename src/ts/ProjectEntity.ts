@@ -42,6 +42,8 @@ export class ProjectEntity {
     if (!session && !bookmark)
       throw '[ProjectEntity] Invalid ProjectEntity creation.';
 
+    if (bookmark && session) session.setId(bookmark.id);
+
     this.id           = bookmark?.id || session?.id || '';
     this.session      = session;
     this.bookmark     = bookmark;
@@ -210,7 +212,8 @@ export class ProjectEntity {
    * - abondoning a session from linked project
    */
   public deassociateBookmark(): void {
-    this.id = `-${this.session?.id}`;
+    const projectId = this.session?.id;
+    this.id = projectId?.indexOf('-') === 0 ? projectId : `-${projectId}`;
     Util.log('[ProjectEntity] deassociated bookmark', this.bookmark);
     this.bookmark = undefined;
     this.title = this.session?.title || l10n('new_project');

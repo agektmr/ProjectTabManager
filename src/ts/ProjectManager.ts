@@ -120,8 +120,6 @@ export class ProjectManager {
         Util.log('[ProjectManager] failed to remove project %s from bookmark', projectId);
       }
     }
-    // Session might be non bound. Don't return promise directly.
-    this.sessionManager.removeSessionFromProjectId(projectId);
     Util.log('[ProjectManager] removed project %s from bookmark', projectId);
     return project;
   }

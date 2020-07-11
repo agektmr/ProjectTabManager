@@ -42,6 +42,8 @@ export class ProjectEntity {
     if (!session && !bookmark)
       throw '[ProjectEntity] Invalid ProjectEntity creation.';
 
+    if (bookmark && session) session.setId(bookmark.id);
+
     this.id           = bookmark?.id || session?.id || '';
     this.session      = session;
     this.bookmark     = bookmark;

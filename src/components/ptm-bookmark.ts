@@ -142,7 +142,7 @@ export class PtmBookmark extends PtmBase {
           id="star"
           icon="icons:star"
           @click="${this.onTapStar}"
-          ?bookmarked="${this.bookmarkId != 'undefined'}"
+          ?bookmarked="${this.bookmarkId != ''}"
           tabindex="-1">
         </paper-icon-button>
         `:''}
@@ -169,13 +169,13 @@ export class PtmBookmark extends PtmBase {
 
   private onTapStar(e: MouseEvent): void {
     e.stopPropagation();
-    if (this.tabId) {
-      this.fire('add-bookmark', {
-        tabId: this.tabId,
-      });
-    } if (this.bookmarkId) {
+    if (this.bookmarkId) {
       this.fire('remove-bookmark', {
         bookmarkId: this.bookmarkId
+      });
+    } else if (this.tabId) {
+      this.fire('add-bookmark', {
+        tabId: this.tabId,
       });
     }
   }

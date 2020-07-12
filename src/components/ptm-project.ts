@@ -139,7 +139,7 @@ export class PtmProject extends PtmBase {
           display: block;
         }
         mwc-list {
-          height: 32px;
+          height: var(--mdc-icon-button-size);
         }
         mwc-list[expanded] {
           height: auto;

@@ -219,7 +219,8 @@ export class PtmBookmark extends PtmBase {
   private extractDomain(
     url: string
   ): string {
-    let domain = url.replace(/^.*?:\/\/(.*?)\/.*$/, "$1");
+    const _url = new URL(url);
+    let domain = _url.hostname;
     // Special case, if Google Docs, it could be /spreadsheet, /document or /presentation
     if (/docs.google.com/.test(domain)) {
       domain = url.replace(/^.*?:\/\/(docs.google.com\/(a\/.*?\/)?.*?)\/.*$/, "$1");

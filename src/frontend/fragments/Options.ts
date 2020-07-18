@@ -1,5 +1,5 @@
 import { html } from 'lit-html';
-import '../../components/ptm-dialog';
+import './components/ptm-dialog';
 
 export const Options = (state) => {
   return html`

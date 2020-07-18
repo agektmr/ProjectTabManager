@@ -10,7 +10,7 @@ module.exports = {
   entry: {
     'js/background': './src/background/background.ts',
     'js/lazy': './src/frontend/lazy.ts',
-    'components/ptm-app': './src/components/ptm-app.ts',
+    'js/index': './src/frontend/index.ts',
     'styles/default-theme': './src/styles/default-theme.scss'
   },
   output: {

@@ -1,5 +1,5 @@
 import { html } from 'lit-html';
-import '../../components/ptm-project-linker';
+import './components/ptm-project-linker';
 
 const linkProject = e => {
 

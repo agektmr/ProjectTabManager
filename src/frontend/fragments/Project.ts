@@ -4,8 +4,8 @@ import { l10n } from '../ChromeL10N';
 import '@material/mwc-list';
 import '@material/mwc-icon-button';
 import '@material/mwc-icon-button-toggle';
-import '../../components/ptm-list-item';
-import '../../components/ptm-bookmark';
+import './components/ptm-list-item';
+import './components/ptm-bookmark';
 
 const toggle = e => {
   // Switch the status of `.expand` between `true` and `false`
@@ -120,6 +120,8 @@ export const Project = (project) => {
             </div>
           </div>
         </ptm-list-item>
+        <mwc-linear-progress
+          ?indeterminate="${project.loading}"></mwc-linear-progress>
         <iron-collapse id="collapse" ?opened="${project.expanded}">
           ${!project.fields.length ? html`
           <ptm-list-item graphic="icon">

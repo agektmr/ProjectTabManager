@@ -1,5 +1,12 @@
 import { html } from 'lit-html';
 
+import '@material/mwc-top-app-bar-fixed';
+import '@material/mwc-textfield';
+import '@material/mwc-tab';
+import '@material/mwc-tab-bar';
+import '@material/mwc-linear-progress';
+import '@material/mwc-snackbar';
+
 import { l10n } from '../ChromeL10N';
 import { Dialog } from './Dialog';
 import { Menu } from './Menu';
@@ -34,9 +41,6 @@ export const App = (state) => {
         <mwc-tab label="${l10n('sessions')}"></mwc-tab>
         <mwc-tab label="${l10n('projects')}"></mwc-tab>
       </mwc-tab-bar>
-      <mwc-linear-progress
-        id="progress"
-        ?indeterminate="${state.loading}"></mwc-linear-progress>
     </mwc-top-app-bar-fixed>
     <section>
       ${state.projects.map(project => Project(project))}

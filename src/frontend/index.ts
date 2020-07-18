@@ -1,7 +1,6 @@
 import { render } from 'lit-html';
-import { init } from './actions/actions.js';
 import { store } from './store/store.js';
-import { App } from './components/App.js';
+import { App } from './fragments/App.js';
 
 store.dispatch(init());
 

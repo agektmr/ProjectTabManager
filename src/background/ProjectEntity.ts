@@ -21,7 +21,7 @@ import { SessionEntity } from './SessionEntity'
 import { TabEntity } from './TabEntity';
 import { BookmarkManager } from './BookmarkManager';
 import { Util } from './Util';
-import { l10n } from './ChromeL10N';
+import { l10n } from '../frontend/ChromeL10N';
 
 /**
  * [ProjectEntity description]

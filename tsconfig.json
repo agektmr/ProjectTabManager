@@ -64,7 +64,7 @@
     "forceConsistentCasingInFileNames": true,  /* Disallow inconsistently-cased references to the same file. */
   },
   "include": [
-    "src/ts/*.ts",
-    "src/components/*.ts", "_backup/ptm-session_.ts"
+    "src/background/*.ts",
+    "src/components/*.ts", "_backup/ptm-session_.ts", "src/background/background.ts"
   ]
 }

@@ -84,6 +84,11 @@ export class PtmBookmark extends PtmBase {
   })
   bookmarkId: string = ''
 
+  @property({
+    type: Boolean
+  })
+  hover: boolean = false
+
   render () {
     return html`
       <style>
@@ -112,15 +117,19 @@ export class PtmBookmark extends PtmBase {
       </style>
       <ptm-list-item
         graphic="icon"
-        tabindex="-1" hasMeta>
-        <mwc-icon slot="graphic">
-          <img src="${navigator.onLine && this.favIconUrl ? this.favIconUrl : PtmBookmark.DEFAULT_FAVICON_URL}">
+        tabindex="-1"
+        @mouseover="${this.onMouseOver}"
+        @mouseout="${this.onMouseOut}"
+        hasMeta>
+        <mwc-icon slot="graphic" @click="${this.onTapClose}">
+          ${!this.hover ? html`
+          <img src="${this.favIconUrl ? this.favIconUrl : PtmBookmark.DEFAULT_FAVICON_URL}">`:html`
+          <svg viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" focusable="false" style="pointer-events: none; display: block; width: 100%; height: 100%;"><g id="close"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></g></svg>`}
         </mwc-icon>
         <div class="title" @click="${this.open}" ?active="${!!this.tabId}">
           <span>${this.siteTitle}</span>
           <paper-tooltip>${this.siteTitle}<br/>${this.url}</paper-tooltip>
         </div>
-        <!--Why this?-->
         ${this.projectId.indexOf('-') === -1 ? html`
         <mwc-icon-button
           id="star"
@@ -129,8 +138,7 @@ export class PtmBookmark extends PtmBase {
           ?bookmarked="${this.bookmarkId != ''}"
           tabindex="-1">
           <svg viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" focusable="false" style="pointer-events: none; display: block; width: 100%; height: 100%;"><g><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></g></svg>
-        </mwc-icon-button>
-        `:''}
+        </mwc-icon-button>`:''}
       </ptm-list-item>`
   }
 
@@ -150,6 +158,23 @@ export class PtmBookmark extends PtmBase {
       tabId: this.tabId,
       url: this.url
     });
+  }
+
+  private onMouseOver(e: MouseEvent): void {
+    this.hover = true;
+  }
+
+  private onMouseOut(e: MouseEvent): void {
+    this.hover = false;
+  }
+
+  private onTapClose(e: MouseEvent): void {
+    e.stopPropagation();
+    if (this.tabId) {
+      this.fire('close-tab', {
+        tabId: this.tabId
+      });
+    }
   }
 
   private onTapStar(e: MouseEvent): void {

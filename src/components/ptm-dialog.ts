@@ -18,7 +18,7 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 
 import { html, customElement, property } from "lit-element";
 import { PtmBase } from './ptm-base';
-import { l10n } from '../ts/ChromeL10N';
+import { l10n } from '../frontend/ChromeL10N';
 import { IronMeta } from '@polymer/iron-meta/iron-meta';
 import '@material/mwc-dialog';
 import '@material/mwc-textfield';

@@ -75,6 +75,7 @@
     "lit-element": "^2.3.1",
     "lit-html": "^1.2.1",
     "material-design-icons": "^3.0.1",
+    "redux": "^4.0.5",
     "web-animations-js": "^2.3.2"
   }
 }

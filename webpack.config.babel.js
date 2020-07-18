@@ -8,8 +8,8 @@ module.exports = {
   mode: "development",
   devtool: 'inline-source-map',
   entry: {
-    'js/background': './src/ts/background.ts',
-    'js/lazy': './src/ts/lazy.ts',
+    'js/background': './src/background/background.ts',
+    'js/lazy': './src/frontend/lazy.ts',
     'components/ptm-app': './src/components/ptm-app.ts',
     'styles/default-theme': './src/styles/default-theme.scss'
   },

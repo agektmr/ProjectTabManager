@@ -17,8 +17,8 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 **/
 
 import { html, customElement, property } from "lit-element";
-import { l10n } from '../ts/ChromeL10N';
-import { FieldEntity } from "../ts/FieldEntity";
+import { l10n } from '../frontend/ChromeL10N';
+import { FieldEntity } from "../background/FieldEntity";
 
 import './ptm-bookmark';
 import './ptm-list-item';

@@ -54,6 +54,6 @@ Of course, [reporting bugs and feature requests](https://chrome.google.com/webst
 
 If you are a developer and thinking about contribution, head to [the github page](https://github.com/agektmr/ProjectTabManager).
 
-See [changelog](CHANGELOG.html)
+See [changelog](CHANGELOG.md)
 
 ----

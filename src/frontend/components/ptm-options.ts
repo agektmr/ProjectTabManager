@@ -16,11 +16,11 @@ limitations under the License.
 Author: Eiji Kitamura (agektmr@gmail.com)
 **/
 
-/// <reference path="../../node_modules/@types/chrome/index.d.ts" />
+/// <reference path="../../../node_modules/@types/chrome/index.d.ts" />
 
 import { html, customElement, property } from "lit-element";
-import { SyncConfig } from '../background/Config';
-import { l10n } from '../frontend/ChromeL10N';
+import { SyncConfig } from '../../background/Config';
+import { l10n } from '../ChromeL10N';
 
 import '@material/mwc-select';
 import '@material/mwc-list/mwc-list-item';

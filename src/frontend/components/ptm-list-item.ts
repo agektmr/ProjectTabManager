@@ -15,9 +15,9 @@
  limitations under the License.
  */
 
+import {html, LitElement, customElement, property, query} from 'lit-element';
 import {observer} from '@material/mwc-base/observer';
 import {rippleNode} from '@material/mwc-ripple/ripple-directive';
-import {html, LitElement, customElement, property, query} from 'lit-element';
 import {style} from '@material/mwc-list/mwc-list-item-css.js';
 
 export type SelectionSource = 'interaction'|'property';

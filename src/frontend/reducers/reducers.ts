@@ -1,30 +1,13 @@
 import { combineReducers } from 'redux';
-
-const controls = (state = [], action) => {
-
-};
-
-const projects = (state = [], action) => {
-  switch (action.type) {
-    case '':
-  }
-};
-
-const config = (state = [], action) => {
-
-};
-
-const linker = (state = [], action) => {
-
-};
-
-const dialog = (state = [], action) => {
-
-};
+import { controls } from './controls';
+import { dialog } from './dialog';
+import { linker } from './linker';
+import { options } from './options';
+import { projects } from './projects';
 
 export const reducers = combineReducers({
   controls,
-  config,
+  options,
   linker,
   dialog,
   projects,

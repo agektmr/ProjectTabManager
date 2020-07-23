@@ -16,7 +16,7 @@ limitations under the License.
 Author: Eiji Kitamura (agektmr@gmail.com)
 **/
 
-/// <reference path="../../node_modules/@types/chrome/index.d.ts" />
+/// <reference path="../../../node_modules/@types/chrome/index.d.ts" />
 
 import { html, customElement, property } from 'lit-element';
 

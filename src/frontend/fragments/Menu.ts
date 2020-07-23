@@ -2,21 +2,21 @@ import { html } from 'lit-html';
 
 import { l10n } from '../ChromeL10N';
 
-import './components/ptm-project-linker';
+import '../components/ptm-project-linker';
 
-const reload = e => {
-
-};
-
-const manageBookmarks = e => {
+const reload = (e: CustomEvent) => {
 
 };
 
-const openSettings = e => {
+const manageBookmarks = (e: CustomEvent) => {
 
 };
 
-const openHelp = e => {
+const openSettings = (e: CustomEvent) => {
+
+};
+
+const openHelp = (e: CustomEvent) => {
 
 };
 

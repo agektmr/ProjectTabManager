@@ -8,32 +8,46 @@ import '@material/mwc-linear-progress';
 import '@material/mwc-snackbar';
 
 import { l10n } from '../ChromeL10N';
-import { Dialog } from './Dialog';
+import { Dialog, DialogState } from './Dialog';
 import { Menu } from './Menu';
-import { Linker } from './Linker';
-import { Options } from './Options';
-import { Project } from './Project';
+import { Linker, LinkerState } from './Linker';
+import { Options, OptionsState } from './Options';
+import { Project, ProjectState } from './Project';
 
-const onChangeTab = e => {
+export interface ControlsState {
+  query: string
+  labelText: string
+  selectedTab: number
+}
+
+export interface AppState {
+  controls: ControlsState
+  dialog: DialogState
+  linker: LinkerState
+  options: OptionsState
+  projects: ProjectState[]
+}
+
+const onChangeTab = (e: CustomEvent) => {
 
 };
 
-const queryChanged = e => {
+const queryChanged = (e: CustomEvent) => {
 
 };
 
-export const App = (state) => {
+export const App = (state: AppState) => {
   return html`
     ${Dialog(state.dialog)}
-    ${Options(state.dialog)}
-    ${Linker(state.dialog)}
+    ${Options(state.options)}
+    ${Linker(state.linker)}
     <mwc-top-app-bar-fixed>
       <mwc-textfield
         id="search"
         slot="title"
         placeholder="Project Tab Manager"
         @keyup="${queryChanged}"
-        value="${state.query}"
+        value="${state.controls.query}"
         fullwidth>
       </mwc-textfield>
       ${Menu()}
@@ -48,6 +62,6 @@ export const App = (state) => {
     <mwc-snackbar
       id="toast"
       duration="3000"
-      labelText="${state.toastText}">
+      labelText="${state.controls.labelText}">
     </mwc-snackbar>`;
 }

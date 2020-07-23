@@ -4,47 +4,66 @@ import { l10n } from '../ChromeL10N';
 import '@material/mwc-list';
 import '@material/mwc-icon-button';
 import '@material/mwc-icon-button-toggle';
-import './components/ptm-list-item';
-import './components/ptm-bookmark';
+import '../components/ptm-list-item';
+import '../components/ptm-bookmark';
 
-const toggle = e => {
+export interface TabState {
+  bookmarkId?: string
+  tabId?: number
+  title?: string
+  url?: string
+  pinned: boolean
+  favIconUrl?: string
+}
+
+export interface ProjectState {
+  id: string
+	title: string
+	expanded: boolean
+  focused: boolean
+	loading: boolean
+  winId?: number
+  fields: TabState[]
+}
+
+const toggle = (e: CustomEvent) => {
   // Switch the status of `.expand` between `true` and `false`
   // At the same time, if `.fields` are not loaded, load them before `true`.
 };
 
-const openProject = e => {
+const openProject = (e: CustomEvent) => {
   // Open the project from background.
 };
 
-const onTapRemove = e => {
+const onTapRemove = (e: CustomEvent) => {
   // Remove the project after confirmation.
   // Use the dialog to confirm.
 };
 
-const onTapLink = e => {
+const onTapLink = (e: CustomEvent) => {
   // Link the project to another project.
   // Use the linker to find the project to link to.
 };
 
-const onTapNewProject = e => {
+const onTapNewProject = (e: CustomEvent) => {
   // Create a new project.
   // Use the dialog to determine the name.
 };
 
-const onTapRename = e => {
+const onTapRename = (e: CustomEvent) => {
   // Rename the project.
   // Use the dialog to change the name.
 };
 
-const addBookmark = e => {
+const addBookmark = (e: CustomEvent) => {
   // Add bookmark.
 };
 
-const removeBookmark = e => {
+const removeBookmark = (e: CustomEvent) => {
   // Remove bookmark.
 };
 
-export const Project = (project) => {
+export const Project = (project: ProjectState) => {
   return html`
     <section>
     <style>

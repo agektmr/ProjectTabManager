@@ -3,31 +3,7 @@ import { l10n } from '../ChromeL10N';
 
 import '../components/ptm-dialog';
 
-export interface OptionsState {
-  lazyLoad: boolean
-  rootName: string
-  rootParentId: string
-  rootFolders: chrome.bookmarks.BookmarkTreeNode[]
-  maxSessions: number
-  open: boolean
-}
-
-interface OptionsSaveAction {
-  type: 'OPTIONS_SAVE'
-  lazyLoad: boolean
-  rootName: string
-  rootParentId: string
-  maxSessions: number
-  option: boolean
-}
-
-interface OptionsCloseAction {
-  type: 'OPTIONS_CLOSE'
-}
-
-export type OptionsActionTypes =
-  OptionsSaveAction |
-  OptionsCloseAction;
+import { OptionsState } from '../../types/types';
 
 const onClose = (e: CustomEvent) => {
 

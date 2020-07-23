@@ -1,15 +1,15 @@
-import { LinkerState, LinkerActionTypes } from '../fragments/Linker';
+import { LinkerState, LinkerActionTypes } from '../../types/types';
 
 export const linker = (
   state: LinkerState,
-  action: LinkerActionTypes
+  action: LinkerActionTypes,
 ): LinkerState => {
   switch (action.type) {
-    case 'LINKER_LINK':
+    case 'LINK_LINKER':
       break;
-    case 'LINKER_UNLINK':
+    case 'UNLINK_LINKER':
       break;
-    case 'LINKER_CLOSE':
+    case 'CLOSE_LINKER':
       break;
   }
   return state;

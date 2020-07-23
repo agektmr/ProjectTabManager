@@ -7,24 +7,7 @@ import '@material/mwc-icon-button-toggle';
 import '../components/ptm-list-item';
 import '../components/ptm-bookmark';
 
-export interface TabState {
-  bookmarkId?: string
-  tabId?: number
-  title?: string
-  url?: string
-  pinned: boolean
-  favIconUrl?: string
-}
-
-export interface ProjectState {
-  id: string
-	title: string
-	expanded: boolean
-  focused: boolean
-	loading: boolean
-  winId?: number
-  fields: TabState[]
-}
+import { ProjectState } from '../../types/types';
 
 const toggle = (e: CustomEvent) => {
   // Switch the status of `.expand` between `true` and `false`
@@ -53,6 +36,10 @@ const onTapNewProject = (e: CustomEvent) => {
 const onTapRename = (e: CustomEvent) => {
   // Rename the project.
   // Use the dialog to change the name.
+};
+
+const closeTab = (e: CustomEvent) => {
+
 };
 
 const addBookmark = (e: CustomEvent) => {

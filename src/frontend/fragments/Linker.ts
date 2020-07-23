@@ -1,30 +1,7 @@
 import { html } from 'lit-html';
 import { l10n } from '../ChromeL10N';
-import { ProjectState } from './Project';
+import { LinkerState } from '../../types/types';
 import '../components/ptm-project-linker';
-
-export interface LinkerState {
-  linkingProjectId: string
-  projects: ProjectState[]
-  open: boolean
-}
-
-interface LinkerLinkAction {
-  type: 'LINKER_LINK'
-}
-
-interface LinkerUnlinkAction {
-  type: 'LINKER_UNLINK'
-}
-
-interface LinkerCloseAction {
-  type: 'LINKER_CLOSE'
-}
-
-export type LinkerActionTypes =
-  LinkerLinkAction |
-  LinkerUnlinkAction |
-  LinkerCloseAction;
 
 const onLink = (e: CustomEvent) => {
 
@@ -90,15 +67,15 @@ export const Linker = (state: LinkerState) => {
     </style>
     <mwc-dialog id="dialog" heading="${l10n('link_session_to_a_project')}">
       <mwc-list>
-        ${state.projects.map(project => !!project.bookmark ? html`
+        ${state.projects.map(project => !!project.projectId ? html`
         <ptm-list-item
           @click="${onLink}"
-          ?data-session="${!!project.session}"
+          ?data-session="${!!project.winId}"
           data-project-id="${project.id}"
           hasMeta>
           <span class="title">${project.title}</span>
           <mwc-icon-button slot="meta">
-            ${project.session ? html`<img src="../img/link.svg">`:``}
+            ${!!project.winId ? html`<img src="../img/link.svg">`:``}
           </mwc-icon-button>
         </ptm-list-item>`:'')}
       </mwc-list>

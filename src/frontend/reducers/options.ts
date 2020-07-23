@@ -1,13 +1,13 @@
-import { OptionsState, OptionsActionTypes } from '../fragments/Options';
+import { OptionsState, OptionsActionTypes } from '../../types/types';
 
 export const options = (
   state: OptionsState,
-  action: OptionsActionTypes
+  action: OptionsActionTypes,
 ): OptionsState => {
   switch (action.type) {
-    case 'OPTIONS_SAVE':
+    case 'SAVE_OPTIONS':
       break;
-    case 'OPTIONS_CLOSE':
+    case 'CLOSE_OPTIONS':
       break;
   }
   return state;

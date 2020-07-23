@@ -1,8 +1,8 @@
-import { ControlsState } from '../fragments/App';
+import { ControlsState, ControlsActionTypes } from '../../types/types';
 
 export const controls = (
   state: ControlsState,
-  action
+  action: ControlsActionTypes,
 ): ControlsState => {
   return state;
 };

@@ -7,26 +7,19 @@ import '@material/mwc-tab-bar';
 import '@material/mwc-linear-progress';
 import '@material/mwc-snackbar';
 
+import {
+  AppState,
+  DialogState,
+  LinkerState,
+  OptionsState,
+  ProjectState
+} from '../../types/types';
 import { l10n } from '../ChromeL10N';
-import { Dialog, DialogState } from './Dialog';
+import { Dialog } from './Dialog';
 import { Menu } from './Menu';
-import { Linker, LinkerState } from './Linker';
-import { Options, OptionsState } from './Options';
-import { Project, ProjectState } from './Project';
-
-export interface ControlsState {
-  query: string
-  labelText: string
-  selectedTab: number
-}
-
-export interface AppState {
-  controls: ControlsState
-  dialog: DialogState
-  linker: LinkerState
-  options: OptionsState
-  projects: ProjectState[]
-}
+import { Linker } from './Linker';
+import { Options } from './Options';
+import { Project } from './Project';
 
 const onChangeTab = (e: CustomEvent) => {
 

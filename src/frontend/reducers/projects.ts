@@ -1,11 +1,11 @@
-import { ProjectState } from '../fragments/Project';
+import { ProjectState, ProjectActionTypes } from '../../types/types';
+import { ProjectEntity } from '../../background/ProjectEntity';
 
 export const projects = (
   state: ProjectState[] = [],
-  action
+  action: ProjectActionTypes,
 ): ProjectState[] => {
   switch (action.type) {
-    case '':
   }
   return state;
 };

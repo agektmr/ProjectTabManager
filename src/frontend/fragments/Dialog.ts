@@ -4,30 +4,7 @@ import '@material/mwc-dialog';
 import '@material/mwc-button';
 import '@material/mwc-textfield';
 
-export interface DialogState {
-  line1: string
-	line2?: string
-  placeholder?: string
-  answer?: string
-  okay: string
-  cancel: string
-  isPrompt: boolean
-  confirmed?: Function
-  canceled?: Function
-  open: boolean
-}
-
-interface DialogConfirmAction {
-  type: 'DIALOG_CONFIRM'
-}
-
-interface DialogCancelAction {
-  type: 'DIALOG_CANCEL'
-}
-
-export type DialogActionTypes =
-  DialogConfirmAction |
-  DialogCancelAction;
+import { DialogState } from '../../types/types';
 
 const onConfirmed = (e: CustomEvent) => {
 

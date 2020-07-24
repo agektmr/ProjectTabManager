@@ -1,22 +1,16 @@
+/**
+ * Controls
+ */
+
 export interface ControlsState {
   query: string
   labelText: string
   selectedTab: number
 }
 
-interface SearchControlsAction {
-  type: 'SEARCH_CONTROL'
-  query: string
-}
-
-interface ChangeTabControlsAction {
-  type: 'CHANGE_TAB_CONTROL'
-  selectedTab: number
-}
-
-export type ControlsActionTypes =
-  SearchControlsAction |
-  ChangeTabControlsAction;
+/**
+ * Dialog
+ */
 
 export interface DialogState {
   line1: string
@@ -31,6 +25,10 @@ export interface DialogState {
   open: boolean
 }
 
+interface InitDialogAction {
+  type: 'INIT_DIALOG'
+}
+
 interface ConfirmDialogAction {
   type: 'CONFIRM_DIALOG'
 }
@@ -40,9 +38,13 @@ interface CancelDialogAction {
 }
 
 export type DialogActionTypes =
+  InitDialogAction |
   ConfirmDialogAction |
   CancelDialogAction;
 
+/**
+ * Linker
+ */
 
 export interface LinkerState {
   linkingProjectId: string
@@ -50,8 +52,18 @@ export interface LinkerState {
   open: boolean
 }
 
+interface InitLinkerAction {
+  type: 'INIT_LINKER'
+}
+
+interface OpenLinkerAction {
+  type: 'OPEN_LINKER'
+  projectId: string
+}
+
 interface LinkLinkerAction {
   type: 'LINK_LINKER'
+  projectId: string
 }
 
 interface UnlinkLinkerAction {
@@ -63,9 +75,15 @@ interface CloseLinkerAction {
 }
 
 export type LinkerActionTypes =
+  InitLinkerAction |
+  OpenLinkerAction |
   LinkLinkerAction |
   UnlinkLinkerAction |
   CloseLinkerAction;
+
+/**
+ * Options
+ */
 
 export interface OptionsState {
   lazyLoad: boolean
@@ -76,13 +94,20 @@ export interface OptionsState {
   open: boolean
 }
 
+interface InitOptionsAction {
+  type: 'INIT_OPTIONS'
+}
+
+interface OpenOptionsAction {
+  type: 'OPEN_OPTIONS'
+}
+
 interface SaveOptionsAction {
   type: 'SAVE_OPTIONS'
-  lazyLoad: boolean
-  rootName: string
-  rootParentId: string
-  maxSessions: number
-  option: boolean
+  lazyLoad?: boolean
+  rootName?: string
+  rootParentId?: string
+  maxSessions?: number
 }
 
 interface CloseOptionsAction {
@@ -90,8 +115,14 @@ interface CloseOptionsAction {
 }
 
 export type OptionsActionTypes =
+  InitOptionsAction |
+  OpenOptionsAction |
   SaveOptionsAction |
   CloseOptionsAction;
+
+/**
+ * Project
+ */
 
 export interface ProjectState {
   id: string
@@ -104,13 +135,18 @@ export interface ProjectState {
   fields: TabState[]
 }
 
+interface InitProjectsAction {
+  type: 'INIT_PROJECTS'
+}
+
 interface ToggleProjectAction {
   type: 'TOGGLE_PROJECT'
 }
 
 interface OpenProjectAction {
   type: 'OPEN_PROJECT'
-  projectId: string
+  winId?: number
+  projectId?: string
 }
 
 interface RemoveProjectAction {
@@ -134,12 +170,17 @@ interface RenameProjectAction {
 }
 
 export type ProjectActionTypes =
+  InitProjectsAction |
   ToggleProjectAction |
   OpenProjectAction |
   RemoveProjectAction |
   LinkProjectAction |
   CreateProjectAction |
   RenameProjectAction;
+
+/**
+ * Tab
+ */
 
 export interface TabState {
   bookmarkId?: string
@@ -170,6 +211,10 @@ export type TabActionTypes =
   AddBookmarkAction |
   RemoveBookmarkAction;
 
+/**
+ * App
+ */
+
 export interface AppState {
   controls: ControlsState
   dialog: DialogState
@@ -177,3 +222,37 @@ export interface AppState {
   options: OptionsState
   projects: ProjectState[]
 }
+
+interface InitAppAction {
+  type: 'INIT_APP'
+}
+
+interface ReloadAppAction {
+  type: 'RELOAD_APP'
+}
+
+interface OpenBookmarksAppAction {
+  type: 'OPEN_BOOKMARKS_APP'
+}
+
+interface OpenHelpAppAction {
+  type: 'OPEN_HELP_APP'
+}
+
+interface SearchAppAction {
+  type: 'SEARCH_APP'
+  query: string
+}
+
+interface ChangeTabAppAction {
+  type: 'CHANGE_TAB_APP'
+  selectedTab: number
+}
+
+export type AppActionTypes =
+  InitAppAction |
+  ReloadAppAction |
+  OpenBookmarksAppAction |
+  OpenHelpAppAction |
+  SearchAppAction |
+  ChangeTabAppAction;

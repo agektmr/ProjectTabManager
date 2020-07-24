@@ -4,14 +4,15 @@ import '@material/mwc-dialog';
 import '@material/mwc-button';
 import '@material/mwc-textfield';
 
-import { DialogState } from '../../types/types';
+import { DialogState } from '../store/types';
+import { confirmDialog, cancelDialog } from '../store/actions';
 
 const onConfirmed = (e: CustomEvent) => {
-
+  confirmDialog();
 };
 
 const onCanceled = (e: CustomEvent) => {
-
+  cancelDialog();
 };
 
 export const Dialog = (dialog: DialogState) => {

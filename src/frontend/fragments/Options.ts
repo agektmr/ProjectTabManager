@@ -1,65 +1,47 @@
 import { html } from 'lit-html';
 import { l10n } from '../ChromeL10N';
 
-import '../components/ptm-dialog';
+import '@material/mwc-dialog';
+import '@material/mwc-select';
+import '@material/mwc-list/mwc-list-item';
+import '@material/mwc-textfield';
+import '@material/mwc-switch';
+import '@material/mwc-button';
 
-import { OptionsState } from '../../types/types';
+import { Switch } from '@material/mwc-switch';
+import { Select } from '@material/mwc-select';
+import { TextField } from '@material/mwc-textfield';
+import { OptionsState } from '../store/types';
+import { closeOptions, saveOptions } from '../store/actions';
 
-const onClose = (e: CustomEvent) => {
-
+const onClose = () => {
+  closeOptions();
 };
 
-const onSave = (e: CustomEvent) => {
-
+const onSave = () => {
+  const rootParentId = document.querySelector('#rootParentId');
+  const rootName = document.querySelector('#rootName');
+  const lazyLoad = document.querySelector('#lazyLoad');
+  const _maxSessions = document.querySelector('#maxSessions');
+  const maxSessions = parseInt((<Select>_maxSessions)?.value) || undefined;
+  saveOptions(
+    (<Switch>lazyLoad)?.checked,
+    (<TextField>rootName)?.value,
+    (<Select>rootParentId)?.value,
+    maxSessions);
 };
 
 export const Options = (state: OptionsState) => {
   const rootParent = parseInt(state.rootParentId) - 1;
   const rootName = state.rootName || 'Project Tab Manager';
   return html`
-    <style>
-      :host {
-        font-size: 1.0em;
-      }
-      iron-icon {
-        width: 16px;
-        height: 16px;
-        margin-right: 4px;
-      }
-      paper-dialog {
-        font-size: 1.0em;
-        margin: 0 20px;
-        max-width: none;
-      }
-      paper-item {
-        cursor: pointer;
-        padding: 0 16px;
-        margin: 0;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
-      }
-      p {
-        color: var(--secondary-text-color);
-      }
-      paper-button {
-        color: var(--text-primary-color);
-        background-color: var(--default-primary-color);
-      }
-      .accent {
-        color: var(--text-primary-color);
-        background-color: var(--accent-color);
-      }
-      .buttons {
-        padding: 10px 5px 10px 10px;
-      }
-    </style>
-    <mwc-dialog id="dialog" heading="${l10n('settings')}">
+    <mwc-dialog heading="${l10n('settings')}" ?open="${state.open}">
       <mwc-select
-        id="root"
+        id="rootParentId"
         label="${l10n('root_folder_location')}">
-        ${state.rootFolders?.map((item, i) => html`
+        ${state.rootFolders.map((item, i) => html`
         <mwc-list-item
+          value="${item.id}"
           ?selected="${rootParent === i}">
           ${item.title}
         </mwc-list-item>`)}
@@ -74,14 +56,20 @@ export const Options = (state: OptionsState) => {
         ${l10n('disable_lazy_load')}
       </mwc-switch>
       <p>${l10n('disable_lazy_load_help')}</p>
-      <mwc-select id="max_sessions" label="${l10n('maximum_sessions')}">
-        <mwc-list-item ?selected="${state.maxSessions === -1}">
+      <mwc-select id="maxSessions" label="${l10n('maximum_sessions')}">
+        <mwc-list-item
+          value="-1"
+          ?selected="${state.maxSessions === -1}">
           ${l10n('unlimited')}
         </mwc-list-item>
-        <mwc-list-item ?selected="${state.maxSessions === 5}">
+        <mwc-list-item
+          value="5"
+          ?selected="${state.maxSessions === 5}">
           5
         </mwc-list-item>
-        <mwc-list-item ?selected="${state.maxSessions === 10}">
+        <mwc-list-item
+          value="10"
+          ?selected="${state.maxSessions === 10}">
           10
         </mwc-list-item>
       </mwc-select><br/>

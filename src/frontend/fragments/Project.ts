@@ -7,53 +7,95 @@ import '@material/mwc-icon-button-toggle';
 import '../components/ptm-list-item';
 import '../components/ptm-bookmark';
 
-import { ProjectState } from '../../types/types';
+import { ProjectState } from '../store/types';
+import {
+  openLinker,
+  openProject,
+  removeProject,
+  renameProject,
+  createProject,
+  closeTab,
+  addBookmark,
+  removeBookmark,
+} from '../store/actions';
+import { store } from '../store/store';
 
-const toggle = (e: CustomEvent) => {
+const toggle = (e: CustomEvent): void => {
   // Switch the status of `.expand` between `true` and `false`
   // At the same time, if `.fields` are not loaded, load them before `true`.
 };
 
-const openProject = (e: CustomEvent) => {
-  // Open the project from background.
+const onOpenProject = (e: CustomEvent): void => {
+  const _winId = (<HTMLElement>e.target).dataset.winId;
+  const winId = _winId ? parseInt(_winId) : undefined;
+  const projectId = (<HTMLElement>e.target).dataset.projectId;
+  if (!projectId) {
+    console.error('[Project.onOpenProject] Project id not found');
+    return;
+  }
+
+  // Open a project or a session window.
+  // TODO: I don't know why if I remove this line gets error.
+  // @ts-ignore
+  store.dispatch(openProject(winId, projectId));
 };
 
-const onTapRemove = (e: CustomEvent) => {
+const onRemoveProject = (e: CustomEvent) => {
   // Remove the project after confirmation.
   // Use the dialog to confirm.
+
+  const projectId = (<HTMLElement>e.target).dataset.projectId;
+  if (projectId) store.dispatch(removeProject(projectId));
 };
 
-const onTapLink = (e: CustomEvent) => {
+const onLinkProject = (e: CustomEvent) => {
   // Link the project to another project.
   // Use the linker to find the project to link to.
+
+  // const projectId = // TODO:
+  // openLinker(projectId);
 };
 
-const onTapNewProject = (e: CustomEvent) => {
+const onCreateProject = (e: CustomEvent) => {
   // Create a new project.
   // Use the dialog to determine the name.
+
+  // const winId = // TODO:
+  // store.dispatch(createProject(winId));
 };
 
-const onTapRename = (e: CustomEvent) => {
+const onRenameProject = (e: CustomEvent) => {
   // Rename the project.
   // Use the dialog to change the name.
+
+  // const projectId = // TODO:
+  // store.dispatch(renameProject(projectId));
 };
 
-const closeTab = (e: CustomEvent) => {
+const onCloseTab = (e: CustomEvent) => {
 
+  // const tabId = //TODO:
+  // store.dispatch(closeTab(tabId));
 };
 
-const addBookmark = (e: CustomEvent) => {
+const onAddBookmark = (e: CustomEvent) => {
   // Add bookmark.
+
+  // const tabId = //TODO:
+  // store.dispatch(addBookmark(tabId));
 };
 
-const removeBookmark = (e: CustomEvent) => {
+const onRemoveBookmark = (e: CustomEvent) => {
   // Remove bookmark.
+
+  // const bookmarkId = //TODO:
+  // store.dispatch(removeBookmark(bookmarkId));
 };
 
 export const Project = (project: ProjectState) => {
   return html`
     <section>
-    <style>
+      <style>
         .content {
           display: flex;
           align-items: center;
@@ -96,30 +138,32 @@ export const Project = (project: ProjectState) => {
           <div class="content">
             <div
               class="title"
-              @click="${openProject}"
+              data-win-id="${project.winId}"
+              data-project-id="${project.projectId}"
+              @click="${onOpenProject}"
               ?active="${!!project.winId}">
               <span>${project.title}</span>
             </div>
             <div class="buttons">
               ${!project.winId ? html`
               <mwc-icon-button
-                @click="${onTapRemove}"
+                @click="${onRemoveProject}"
                 title="${l10n('remove')}">
                 <img src="../img/delete.svg">
               </mwc-icon-button>`:''}
               <mwc-icon-button
-                @click="${onTapLink}"
+                @click="${onLinkProject}"
                 title="${l10n('link_session_to_a_project')}">
                 <img src="../img/link.svg">
               </mwc-icon-button>
               ${project.id.indexOf('-') === -1 ? html`
               <mwc-icon-button
-                @click="${onTapRename}"
+                @click="${onRenameProject}"
                 title="${l10n('edit')}">
                 <img src="../img/create.svg">
               </mwc-icon-button>`:html`
               <mwc-icon-button
-                @click="${onTapNewProject}"
+                @click="${onCreateProject}"
                 title="${l10n('create_a_new_project')}">
                 <img src="../img/folder-special.svg">
               </mwc-icon-button>`}
@@ -147,8 +191,8 @@ export const Project = (project: ProjectState) => {
             tab-id="${field.tabId || ''}"
             site-title="${field.title}"
             project-id="${project.id}"
-            @add-bookmark="${addBookmark}"
-            @remove-bookmark="${removeBookmark}">
+            @add-bookmark="${onAddBookmark}"
+            @remove-bookmark="${onRemoveBookmark}">
           </ptm-bookmark>`)}
         </iron-collapse>
       </mwc-list>

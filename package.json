@@ -21,6 +21,7 @@
     "@babel/preset-env": "^7.9.6",
     "@babel/register": "^7.9.0",
     "@types/chrome": "0.0.107",
+    "@types/redux-logger": "^3.0.8",
     "babel-loader": "^8.1.0",
     "concat-files": "^0.1.1",
     "copy-webpack-plugin": "^5.1.1",
@@ -76,6 +77,8 @@
     "lit-html": "^1.2.1",
     "material-design-icons": "^3.0.1",
     "redux": "^4.0.5",
+    "redux-logger": "^3.0.6",
+    "redux-thunk": "^2.3.0",
     "web-animations-js": "^2.3.2"
   }
 }

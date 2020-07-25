@@ -227,6 +227,10 @@ interface InitAppAction {
   type: 'INIT_APP'
 }
 
+interface OpenMenuAppAction {
+  type: 'OPEN_MENU_APP'
+}
+
 interface ReloadAppAction {
   type: 'RELOAD_APP'
 }
@@ -251,6 +255,7 @@ interface ChangeTabAppAction {
 
 export type AppActionTypes =
   InitAppAction |
+  OpenMenuAppAction |
   ReloadAppAction |
   OpenBookmarksAppAction |
   OpenHelpAppAction |

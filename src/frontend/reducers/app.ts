@@ -1,17 +1,17 @@
-import { AppState, AppActionTypes } from '../store/types';
+import { ControlsState, AppActionTypes } from '../store/types';
 
 export const controls = (
-  state: AppState,
-  action: AppActionTypes,
-): AppState => {
-  switch (action.type) {
-    case 'INIT_APP':
-      const controls = {
+  state: ControlsState = {
         query: '',
         labelText: '',
-        selectedTab: 0
-      };
-      return { ...state, controls, }
+        selectedTab: 0,
+      },
+  action: AppActionTypes,
+): ControlsState => {
+  switch (action.type) {
+    // case 'OPEN_MENU_APP':
+    //   state.options.open = true;
+    //   return state;
   }
   return state;
 };

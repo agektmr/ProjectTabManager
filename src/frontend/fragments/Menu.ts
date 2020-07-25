@@ -6,19 +6,24 @@ import '../components/ptm-list-item';
 
 import { l10n } from '../ChromeL10N';
 import {
+  openMenuApp,
   reloadApp,
   openOptions,
-  openBookmarksMenu,
-  openHelpMenu,
+  openBookmarksApp,
+  openHelpApp,
 } from '../store/actions';
 import { store } from '../store/store';
+
+const onOpenMenu = (): void => {
+  store.dispatch(openMenuApp());
+};
 
 const onReload = (): void => {
   store.dispatch(reloadApp());
 };
 
 const onOpenBookmarks = () => {
-  store.dispatch(openBookmarksMenu());
+  store.dispatch(openBookmarksApp());
 };
 
 const onOpenOptions = () => {
@@ -26,7 +31,7 @@ const onOpenOptions = () => {
 };
 
 const onOpenHelp = () => {
-  store.dispatch(openHelpMenu());
+  store.dispatch(openHelpApp());
 };
 
 export const Menu = () => {
@@ -42,7 +47,7 @@ export const Menu = () => {
       }
     </style>
     <div id="menu" slot="actionItems">
-      <mwc-icon-button id="menu-button">
+      <mwc-icon-button id="menu-button" @click="${onOpenMenu}">
         <svg viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" focusable="false" style="pointer-events: none; display: block; width: 100%; height: 100%;"><g><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path></g></svg>
       </mwc-icon-button>
       <mwc-menu id="menu-list">

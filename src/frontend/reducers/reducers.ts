@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux';
-import { controls } from './controls';
+import { controls } from './app';
 import { dialog } from './dialog';
 import { linker } from './linker';
 import { options } from './options';

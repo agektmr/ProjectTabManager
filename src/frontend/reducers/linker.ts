@@ -1,7 +1,11 @@
 import { LinkerState, LinkerActionTypes } from '../store/types';
 
 export const linker = (
-  state: LinkerState,
+  state: LinkerState = {
+    linkingProjectId: '',
+    projects: [],
+    open: false,
+  },
   action: LinkerActionTypes,
 ): LinkerState => {
   switch (action.type) {

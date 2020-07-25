@@ -1,7 +1,14 @@
 import { OptionsState, OptionsActionTypes } from '../store/types';
 
 export const options = (
-  state: OptionsState,
+  state: OptionsState = {
+    lazyLoad: true,
+    rootName: 'ProjectTabManager',
+    rootParentId: '0',
+    rootFolders: [],
+    maxSessions: -1,
+    open: false,
+  },
   action: OptionsActionTypes,
 ): OptionsState => {
   switch (action.type) {
@@ -18,13 +25,13 @@ export const options = (
       break;
     case 'OPEN_OPTIONS':
       state.open = true;
-      break;
+      return state;
     case 'SAVE_OPTIONS':
       state.open = false;
-      break;
+      return state;
     case 'CLOSE_OPTIONS':
       state.open = false;
-      break;
+      return state;
   }
   return state;
 };

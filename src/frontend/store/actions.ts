@@ -7,6 +7,27 @@ import {
   AppActionTypes,
 } from './types';
 
+const requestBackend = (
+  commandName: string,
+  commandDetail: any
+): Promise<any> => {
+  return new Promise((resolve, reject) =>
+    chrome.runtime.sendMessage({
+      command: commandName,
+      detail: commandDetail
+    }, response => {
+      if (!response) {
+        // result being `undefined` is safe
+        resolve();
+      } else if (response.error) {
+        reject(response.error);
+      } else {
+        resolve(response.result)
+      }
+    })
+  );
+}
+
 export const initDialog = (): DialogActionTypes => {
   return {
     type: 'INIT_DIALOG'
@@ -153,6 +174,21 @@ export const renameProject = (
   }
 };
 
+export const fetchProjects = (
+  type: string,
+  details: any,
+): any => {
+  return (dispatch: any) => {
+    // TODO: display loading
+    return requestBackend(type, details)
+    .then(result =>
+      dispatch(openProject(result)))
+    .catch(error => {
+      // TODO: display error
+    })
+  }
+}
+
 export const closeTab = (
   tabId: number
 ): TabActionTypes => {
@@ -183,6 +219,12 @@ export const removeBookmark = (
 export const initApp = (): AppActionTypes => {
   return {
     type: 'INIT_APP'
+  }
+};
+
+export const openMenuApp = (): AppActionTypes => {
+  return {
+    type: 'OPEN_MENU_APP'
   }
 };
 

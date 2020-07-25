@@ -1,5 +1,9 @@
 import { createStore, applyMiddleware } from 'redux';
-import { bridge } from './bridge';
+import thunk from 'redux-thunk';
+import { createLogger } from 'redux-logger';
 import { reducers } from '../reducers/reducers';
 
-export const store = createStore(reducers, applyMiddleware(bridge));
+const logger = createLogger();
+const middlewares = [thunk, logger];
+
+export const store = createStore(reducers, applyMiddleware(...middlewares));

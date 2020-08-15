@@ -4,8 +4,8 @@ import '@material/mwc-top-app-bar-fixed';
 import '@material/mwc-textfield';
 import '@material/mwc-tab';
 import '@material/mwc-tab-bar';
-import '@material/mwc-linear-progress';
 import '@material/mwc-snackbar';
+import '@material/mwc-circular-progress';
 
 import { TextField } from '@material/mwc-textfield';
 import {
@@ -26,7 +26,7 @@ import { changeTabApp, searchApp } from '../store/actions';
 
 const onChangeTab = (e: CustomEvent) => {
   // TODO:
-  const tabIndex = 0;
+  const tabIndex = e.detail.index;
   store.dispatch(changeTabApp(tabIndex));
 };
 
@@ -56,9 +56,25 @@ export const App = (state: AppState) => {
         <mwc-tab label="${l10n('projects')}"></mwc-tab>
       </mwc-tab-bar>
     </mwc-top-app-bar-fixed>
-    <section>
-      ${state.projects.map(project => Project(project))}
-    </section>
+    <div class="projects-container">
+      ${state.controls.selectedTab === 0 ? html`
+      <section class="center-center" style="min-height: 300px">
+        <mwc-circular-progress indeterminate></mwc-circular-progress>
+      </section>
+      `:state.controls.selectedTab === 1 ? html`
+      <section>
+        ${state.projects.map(project => Project(project))}
+      </section>
+      `:state.controls.selectedTab === 2 ? html`
+      <section>
+        ${state.projects.map(project => Project(project))}
+      </section>
+      `:state.controls.selectedTab === 3 ? html`
+      <section>
+        ${state.projects.map(project => Project(project))}
+      </section>
+      `:''}
+    </div>
     <mwc-snackbar
       id="toast"
       duration="3000"

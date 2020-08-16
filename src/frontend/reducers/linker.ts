@@ -1,16 +1,16 @@
-import { LinkerState, LinkerActionTypes } from '../store/types';
+import { LinkerState, LinkerActionTypes, AppActionTypes } from '../store/types';
 
 export const linker = (
-  state: LinkerState = {
-    linkingProjectId: '',
-    projects: [],
-    open: false,
-  },
-  action: LinkerActionTypes,
+  state: LinkerState,
+  action: LinkerActionTypes | AppActionTypes,
 ): LinkerState => {
   switch (action.type) {
-    case 'INIT_LINKER':
-      break;
+    case 'INIT':
+      return {
+        linkingProjectId: '',
+        projects: [],
+        open: false,
+      }
     case 'LINK_LINKER':
       break;
     case 'UNLINK_LINKER':

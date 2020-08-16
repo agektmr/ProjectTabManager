@@ -22,7 +22,7 @@ import { Menu } from './Menu';
 import { Options } from './Options';
 import { Project } from './Project';
 import { store } from '../store/store';
-import { changeTabApp, searchApp } from '../store/actions';
+import { changeTabApp, searchApp } from '../actions/app';
 
 const onChangeTab = (e: CustomEvent) => {
   // TODO:

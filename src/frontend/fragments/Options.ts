@@ -12,7 +12,7 @@ import { Switch } from '@material/mwc-switch';
 import { Select } from '@material/mwc-select';
 import { TextField } from '@material/mwc-textfield';
 import { OptionsState } from '../store/types';
-import { closeOptions, saveOptions } from '../store/actions';
+import { closeOptions, saveOptions } from '../actions/options';
 
 const onClose = () => {
   closeOptions();

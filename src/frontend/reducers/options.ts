@@ -1,27 +1,20 @@
-import { OptionsState, OptionsActionTypes } from '../store/types';
+import { OptionsState, OptionsActionTypes, AppActionTypes } from '../store/types';
 
 export const options = (
-  state: OptionsState = {
-    lazyLoad: true,
-    rootName: 'ProjectTabManager',
-    rootParentId: '0',
-    rootFolders: [],
-    maxSessions: -1,
-    open: false,
-  },
-  action: OptionsActionTypes,
+  state: OptionsState,
+  action: OptionsActionTypes | AppActionTypes,
 ): OptionsState => {
   switch (action.type) {
-    case 'INIT_OPTIONS':
+    case 'INIT':
       // TODO:
-      Promise.all([
-        new Promise((resolve) => {
-          chrome.bookmarks.getSubTree('0', bookmarks => {
-            const rootFolders = bookmarks[0].children;
-            resolve(rootFolders);
-          })
-        })
-      ]);
+      return {
+        lazyLoad: true,
+        rootName: 'ProjectTabManager',
+        rootParentId: '0',
+        rootFolders: [],
+        maxSessions: -1,
+        open: false,
+      }
       break;
     case 'OPEN_OPTIONS':
       state.open = true;

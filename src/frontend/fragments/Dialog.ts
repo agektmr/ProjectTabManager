@@ -5,7 +5,7 @@ import '@material/mwc-button';
 import '@material/mwc-textfield';
 
 import { DialogState } from '../store/types';
-import { confirmDialog, cancelDialog } from '../store/actions';
+import { confirmDialog, cancelDialog } from '../actions/dialog';
 
 const onConfirmed = (e: CustomEvent) => {
   confirmDialog();

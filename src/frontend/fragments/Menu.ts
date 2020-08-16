@@ -8,10 +8,10 @@ import { l10n } from '../ChromeL10N';
 import {
   openMenuApp,
   reloadApp,
-  openOptions,
   openBookmarksApp,
   openHelpApp,
-} from '../store/actions';
+} from '../actions/app';
+import { openOptions } from '../actions/options';
 import { store } from '../store/store';
 
 const onOpenMenu = (): void => {

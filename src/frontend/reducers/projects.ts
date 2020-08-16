@@ -1,12 +1,13 @@
-import { ProjectState, ProjectActionTypes, TabActionTypes } from '../store/types';
+import { ProjectState, ProjectActionTypes, TabActionTypes, AppActionTypes } from '../store/types';
 import { ProjectEntity } from '../../background/ProjectEntity';
 
 export const projects = (
   state: ProjectState[] = [],
-  action: ProjectActionTypes | TabActionTypes,
+  action: ProjectActionTypes | TabActionTypes | AppActionTypes
+  ,
 ): ProjectState[] => {
   switch (action.type) {
-    case 'INIT_PROJECTS':
+    case 'INIT':
       break;
     case 'TOGGLE_PROJECT':
       break;

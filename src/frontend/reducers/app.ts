@@ -1,19 +1,38 @@
-import { ControlsState, AppActionTypes } from '../store/types';
+import { AppState, AppActionTypes, DialogActionTypes, OptionsActionTypes, LinkerActionTypes, ProjectActionTypes } from '../store/types';
+import { controls } from './controls';
+import { dialog } from './dialog';
+import { linker } from './linker';
+import { options } from './options';
+import { projects } from './projects';
 
-export const controls = (
-  state: ControlsState = {
-        query: '',
-        labelText: '',
-        selectedTab: 0,
-      },
-  action: AppActionTypes,
-): ControlsState => {
+const bound = {
+  controls,
+  options,
+  linker,
+  dialog,
+  projects,
+};
+
+export const app = (
+  state: AppState,
+  action: AppActionTypes | DialogActionTypes | OptionsActionTypes | LinkerActionTypes | ProjectActionTypes,
+): AppState => {
   switch (action.type) {
-    // case 'OPEN_MENU_APP':
-    //   state.options.open = true;
-    //   return state;
+    case 'INIT':
+      return {
+        ...state,
+        controls: controls(state.controls, action),
+        options: options(state.options, action),
+        linker: linker(state.linker, action),
+        dialog: dialog(state.dialog, action),
+        projects: projects(state.projects, action),
+      };
     case 'CHANGE_TAB_APP':
-      state.selectedTab = action.selectedTab;
+      state.controls.selectedTab = action.selectedTab;
+      return state;
+    case 'OPEN_MENU_APP':
+      // state.options.open = true;
+      return state;
   }
   return state;
 };

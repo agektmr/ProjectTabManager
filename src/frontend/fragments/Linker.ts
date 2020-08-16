@@ -11,7 +11,7 @@ import {
   linkLinker,
   unlinkLinker,
   closeLinker
-} from '../store/actions';
+} from '../actions/linker';
 import { store } from '../store/store';
 
 const onLinkProject = (e: CustomEvent) => {

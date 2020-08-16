@@ -2,6 +2,8 @@
  * Controls
  */
 
+import { Dialog } from "@material/mwc-dialog";
+
 export interface ControlsState {
   query: string
   labelText: string
@@ -26,7 +28,7 @@ export interface DialogState {
 }
 
 interface InitDialogAction {
-  type: 'INIT_DIALOG'
+  type: 'INIT'
 }
 
 interface ConfirmDialogAction {
@@ -53,7 +55,7 @@ export interface LinkerState {
 }
 
 interface InitLinkerAction {
-  type: 'INIT_LINKER'
+  type: 'INIT'
 }
 
 interface OpenLinkerAction {
@@ -95,7 +97,7 @@ export interface OptionsState {
 }
 
 interface InitOptionsAction {
-  type: 'INIT_OPTIONS'
+  type: 'INIT'
 }
 
 interface OpenOptionsAction {
@@ -136,7 +138,7 @@ export interface ProjectState {
 }
 
 interface InitProjectsAction {
-  type: 'INIT_PROJECTS'
+  type: 'INIT'
 }
 
 interface ToggleProjectAction {
@@ -224,7 +226,7 @@ export interface AppState {
 }
 
 interface InitAppAction {
-  type: 'INIT_APP'
+  type: 'INIT'
 }
 
 interface OpenMenuAppAction {

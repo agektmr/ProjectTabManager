@@ -9,7 +9,6 @@ import '../components/ptm-bookmark';
 
 import { ProjectState } from '../store/types';
 import {
-  openLinker,
   openProject,
   removeProject,
   renameProject,
@@ -17,7 +16,8 @@ import {
   closeTab,
   addBookmark,
   removeBookmark,
-} from '../store/actions';
+} from '../actions/project';
+import { openLinker } from '../actions/linker';
 import { store } from '../store/store';
 
 const toggle = (e: CustomEvent): void => {

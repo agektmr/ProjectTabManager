@@ -7,8 +7,6 @@ export const projects = (
   ,
 ): ProjectState[] => {
   switch (action.type) {
-    case 'INIT':
-      break;
     case 'TOGGLE_PROJECT':
       break;
     case 'OPEN_PROJECT':

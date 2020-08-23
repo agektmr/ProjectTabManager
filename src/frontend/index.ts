@@ -2,15 +2,15 @@ import { render } from 'lit-html';
 import { store } from './store/store';
 import { App } from './fragments/App';
 import { AppState } from './store/types';
-import { initApp } from './actions/app';
+import { init } from './actions/app';
 
-store.dispatch(initApp());
+store.dispatch(init());
 
 const renderApp = (): void => {
-  const state = store.getState() as unknown;
+  const state = store.getState();
   const container = document.querySelector('#app-container');
   if (!container) return;
-  render(App(<AppState>state), container);
+  render(App(state.app), container);
 }
 
 store.subscribe(renderApp);

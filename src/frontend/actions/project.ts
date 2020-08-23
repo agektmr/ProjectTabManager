@@ -1,5 +1,5 @@
 import { ProjectActionTypes, TabActionTypes } from '../store/types';
-import { requestBackend } from './thunk-actions';
+import { requestBackend } from '../utility';
 
 export const initProjects = (): ProjectActionTypes => {
   return {
@@ -71,7 +71,7 @@ export const fetchProjects = (
       dispatch(openProject(result)))
     .catch(error => {
       // TODO: display error
-    })
+    });
   }
 }
 

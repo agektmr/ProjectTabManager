@@ -52,6 +52,10 @@ export class ProjectManager {
     });
   }
 
+  public async getProjects(): Promise<ProjectEntity[]> {
+    return this.projects;
+  }
+
   public async openProject(
     projectId: string,
     closeCurrent: boolean = false

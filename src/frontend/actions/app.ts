@@ -1,4 +1,24 @@
 import { AppActionTypes } from '../store/types';
+import { requestBackend } from '../utility';
+
+export const init = (): any => {
+  return async (dispatch: any, getState: any): Promise<void> => {
+    const [ rootFolders, projects ] = await Promise.all([
+      new Promise((resolve) => {
+        chrome.bookmarks.getSubTree('0', bookmarks => {
+          const rootFolders = bookmarks[0].children;
+          resolve(rootFolders);
+        })
+      }),
+      requestBackend('getProjects', {})
+    ]);
+    console.log(rootFolders, projects);
+    const { app } = getState();
+    app.options.rootFolders = rootFolders;
+    app.projects = projects;
+    dispatch(initApp());
+  }
+}
 
 export const initApp = (): AppActionTypes => {
   return {

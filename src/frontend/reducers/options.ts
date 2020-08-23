@@ -1,21 +1,17 @@
 import { OptionsState, OptionsActionTypes, AppActionTypes } from '../store/types';
 
 export const options = (
-  state: OptionsState,
+  state: OptionsState = {
+    lazyLoad: true,
+    rootName: 'ProjectTabManager',
+    rootParentId: '0',
+    rootFolders: [],
+    maxSessions: -1,
+    open: false,
+  },
   action: OptionsActionTypes | AppActionTypes,
 ): OptionsState => {
   switch (action.type) {
-    case 'INIT':
-      // TODO:
-      return {
-        lazyLoad: true,
-        rootName: 'ProjectTabManager',
-        rootParentId: '0',
-        rootFolders: [],
-        maxSessions: -1,
-        open: false,
-      }
-      break;
     case 'OPEN_OPTIONS':
       state.open = true;
       return state;

@@ -4,6 +4,7 @@ import { l10n } from '../ChromeL10N';
 import '@material/mwc-list';
 import '@material/mwc-icon-button';
 import '@material/mwc-icon-button-toggle';
+import '@polymer/iron-collapse';
 import '../components/ptm-list-item';
 import '../components/ptm-bookmark';
 
@@ -94,37 +95,6 @@ const onRemoveBookmark = (e: CustomEvent) => {
 
 export const Project = (project: ProjectState) => {
   return html`
-    <style>
-      .content {
-        display: flex;
-        align-items: center;
-      }
-      .title {
-        cursor: pointer;
-        color: var(--secondary-text-color);
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
-        flex: 1 1 auto;
-      }
-      .title[active] {
-        font-weight: bold;
-        color: var(--primary-text-color);
-      }
-      .buttons {
-        display: none;
-        flex: 0 0 auto;
-      }
-      .content:hover .buttons {
-        display: block;
-      }
-      mwc-list {
-        height: 32px;
-      }
-      mwc-list[expanded] {
-        height: auto;
-      }
-    </style>
     <mwc-list ?expanded="${project.expanded}">
       <ptm-list-item graphic="avatar" ?focused="${project.focused}">
         <mwc-icon-button-toggle
@@ -137,8 +107,8 @@ export const Project = (project: ProjectState) => {
         <div class="content">
           <div
             class="title"
-            data-win-id="${project.winId}"
-            data-project-id="${project.projectId}"
+            data-win-id="${project.winId || ''}"
+            data-project-id="${project.projectId || ''}"
             @click="${onOpenProject}"
             ?active="${!!project.winId}">
             <span>${project.title}</span>
@@ -194,5 +164,5 @@ export const Project = (project: ProjectState) => {
           @remove-bookmark="${onRemoveBookmark}">
         </ptm-bookmark>`)}
       </iron-collapse>
-    </mwc-list>
+    </mwc-list>`
 };

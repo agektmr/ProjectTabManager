@@ -1,4 +1,4 @@
-import { AppState, AppActionTypes, DialogActionTypes, OptionsActionTypes, LinkerActionTypes, ProjectActionTypes } from '../store/types';
+import { PtmTab, AppState, AppActionTypes, DialogActionTypes, OptionsActionTypes, LinkerActionTypes, ProjectActionTypes } from '../store/types';
 import { controls } from './controls';
 import { dialog } from './dialog';
 import { linker } from './linker';
@@ -27,11 +27,11 @@ export const app = (
         dialog: dialog(state.dialog, action),
         projects: projects(state.projects, action),
       };
+    case 'START_LOADING_APP':
+      state.controls.selectedTab = PtmTab.LOADING;
+      return state;
     case 'CHANGE_TAB_APP':
       state.controls.selectedTab = action.selectedTab;
-      return state;
-    case 'OPEN_MENU_APP':
-      // state.options.open = true;
       return state;
     default:
       const _action = { type: action.type };

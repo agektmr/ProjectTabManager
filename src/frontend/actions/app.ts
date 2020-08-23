@@ -1,8 +1,9 @@
-import { AppActionTypes } from '../store/types';
+import { PtmTab, AppActionTypes } from '../store/types';
 import { requestBackend } from '../utility';
 
 export const init = (): any => {
   return async (dispatch: any, getState: any): Promise<void> => {
+    dispatch(startLoading());
     const [ rootFolders, projects ] = await Promise.all([
       new Promise((resolve) => {
         chrome.bookmarks.getSubTree('0', bookmarks => {
@@ -16,6 +17,7 @@ export const init = (): any => {
     const { app } = getState();
     app.options.rootFolders = rootFolders;
     app.projects = projects;
+    app.controls.selectedTab = PtmTab.SESSIONS;
     dispatch(initApp());
   }
 }
@@ -26,15 +28,15 @@ export const initApp = (): AppActionTypes => {
   }
 };
 
-export const openMenuApp = (): AppActionTypes => {
-  return {
-    type: 'OPEN_MENU_APP'
-  }
-};
-
 export const reloadApp = (): AppActionTypes => {
   return {
     type: 'RELOAD_APP'
+  }
+};
+
+export const startLoading = (): AppActionTypes => {
+  return {
+    type: 'START_LOADING_APP'
   }
 };
 

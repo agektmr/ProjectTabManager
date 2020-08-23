@@ -30,16 +30,7 @@ const onCloseLinker = (e: CustomEvent) => {
 
 export const Linker = (state: LinkerState) => {
   return html`
-    <style>
-      .title {
-        cursor: pointer;
-        color: var(--secondary-text-color);
-      }
-      ptm-list-item {
-        --mdc-list-side-padding: 0;
-      }
-    </style>
-    <mwc-dialog id="dialog" heading="${l10n('link_session_to_a_project')}">
+    <mwc-dialog id="linker" heading="${l10n('link_session_to_a_project')}">
       <mwc-list>
         ${state.projects.map(project => !!project.projectId ? html`
         <ptm-list-item

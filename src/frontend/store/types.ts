@@ -1,8 +1,13 @@
+export enum PtmTab {
+  LOADING = -1,
+  SESSIONS = 0,
+  PROJECTS = 1,
+  SEARCH_RESULTS = 2,
+}
+
 /**
  * Controls
  */
-
-import { Dialog } from "@material/mwc-dialog";
 
 export interface ControlsState {
   query: string
@@ -229,12 +234,12 @@ interface InitAppAction {
   type: 'INIT'
 }
 
-interface OpenMenuAppAction {
-  type: 'OPEN_MENU_APP'
-}
-
 interface ReloadAppAction {
   type: 'RELOAD_APP'
+}
+
+interface StartLoadingAppAction {
+  type: 'START_LOADING_APP'
 }
 
 interface OpenBookmarksAppAction {
@@ -257,8 +262,8 @@ interface ChangeTabAppAction {
 
 export type AppActionTypes =
   InitAppAction |
-  OpenMenuAppAction |
   ReloadAppAction |
+  StartLoadingAppAction |
   OpenBookmarksAppAction |
   OpenHelpAppAction |
   SearchAppAction |

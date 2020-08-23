@@ -6,17 +6,12 @@ import '../components/ptm-list-item';
 
 import { l10n } from '../ChromeL10N';
 import {
-  openMenuApp,
   reloadApp,
   openBookmarksApp,
   openHelpApp,
 } from '../actions/app';
 import { openOptions } from '../actions/options';
 import { store } from '../store/store';
-
-const onOpenMenu = (): void => {
-  store.dispatch(openMenuApp());
-};
 
 const onReload = (): void => {
   store.dispatch(reloadApp());
@@ -36,18 +31,8 @@ const onOpenHelp = () => {
 
 export const Menu = () => {
   return html`
-    <style>
-      #menu {
-        position: relative;
-        margin-right: 8px;
-      }
-      #menu-list ptm-list-item svg {
-        width: var(--mdc-icon-size);
-        height: var(--mdc-icon-size);
-      }
-    </style>
     <div id="menu" slot="actionItems">
-      <mwc-icon-button id="menu-button" @click="${onOpenMenu}">
+      <mwc-icon-button id="menu-button">
         <svg viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" focusable="false" style="pointer-events: none; display: block; width: 100%; height: 100%;"><g><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path></g></svg>
       </mwc-icon-button>
       <mwc-menu id="menu-list">

@@ -8,6 +8,7 @@ import '@material/mwc-snackbar';
 import '@material/mwc-circular-progress';
 
 import { TextField } from '@material/mwc-textfield';
+import { PtmTab } from '../store/types';
 import {
   AppState,
   DialogState,
@@ -57,19 +58,19 @@ export const App = (state: AppState) => {
       </mwc-tab-bar>
     </mwc-top-app-bar-fixed>
     <div class="projects-container">
-      ${state.controls.selectedTab === 0 ? html`
+      ${state.controls.selectedTab === PtmTab.LOADING ? html`
       <section class="center-center" style="min-height: 300px">
         <mwc-circular-progress indeterminate></mwc-circular-progress>
       </section>
-      `:state.controls.selectedTab === 1 ? html`
+      `:state.controls.selectedTab === PtmTab.SESSIONS ? html`
       <section>
-        ${state.projects.map(project => Project(project))}
+        ${(state.projects.filter(project => project.id.indexOf('-') === 0)).map(project => Project(project))}
       </section>
-      `:state.controls.selectedTab === 2 ? html`
+      `:state.controls.selectedTab === PtmTab.PROJECTS ? html`
       <section>
-        ${state.projects.map(project => Project(project))}
+        ${(state.projects.filter(project => project.id.indexOf('-') === -1)).map(project => Project(project))}
       </section>
-      `:state.controls.selectedTab === 3 ? html`
+      `:state.controls.selectedTab === PtmTab.SEARCH_RESULTS ? html`
       <section>
         ${state.projects.map(project => Project(project))}
       </section>

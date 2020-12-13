@@ -1,3 +1,5 @@
+/** @format */
+
 import { html } from 'lit-html';
 
 import '@material/mwc-dialog';
@@ -7,11 +9,7 @@ import '../components/ptm-list-item';
 
 import { l10n } from '../ChromeL10N';
 import { LinkerState } from '../store/types';
-import {
-  linkLinker,
-  unlinkLinker,
-  closeLinker
-} from '../actions/linker';
+import { linkLinker, unlinkLinker, closeLinker } from '../actions/linker';
 import { store } from '../store/store';
 
 const onLinkProject = (e: CustomEvent) => {
@@ -29,28 +27,36 @@ const onCloseLinker = (e: CustomEvent) => {
 };
 
 export const Linker = (state: LinkerState) => {
-  return html`
-    <mwc-dialog id="linker" heading="${l10n('link_session_to_a_project')}">
-      <mwc-list>
-        ${state.projects.map(project => !!project.projectId ? html`
-        <ptm-list-item
-          @click="${onLinkProject}"
-          ${project.winId ? html`data-win-id="${project.winId}"`:``}
-          data-project-id="${project.projectId}"
-          hasMeta>
-          <span class="title">${project.title}</span>
-          ${!!project.winId ? html`
-          <mwc-icon-button slot="meta">
-            <img src="../img/link.svg">
-          </mwc-icon-button>`:``}
-        </ptm-list-item>`:'')}
-      </mwc-list>
-      <mwc-button slot="secondaryAction" @click="${onCloseLinker}">
-        ${l10n('cancel')}
-      </mwc-button>
-      ${state.linkingProjectId ? html`
-      <mwc-button slot="primaryAction" @click="${onUnlinkProject}">
-        ${l10n('unlink')}
-      </mwc-button>`:''}
-    </mwc-dialog>`;
+  return html` <mwc-dialog
+    id="linker"
+    heading="${l10n('link_session_to_a_project')}"
+  >
+    <mwc-list>
+      ${state.projects.map((project) =>
+        !!project.projectId
+          ? html` <ptm-list-item
+              @click="${onLinkProject}"
+              ${project.winId ? html`data-win-id="${project.winId}"` : ``}
+              data-project-id="${project.projectId}"
+              hasMeta
+            >
+              <span class="title">${project.title}</span>
+              ${!!project.winId
+                ? html` <mwc-icon-button slot="meta">
+                    <img src="../img/link.svg" />
+                  </mwc-icon-button>`
+                : ``}
+            </ptm-list-item>`
+          : '',
+      )}
+    </mwc-list>
+    <mwc-button slot="secondaryAction" @click="${onCloseLinker}">
+      ${l10n('cancel')}
+    </mwc-button>
+    ${state.linkingProjectId
+      ? html` <mwc-button slot="primaryAction" @click="${onUnlinkProject}">
+          ${l10n('unlink')}
+        </mwc-button>`
+      : ''}
+  </mwc-dialog>`;
 };

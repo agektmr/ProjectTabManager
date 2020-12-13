@@ -1,20 +1,23 @@
-/*
-Copyright 2020 Eiji Kitamura
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-     http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
-Author: Eiji Kitamura (agektmr@gmail.com)
-*/
+/**
+ * /*
+ * Copyright 2020 Eiji Kitamura
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Author: Eiji Kitamura (agektmr@gmail.com)
+ *
+ * @format
+ */
 
 /// <reference path="../../node_modules/@types/chrome/index.d.ts" />
 
@@ -31,23 +34,20 @@ import { FieldEntity } from './FieldEntity';
  * @param {[type]} config [description]
  */
 export class ProjectManager {
-  public projects: ProjectEntity[] = []
-  private config: Config
-  private sessionManager: SessionManager
+  public projects: ProjectEntity[] = [];
+  private config: Config;
+  private sessionManager: SessionManager;
 
-  constructor(
-    config: Config,
-    sessionManager: SessionManager
-  ) {
+  constructor(config: Config, sessionManager: SessionManager) {
     this.config = config;
     this.sessionManager = sessionManager;
 
-    chrome.windows.onFocusChanged.addListener(winId => {
+    chrome.windows.onFocusChanged.addListener((winId) => {
       const project = this.getProjectFromWinId(winId);
       if (project) {
         project.setBadgeText();
       } else {
-        chrome.browserAction.setBadgeText({text: ''});
+        chrome.browserAction.setBadgeText({ text: '' });
       }
     });
   }
@@ -58,7 +58,7 @@ export class ProjectManager {
 
   public async openProject(
     projectId: string,
-    closeCurrent: boolean = false
+    closeCurrent: boolean = false,
   ): Promise<boolean> {
     const project = this.getProjectFromId(projectId);
     if (!project) return false;
@@ -76,7 +76,7 @@ export class ProjectManager {
    */
   public async createProject(
     projectId: string,
-    title: string
+    title: string,
   ): Promise<ProjectEntity> {
     const project = this.getProjectFromId(projectId);
 
@@ -87,7 +87,7 @@ export class ProjectManager {
     const session = project.session;
     title = title || session.title;
 
-    const folder = await BookmarkManager.addFolder(title)
+    const folder = await BookmarkManager.addFolder(title);
     for (let tab of session.tabs) {
       const { title, url } = tab;
       BookmarkManager.addBookmark(folder.id, title, url);
@@ -109,9 +109,9 @@ export class ProjectManager {
    * @param  {requestCallback}  callback  [description]
    */
   public async removeProject(
-    projectId: string
+    projectId: string,
   ): Promise<ProjectEntity | undefined> {
-    let i = this.projects.findIndex(project => project.id === projectId);
+    let i = this.projects.findIndex((project) => project.id === projectId);
     if (i === -1) return;
 
     // Remove project from list first
@@ -119,13 +119,24 @@ export class ProjectManager {
     // Then remove bookmark if exists (otherwise non-bound session)
     if (project.bookmark) {
       try {
-        await BookmarkManager.archiveFolder(projectId)
+        await BookmarkManager.archiveFolder(projectId);
       } catch (e) {
-        Util.log('[ProjectManager] failed to remove project %s from bookmark', projectId);
+        Util.log(
+          '[ProjectManager] failed to remove project %s from bookmark',
+          projectId,
+        );
       }
     }
     Util.log('[ProjectManager] removed project %s from bookmark', projectId);
     return project;
+  }
+
+  public async getProject(id: string): Promise<ProjectEntity> {
+    return new Promise((resolve) => {
+      const project = this.projects.find((project) => project.id === id);
+      project?.load(project.session?.tabs, project.bookmark?.children);
+      resolve(project);
+    });
   }
 
   /**
@@ -133,10 +144,8 @@ export class ProjectManager {
    * @param  {String} id
    * @return {ProjectEntity|undefined}
    */
-  public getProjectFromId(
-    id: string
-  ): ProjectEntity | undefined {
-    return this.projects.find(project => project.id === id);
+  public getProjectFromId(id: string): ProjectEntity | undefined {
+    return this.projects.find((project) => project.id === id);
   }
 
   /**
@@ -144,18 +153,14 @@ export class ProjectManager {
    * @param  {Integer} winId
    * @return {ProjectEntity|undefined}
    */
-  public getProjectFromWinId(
-    winId: number
-  ): ProjectEntity | undefined {
-    return this.projects.find(project => project.session?.winId === winId);
+  public getProjectFromWinId(winId: number): ProjectEntity | undefined {
+    return this.projects.find((project) => project.session?.winId === winId);
   }
 
-  public async search(
-    query: string
-  ): Promise<ProjectEntity[]> {
+  public async search(query: string): Promise<ProjectEntity[]> {
     const projects = Util.deepCopy(this.projects);
     const queryLC = query.toLowerCase();
-    return projects.filter(project => {
+    return projects.filter((project) => {
       // project.fields = project.fields.filter(field => {
       //   const title = field.title?.toLowerCase();
       //   return title?.indexOf(queryLC) === -1 ? false : true;
@@ -167,7 +172,7 @@ export class ProjectManager {
 
   public async linkProject(
     srcProjId: string,
-    dstProjId: string
+    dstProjId: string,
   ): Promise<boolean> {
     let srcProj: ProjectEntity | undefined = this.getProjectFromId(srcProjId);
     let dstProj: ProjectEntity | undefined = this.getProjectFromId(dstProjId);
@@ -187,14 +192,12 @@ export class ProjectManager {
     return true;
   }
 
-  public async unlinkProject(
-    targetProjId: string
-  ): Promise<boolean> {
+  public async unlinkProject(targetProjId: string): Promise<boolean> {
     if (!targetProjId) return false;
     const targetProject = this.getProjectFromId(targetProjId);
     if (targetProject) {
       targetProject.deassociateBookmark();
-      return true
+      return true;
     } else {
       return false;
     }
@@ -207,7 +210,7 @@ export class ProjectManager {
    */
   public async renameProject(
     projectId: string,
-    title: string
+    title: string,
   ): Promise<chrome.bookmarks.BookmarkTreeNode> {
     let folder: chrome.bookmarks.BookmarkTreeNode;
 
@@ -217,7 +220,7 @@ export class ProjectManager {
 
     if (!project.bookmark) {
       folder = await BookmarkManager.addFolder(title);
-      project.id       = folder.id;
+      project.id = folder.id;
       project.bookmark = folder;
       if (project.session) project.session.setId(folder.id);
     } else {
@@ -247,9 +250,7 @@ export class ProjectManager {
    * TODO: Not used? Shall I delete this?
    * @param  {String}           projectId       [description]
    */
-  public async removeSession(
-    projectId: string
-  ): Promise<void> {
+  public async removeSession(projectId: string): Promise<void> {
     const project = this.getProjectFromId(projectId);
     if (!project) return;
     if (project.bookmark) project.deassociateBookmark();
@@ -274,9 +275,10 @@ export class ProjectManager {
   public async update(): Promise<ProjectEntity[]> {
     Util.log('[ProjectManager] Starting to generate project list');
     this.projects = [];
-    let project, sessions = this.sessionManager.getSessions().slice(0);
+    let project;
+    let sessions = this.sessionManager.getSessions().slice(0);
 
-    const bookmarks = await BookmarkManager.getBookmarkFolders()
+    const bookmarks = await BookmarkManager.getBookmarkFolders();
     let boundId = [];
 
     // Append non-bound sessions first
@@ -290,7 +292,13 @@ export class ProjectManager {
             project = new ProjectEntity(session, bookmark);
             this.projects.push(project);
             boundId.push(bookmark.id);
-            Util.log('[ProjectManager] Project %s: %o created from session: %o and bookmark: %o', project.id, project, session, bookmark);
+            Util.log(
+              '[ProjectManager] Project %s: %o created from session: %o and bookmark: %o',
+              project.id,
+              project,
+              session,
+              bookmark,
+            );
             found = true;
             break;
           }
@@ -301,7 +309,12 @@ export class ProjectManager {
       // If session is not bound or matching bookmark was not found
       project = new ProjectEntity(session, undefined);
       this.projects.push(project);
-      Util.log('[ProjectManager] Project %s: %o created non-bound session: %o', project.id, project, session);
+      Util.log(
+        '[ProjectManager] Project %s: %o created non-bound session: %o',
+        project.id,
+        project,
+        session,
+      );
     }
 
     // Add rest of bookmarks
@@ -310,7 +323,12 @@ export class ProjectManager {
       if (bookmark.title === this.config.archiveFolderName) continue;
       project = new ProjectEntity(undefined, bookmark);
       this.projects.push(project);
-      Util.log('[ProjectManager] Project %s: %o created non-bound bookmark: %o', project.id, project, bookmark);
+      Util.log(
+        '[ProjectManager] Project %s: %o created non-bound bookmark: %o',
+        project.id,
+        project,
+        bookmark,
+      );
     }
 
     return this.projects;
@@ -320,9 +338,7 @@ export class ProjectManager {
     return this.config.get();
   }
 
-  public async setConfig(
-    config: SyncConfig
-  ): Promise<void> {
+  public async setConfig(config: SyncConfig): Promise<void> {
     return this.config.sync(config);
   }
 
@@ -333,7 +349,7 @@ export class ProjectManager {
    */
   public async openBookmark(
     tabId: number | undefined,
-    url: string
+    url: string,
   ): Promise<void> {
     Util.log('[ProjectManager] Opening a bookmark', tabId, url);
     await BookmarkManager.openBookmark(tabId, url);
@@ -341,54 +357,27 @@ export class ProjectManager {
 
   public async addBookmark(
     projectId: string,
-    tabId: number
+    tabId: number,
   ): Promise<chrome.bookmarks.BookmarkTreeNode | undefined> {
     const project = this.getProjectFromId(projectId);
-    if (!project)
-      throw '[ProjectManager] Project to add bookmark not found';
+    if (!project) throw '[ProjectManager] Project to add bookmark not found';
     return project.addBookmark(tabId);
   }
 
   public async removeBookmark(
     projectId: string,
-    bookmarkId: string
+    bookmarkId: string,
   ): Promise<chrome.bookmarks.BookmarkTreeNode | undefined> {
     const project = this.getProjectFromId(projectId);
-    if (!project)
-      throw '[ProjectManager] Project to remove bookmark not found';
+    if (!project) throw '[ProjectManager] Project to remove bookmark not found';
     return project.removeBookmark(bookmarkId);
   }
-
-  // /**
-  //  * Removes or adds a bookmark depending on current status
-  //  * @param projectId
-  //  * @param tabId
-  //  */
-  // public async toggleBookmark(
-  //   projectId: string,
-  //   tabId?: number,
-  //   bookmarkId?: string
-  // ): Promise<chrome.bookmarks.BookmarkTreeNode | undefined> {
-  //   const project = this.getProjectFromId(projectId);
-  //   if (!project)
-  //     throw '[ProjectManager] Project to toggle bookmark not found';
-
-  //   if (tabId) {
-  //     return project.addBookmark(tabId);
-  //   } else if (bookmarkId) {
-  //     return project.removeBookmark(bookmarkId);
-  //   } else {
-  //     throw '[ProjectEntity] Unexpected attempt to toggle bookmark';
-  //   }
-  // }
 
   /**
    * Open the bookmark manager page.
    * @param  {String} bookmarkId
    */
-  public async openBookmarkEditWindow(
-    bookmarkId?: string
-  ): Promise<void> {
+  public async openBookmarkEditWindow(bookmarkId?: string): Promise<void> {
     if (!bookmarkId) {
       const root = await BookmarkManager.getRootFolder();
       bookmarkId = root.id;
@@ -400,66 +389,6 @@ export class ProjectManager {
    * Open the help page.
    */
   public openHelp(): void {
-    chrome.tabs.create({url: chrome.extension.getURL('/README.html')});
+    chrome.tabs.create({ url: chrome.extension.getURL('/README.html') });
   }
-
-  // /**
-  //  * Sets badge text
-  //  * // TODO: Duplicate function of ProjectEntity
-  //  * @param {String} winId Window Id
-  //  */
-  // public setBadgeText(
-  //   winId: number
-  // ): void {
-  //   const project = this.getProjectFromWinId(winId);
-  //   const text = project?.title?.substr(0, 4)?.trim() || '';
-  //   Util.log(`[ProjectManager] Badge set to "${project.title}"`, project);
-  //   chrome.browserAction.setBadgeText({text: text});
-  // }
-
-  // /**
-  //  * [getTimeTable description]
-  //  * @param  {[type]}   date     [description]
-  //  * @param  {Function} callback [description]
-  //  * @return {[type]}            [description]
-  //  */
-  // public getTimeTable(
-  //   date: number,
-  //   callback: Function
-  // ): void {
-  //   this.sessionManager.getTimeTable(date, table => {
-  //     table.forEach(session => {
-  //       if (session.id) {
-  //         let project = this.getProjectFromId(session.id);
-  //         let _session = this.sessionManager.getSessionFromProjectId(session.id);
-  //         session.title = project?.title || _session?.title;
-  //       } else {
-  //         session.title = 'Unknown';
-  //       }
-  //     });
-  //     callback(table);
-  //   });
-  // }
-
-  // /**
-  //  * [getSummary description]
-  //  * @param  {[type]}   start    [description]
-  //  * @param  {[type]}   end      [description]
-  //  * @param  {Function} callback [description]
-  //  * @return {[type]}            [description]
-  //  */
-  // public getSummary(
-  //   start: number,
-  //   end: number,
-  //   callback: Function
-  // ): void {
-  //   this.sessionManager.getSummary(start, end, summary => {
-  //     for (let id in summary) {
-  //       const project = this.getProjectFromId(id);
-  //       const title = project?.title || 'Unknown';
-  //       summary[id].title = title;
-  //     }
-  //     callback(summary);
-  //   });
-  // }
 }

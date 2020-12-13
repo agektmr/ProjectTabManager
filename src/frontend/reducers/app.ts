@@ -1,4 +1,14 @@
-import { PtmTab, AppState, AppActionTypes, DialogActionTypes, OptionsActionTypes, LinkerActionTypes, ProjectActionTypes } from '../store/types';
+/** @format */
+
+import {
+  PtmTab,
+  AppState,
+  AppActionTypes,
+  DialogActionTypes,
+  OptionsActionTypes,
+  LinkerActionTypes,
+  ProjectActionTypes,
+} from '../store/types';
 import { controls } from './controls';
 import { dialog } from './dialog';
 import { linker } from './linker';
@@ -15,7 +25,12 @@ const bound = {
 
 export const app = (
   state: AppState,
-  action: AppActionTypes | DialogActionTypes | OptionsActionTypes | LinkerActionTypes | ProjectActionTypes,
+  action:
+    | AppActionTypes
+    | DialogActionTypes
+    | OptionsActionTypes
+    | LinkerActionTypes
+    | ProjectActionTypes,
 ): AppState => {
   switch (action.type) {
     case 'INIT':
@@ -37,7 +52,7 @@ export const app = (
       const _action = { type: action.type };
       return {
         // @ts-ignore
-        controls: controls(state?.controls, _action ),
+        controls: controls(state?.controls, _action),
         // @ts-ignore
         options: options(state?.options, _action),
         // @ts-ignore

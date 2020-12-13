@@ -1,3 +1,5 @@
+/** @format */
+
 import { html } from 'lit-html';
 
 import '@material/mwc-top-app-bar-fixed';
@@ -14,7 +16,7 @@ import {
   DialogState,
   LinkerState,
   OptionsState,
-  ProjectState
+  ProjectState,
 } from '../store/types';
 import { l10n } from '../ChromeL10N';
 import { Dialog } from './Dialog';
@@ -38,9 +40,7 @@ const queryChanged = (e: CustomEvent) => {
 };
 
 export const App = (state: AppState) => {
-  return html`
-    ${Dialog(state.dialog)}
-    ${Options(state.options)}
+  return html` ${Dialog(state.dialog)} ${Options(state.options)}
     ${Linker(state.linker)}
     <mwc-top-app-bar-fixed>
       <mwc-textfield
@@ -49,7 +49,8 @@ export const App = (state: AppState) => {
         placeholder="Project Tab Manager"
         @keyup="${queryChanged}"
         value="${state.controls.query}"
-        fullwidth>
+        fullwidth
+      >
       </mwc-textfield>
       ${Menu()}
       <mwc-tab-bar id="tabs" @MDCTabBar:activated="${onChangeTab}">
@@ -58,27 +59,40 @@ export const App = (state: AppState) => {
       </mwc-tab-bar>
     </mwc-top-app-bar-fixed>
     <div class="projects-container">
-      ${state.controls.selectedTab === PtmTab.LOADING ? html`
-      <section class="center-center" style="min-height: 300px">
-        <mwc-circular-progress indeterminate></mwc-circular-progress>
-      </section>
-      `:state.controls.selectedTab === PtmTab.SESSIONS ? html`
-      <section>
-        ${(state.projects.filter(project => project.id.indexOf('-') === 0)).map(project => Project(project))}
-      </section>
-      `:state.controls.selectedTab === PtmTab.PROJECTS ? html`
-      <section>
-        ${(state.projects.filter(project => project.id.indexOf('-') === -1)).map(project => Project(project))}
-      </section>
-      `:state.controls.selectedTab === PtmTab.SEARCH_RESULTS ? html`
-      <section>
-        ${state.projects.map(project => Project(project))}
-      </section>
-      `:''}
+      ${state.controls.selectedTab === PtmTab.LOADING
+        ? html`
+            <section class="center-center" style="min-height: 300px">
+              <mwc-circular-progress indeterminate></mwc-circular-progress>
+            </section>
+          `
+        : state.controls.selectedTab === PtmTab.SESSIONS
+        ? html`
+            <section>
+              ${state.projects
+                .filter((project) => project.id.indexOf('-') === 0)
+                .map((project) => Project(project))}
+            </section>
+          `
+        : state.controls.selectedTab === PtmTab.PROJECTS
+        ? html`
+            <section>
+              ${state.projects
+                .filter((project) => project.id.indexOf('-') === -1)
+                .map((project) => Project(project))}
+            </section>
+          `
+        : state.controls.selectedTab === PtmTab.SEARCH_RESULTS
+        ? html`
+            <section>
+              ${state.projects.map((project) => Project(project))}
+            </section>
+          `
+        : ''}
     </div>
     <mwc-snackbar
       id="toast"
       duration="3000"
-      labelText="${state.controls.labelText}">
+      labelText="${state.controls.labelText}"
+    >
     </mwc-snackbar>`;
-}
+};

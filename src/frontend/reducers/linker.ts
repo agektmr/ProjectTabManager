@@ -1,3 +1,5 @@
+/** @format */
+
 import { LinkerState, LinkerActionTypes, AppActionTypes } from '../store/types';
 
 export const linker = (

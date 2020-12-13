@@ -50,8 +50,9 @@ export class ProjectEntity {
     this.title        = bookmark?.title ||
                         session?.title ||
                         l10n('new_project');
+    this.fields       = [];
 
-    this.load(session?.tabs, bookmark?.children);
+    // this.load(session?.tabs, bookmark?.children);
   }
 
   /**

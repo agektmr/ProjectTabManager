@@ -1,4 +1,10 @@
-import { OptionsState, OptionsActionTypes, AppActionTypes } from '../store/types';
+/** @format */
+
+import {
+  OptionsState,
+  OptionsActionTypes,
+  AppActionTypes,
+} from '../store/types';
 
 export const options = (
   state: OptionsState = {

@@ -1,3 +1,5 @@
+/** @format */
+
 import { render } from 'lit-html';
 import { store } from './store/store';
 import { App } from './fragments/App';
@@ -13,19 +15,17 @@ const renderApp = (): void => {
   const container = document.querySelector('#app-container');
   if (!container) return;
   render(App(state.app), container);
-}
+};
 
 store.subscribe(renderApp);
 
 renderApp();
 
-const menu = document.querySelector('#menu-list');
-const button = document.querySelector('#menu-button');
+const menu: Menu = document.querySelector('#menu-list');
+const button: HTMLButtonElement = document.querySelector('#menu-button');
 if (menu && button) {
-  // @ts-ignore
   menu.anchor = button;
-  button.addEventListener('click', e => {
-    // @ts-ignore
+  button.addEventListener('click', (e) => {
     menu.open = true;
   });
 }

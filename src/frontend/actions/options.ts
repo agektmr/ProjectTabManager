@@ -1,9 +1,11 @@
+/** @format */
+
 import { OptionsActionTypes } from '../store/types';
 
 export const initOptions = (): OptionsActionTypes => {
   return {
     type: 'INIT',
-  }
+  };
 };
 
 export const saveOptions = (
@@ -18,17 +20,17 @@ export const saveOptions = (
     rootName,
     rootParentId,
     maxSessions,
-  }
+  };
 };
 
 export const openOptions = (): OptionsActionTypes => {
   return {
-    type: 'OPEN_OPTIONS'
-  }
+    type: 'OPEN_OPTIONS',
+  };
 };
 
 export const closeOptions = (): OptionsActionTypes => {
   return {
-    type: 'CLOSE_OPTIONS'
-  }
+    type: 'CLOSE_OPTIONS',
+  };
 };

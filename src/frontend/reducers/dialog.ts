@@ -1,3 +1,5 @@
+/** @format */
+
 import { DialogState, DialogActionTypes, AppActionTypes } from '../store/types';
 
 export const dialog = (
@@ -8,7 +10,7 @@ export const dialog = (
     isPrompt: false,
     open: false,
   },
-  action: DialogActionTypes | AppActionTypes
+  action: DialogActionTypes | AppActionTypes,
 ): DialogState => {
   switch (action.type) {
     case 'CONFIRM_DIALOG':

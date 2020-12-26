@@ -8,7 +8,7 @@ module.exports = {
   mode: "development",
   devtool: 'inline-source-map',
   entry: {
-    'js/background': './src/ts/background.ts',
+    'sw': './src/ts/background.ts',
     'js/lazy': './src/ts/lazy.ts',
     'js/web-animations-next-lite.min.js': './src/ts/web-animations-next-lite.min.js',
     'components/ptm-app': './src/components/ptm-app.ts'

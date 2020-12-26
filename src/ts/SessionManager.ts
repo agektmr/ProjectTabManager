@@ -95,6 +95,15 @@ export class SessionManager {
     chrome.tabs.onRemoved.addListener(this.onTabRemoved.bind(this));
     chrome.tabs.onReplaced.addListener(this.onTabReplaced.bind(this));
 
+    // // @ts-ignore
+    // chrome.tabGroups.onCreated.addListener(e => {console.log('TabGroup Created:', e)});
+    // // @ts-ignore
+    // chrome.tabGroups.onUpdated.addListener(e => {console.log('TabGroup Updated', e)});
+    // // @ts-ignore
+    // chrome.tabGroups.onMoved.addListener(e => {console.log('TabGroup Moved', e)});
+    // // @ts-ignore
+    // chrome.tabGroups.onRemoved.addListener(e => {console.log('TabGroup Removed', e)});
+
     chrome.windows.onCreated.addListener(this.onWindowCreated.bind(this));
     chrome.windows.onFocusChanged.addListener(this.onWindowFocusChanged.bind(this));
     chrome.windows.onRemoved.addListener(this.onWindowRemoved.bind(this));

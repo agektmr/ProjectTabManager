@@ -47,7 +47,8 @@ export class ProjectManager {
       if (project) {
         project.setBadgeText();
       } else {
-        chrome.browserAction.setBadgeText({text: ''});
+        // @ts-ignore
+        chrome.action.setBadgeText({text: ''});
       }
     });
   }
@@ -86,6 +87,10 @@ export class ProjectManager {
     const folder = await BookmarkManager.addFolder(title)
     for (let tab of session.tabs) {
       const { title, url } = tab;
+      // Skip exceptional URLs
+      if (url === '' || url?.match(Util.CHROME_EXCEPTION_URL)) {
+        continue;
+      }
       BookmarkManager.addBookmark(folder.id, title, url);
     }
     // Create new project
@@ -410,7 +415,8 @@ export class ProjectManager {
   //   const project = this.getProjectFromWinId(winId);
   //   const text = project?.title?.substr(0, 4)?.trim() || '';
   //   Util.log(`[ProjectManager] Badge set to "${project.title}"`, project);
-  //   chrome.browserAction.setBadgeText({text: text});
+  //   // @ts-ignore
+  //   chrome.action.setBadgeText({text: text});
   // }
 
   // /**

@@ -55,14 +55,14 @@ export class Util {
     url?: string
   ): string {
     if (!url) return '';
-    if (url.match(RegExp('^chrome-extension:\/\/'+chrome.i18n.getMessage('@@extension_id')+'\/lazy\.html'))) {
-      const parsed = Util.parse(url);
-      const _params = parsed?.query.split('&');
-      for (let param of _params) {
-        const tmp = param.split('=');
-        if (tmp[0] === 'url') return decodeURIComponent(tmp[1]);
-      }
-    }
+    // if (url.match(RegExp('^chrome-extension:\/\/'+chrome.i18n.getMessage('@@extension_id')+'\/lazy\.html'))) {
+    //   const parsed = Util.parse(url);
+    //   const _params = parsed?.query.split('&');
+    //   for (let param of _params) {
+    //     const tmp = param.split('=');
+    //     if (tmp[0] === 'url') return decodeURIComponent(tmp[1]);
+    //   }
+    // }
     return url;
   }
 

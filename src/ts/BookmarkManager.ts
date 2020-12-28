@@ -68,10 +68,6 @@ export class BookmarkManager {
     url: string = ''
   ): Promise<chrome.bookmarks.BookmarkTreeNode> {
     return new Promise(resolve => {
-      if (url == '' || url.match(Util.CHROME_EXCEPTION_URL)) {
-        resolve(undefined);
-        return;
-      }
       chrome.bookmarks.create({
         parentId: folderId,
         title: title,

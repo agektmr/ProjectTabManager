@@ -146,6 +146,9 @@ export class ProjectEntity {
     if (url === '') {
       throw "Unsync session. Adding bookmark failed because relevant tab counld't be found";
     }
+    if (url?.match(Util.CHROME_EXCEPTION_URL)) {
+      throw 'Unexpected URL specified to add a bookmark.';
+    }
     if (!this.bookmark) {
       const folder = await BookmarkManager.addFolder(this.title)
       this.id       = folder.id;
@@ -228,6 +231,7 @@ export class ProjectEntity {
   public setBadgeText(): void {
     let text = this.title.substr(0, 4).trim() || '';
     Util.log(`[ProjectEntiry] Badge set to "${text}"`, this);
-    chrome.browserAction.setBadgeText({text: text});
+    // @ts-ignore
+    chrome.action.setBadgeText({text: text});
   }
 }

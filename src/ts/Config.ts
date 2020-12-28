@@ -38,7 +38,7 @@ export class Config {
     let manifest = chrome.runtime.getManifest();
     if (manifest.key !== undefined) {
       // If there's key property exists in manifest, this is production
-      this.debug = false;
+      // this.debug = false;
     }
   }
 

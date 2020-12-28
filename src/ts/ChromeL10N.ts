@@ -20,5 +20,6 @@ Author: Eiji Kitamura (agektmr@gmail.com)
 
 export function l10n(msg: string) {
   if (!chrome?.i18n) return msg;
-  return chrome.i18n.getMessage(msg);
+  // return chrome.i18n.getMessage(msg);
+  return msg;
 }
